@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS edu_corner (
   id SERIAL PRIMARY KEY,
   nama VARCHAR(255) NOT NULL,
   cita_cita TEXT NOT NULL,
+  kelas VARCHAR(10),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -59,6 +60,7 @@ Tabel `edu_corner` memiliki struktur berikut:
 - `id` (SERIAL PRIMARY KEY) - ID unik untuk setiap record
 - `nama` (VARCHAR(255)) - Nama pengguna
 - `cita_cita` (TEXT) - Cita-cita pengguna
+- `kelas` (VARCHAR(10)) - Kelas pengguna (opsional)
 - `created_at` (TIMESTAMP) - Waktu data dibuat (otomatis)
 
 ## API Endpoints

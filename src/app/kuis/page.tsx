@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface QuizResult {
@@ -12,7 +11,6 @@ interface QuizResult {
 }
 
 export default function KuisPage() {
-  const router = useRouter();
   const [nama, setNama] = useState("");
   const [kelas, setKelas] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
@@ -22,6 +20,7 @@ export default function KuisPage() {
   const [showResult, setShowResult] = useState(false);
   const [savedResult, setSavedResult] = useState<QuizResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Cek localStorage saat component mount
   useEffect(() => {
@@ -110,11 +109,13 @@ export default function KuisPage() {
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...answers, answerIndex];
     setAnswers(newAnswers);
+    setIsTransitioning(true);
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestion(currentQuestion + 1);
-      }, 500);
+        setIsTransitioning(false);
+      }, 300);
     } else {
       // Hitung hasil berdasarkan jawaban terbanyak
       const citaCitaCount: { [key: string]: number } = {};
@@ -131,6 +132,7 @@ export default function KuisPage() {
       saveResult(hasilCitaCita);
       
       setTimeout(() => {
+        setIsTransitioning(false);
         setShowResult(true);
       }, 500);
     }
@@ -202,10 +204,10 @@ export default function KuisPage() {
     const displayKelas = savedResult?.kelas || kelas;
 
     return (
-      <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4 py-8">
-        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="mb-6">
-            <div className="w-20 h-20 bg-[#FFB6C1] rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4 py-8 animate-fade-in">
+        <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center animate-scale-in">
+          <div className="mb-6 animate-fade-in">
+            <div className="w-20 h-20 bg-[#FFB6C1] rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
               <svg
                 width="40"
                 height="40"
@@ -220,11 +222,11 @@ export default function KuisPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2">Selamat, {displayNama}!</h2>
-            <p className="text-lg text-[#4A4A4A] mb-6">Kelas {displayKelas}</p>
+            <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2 animate-slide-in-right">Selamat, {displayNama}!</h2>
+            <p className="text-lg text-[#4A4A4A] mb-6 animate-slide-in-left">Kelas {displayKelas}</p>
           </div>
 
-          <div className="bg-[#B8E6B8] rounded-xl p-6 mb-6">
+          <div className="bg-[#B8E6B8] rounded-xl p-6 mb-6 animate-scale-in hover-lift">
             <p className="text-sm font-semibold text-[#2D2D2D] mb-2 uppercase tracking-wide">Cita-Citamu Adalah</p>
             <p className="text-4xl font-bold text-[#2D2D2D]">{hasilCitaCita}</p>
           </div>
@@ -270,34 +272,40 @@ export default function KuisPage() {
       <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4 py-8">
         <div className="max-w-3xl w-full">
           {/* Progress Bar */}
-          <div className="mb-6">
+          <div className="mb-6 animate-fade-in">
             <div className="flex justify-between text-sm text-[#4A4A4A] mb-2">
               <span>Pertanyaan {currentQuestion + 1} dari {questions.length}</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
               <div
-                className="bg-[#FF69B4] h-3 rounded-full transition-all duration-300"
+                className="bg-[#FF69B4] h-3 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
           </div>
 
           {/* Question Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-8 text-center">
+          <div 
+            key={currentQuestion}
+            className={`bg-white rounded-2xl shadow-xl p-8 ${
+              isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100 animate-slide-in-right'
+            } transition-all duration-300`}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-8 text-center animate-fade-in">
               {question.question}
             </h2>
 
             <div className="space-y-4">
               {question.options.map((option, index) => (
                 <button
-                  key={index}
+                  key={`${currentQuestion}-${index}`}
                   onClick={() => handleAnswer(index)}
-                  className="w-full bg-[#FFF5F5] hover:bg-[#FFB6C1] border-2 border-transparent hover:border-[#FF69B4] text-[#2D2D2D] font-semibold px-6 py-4 rounded-xl text-left transition-all transform hover:scale-[1.02] active:scale-100"
+                  className="w-full bg-[#FFF5F5] hover:bg-[#FFB6C1] border-2 border-transparent hover:border-[#FF69B4] text-[#2D2D2D] font-semibold px-6 py-4 rounded-xl text-left transition-all transform hover:scale-[1.02] active:scale-95 hover-lift animate-fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center font-bold text-[#FF69B4]">
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center font-bold text-[#FF69B4] transition-transform hover:scale-110">
                       {String.fromCharCode(65 + index)}
                     </div>
                     <span className="text-lg">{option}</span>
@@ -312,10 +320,10 @@ export default function KuisPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4 py-12 animate-fade-in">
       <div className="max-w-2xl w-full">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-slide-in-right">
           <h1 className="text-4xl md:text-5xl font-bold text-[#2D2D2D] mb-4">
             Tes Cita-Cita yang Cocok dengan Kamu
           </h1>
@@ -325,7 +333,7 @@ export default function KuisPage() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 animate-scale-in hover-lift">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Nama Input */}
             <div>
@@ -370,7 +378,7 @@ export default function KuisPage() {
             <button
               type="submit"
               disabled={!nama.trim() || !kelas}
-              className="w-full bg-[#FF69B4] hover:bg-[#FF5BA3] disabled:bg-gray-300 text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none text-lg"
+              className="w-full bg-[#FF69B4] hover:bg-[#FF5BA3] disabled:bg-gray-300 text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:shadow-none text-lg transform hover:scale-[1.02] active:scale-100 animate-fade-in"
             >
               Mulai Kuis
             </button>

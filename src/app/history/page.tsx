@@ -23,17 +23,24 @@ export default function HistoryPage() {
   const fetchHistory = async () => {
     try {
       setLoading(true);
+      setError("");
       const response = await fetch("/api/data");
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
 
       if (result.success) {
-        setHistory(result.data);
+        setHistory(result.data || []);
+        setError("");
       } else {
-        setError("Gagal mengambil data history");
+        setError(result.error || "Gagal mengambil data history");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching history:", err);
-      setError("Gagal mengambil data history");
+      setError(err.message || "Gagal mengambil data history. Pastikan koneksi database sudah terhubung.");
     } finally {
       setLoading(false);
     }
@@ -51,10 +58,10 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F5] py-12 px-4">
+    <div className="min-h-screen bg-[#FFF5F5] py-12 px-4 animate-fade-in">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-slide-in-right">
           <h1 className="text-4xl md:text-5xl font-bold text-[#2D2D2D] mb-4">
             Cek Petualanganmu
           </h1>
@@ -95,14 +102,38 @@ export default function HistoryPage() {
             <p className="mt-4 text-[#4A4A4A]">Memuat data...</p>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <button
-              onClick={fetchHistory}
-              className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 py-3 rounded-lg transition-all"
-            >
-              Coba Lagi
-            </button>
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-red-500"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-[#2D2D2D] mb-2">Terjadi Kesalahan</h2>
+            <p className="text-red-500 mb-6 text-sm">{error}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={fetchHistory}
+                className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105"
+              >
+                Coba Lagi
+              </button>
+              <Link
+                href="/"
+                className="bg-gray-200 hover:bg-gray-300 text-[#2D2D2D] font-semibold px-6 py-3 rounded-lg transition-all text-center"
+              >
+                Kembali ke Beranda
+              </Link>
+            </div>
           </div>
         ) : history.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
@@ -137,7 +168,8 @@ export default function HistoryPage() {
             {history.map((item, index) => (
               <div
                 key={item.id}
-                className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all animate-fade-in hover-lift"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex-1">

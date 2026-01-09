@@ -13,12 +13,25 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF0F3]">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-[#DCFCE7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-[#FFE4E9] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+      </div>
+
       {/* Header - Nav dengan backdrop blur */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-custom border-b border-[#FCE7F3] px-4 sm:px-8 md:px-16 lg:px-[112px] py-4 md:py-5 animate-slide-in-left">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Logo WebP */}
-          <div className="p-2 sm:p-2.5 rounded-lg" style={{ boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.1)' }}>
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-8 md:px-16 lg:px-[112px] py-4 md:py-5 animate-slide-in-left shadow-sm">
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Logo WebP dengan efek glow */}
+          <div 
+            className="p-2 sm:p-2.5 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-3" 
+            style={{ 
+              boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
+            }}
+          >
             <Image
               src={logoWebp}
               alt="Logo Edu-Corner"
@@ -29,7 +42,7 @@ export default function Home() {
             />
           </div>
           <h1 
-            className="text-base sm:text-lg md:text-[19.7px] font-bold text-[#FF4D6D] leading-[1.42] tracking-[-0.02em]" 
+            className="text-base sm:text-lg md:text-[19.7px] font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
             KKN T Margo Lestari
@@ -38,20 +51,22 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-20 pt-6 sm:pt-8 md:pt-10 max-w-[896px]">
+      <main className="container mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-20 pt-6 sm:pt-8 md:pt-10 max-w-[896px] relative z-10">
         {/* Dashboard Tag - Green dengan background dan border */}
         <div className="flex justify-center mb-4 sm:mb-5 md:mb-6 animate-fade-in">
           <div 
-            className="px-2.5 sm:px-3 py-1 rounded-full"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-105"
             style={{
-              background: 'rgba(167, 209, 41, 0.1)',
-              border: '1px solid rgba(167, 209, 41, 0.2)'
+              background: 'linear-gradient(135deg, rgba(167, 209, 41, 0.15) 0%, rgba(167, 209, 41, 0.1) 100%)',
+              border: '1.5px solid rgba(167, 209, 41, 0.3)',
+              boxShadow: '0px 4px 15px -5px rgba(167, 209, 41, 0.3)'
             }}
           >
             <span 
-              className="text-[10px] sm:text-[11px] md:text-[11.8px] font-bold text-[#A7D129] uppercase tracking-wide" 
+              className="text-[10px] sm:text-[11px] md:text-[11.8px] font-bold text-[#A7D129] uppercase tracking-wide flex items-center gap-2" 
               style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.36em' }}
             >
+              <span className="w-1.5 h-1.5 bg-[#A7D129] rounded-full animate-pulse"></span>
               Dashboard Cita-Cita Siswa
             </span>
           </div>
@@ -65,18 +80,19 @@ export default function Home() {
               fontSize: 'clamp(32px, 8vw, 59.4px)',
               fontFamily: 'Inter, sans-serif',
               letterSpacing: '-2.5%',
-              lineHeight: '1.01em'
+              lineHeight: '1.01em',
+              textShadow: '0px 2px 10px rgba(0, 0, 0, 0.05)'
             }}
           >
             Di mana{" "}
             <span className="relative inline-block">
-              mimpi
-              <span className="absolute bottom-0 left-0 right-0 h-2 sm:h-2.5 md:h-3 bg-[#FFB6C1] opacity-80 -z-10"></span>
+              <span className="relative z-10">mimpi</span>
+              <span className="absolute bottom-2 left-0 right-0 h-3 sm:h-4 md:h-5 bg-gradient-to-r from-[#FFB6C1] via-[#FFC0CB] to-[#FFB6C1] opacity-70 -z-10 rounded-sm transform rotate-[-1deg]"></span>
             </span>{" "}
             dimulai.
           </h2>
           <p 
-            className="text-[#6B7280] max-w-full sm:max-w-[600px] md:max-w-[672px] mx-auto leading-[1.53] mt-3 sm:mt-4 px-2 sm:px-4 text-sm sm:text-[13.1px]"
+            className="text-[#6B7280] max-w-full sm:max-w-[600px] md:max-w-[672px] mx-auto leading-[1.53] mt-3 sm:mt-4 px-2 sm:px-4 text-sm sm:text-[13.1px] font-medium"
             style={{
               fontFamily: 'Inter, sans-serif',
               lineHeight: '1.53em'
@@ -91,18 +107,19 @@ export default function Home() {
           {/* Pink Button - Mulai Kuis */}
           <Link 
             href="/kuis" 
-            className="bg-[#FF4D6D] text-white font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:min-w-[280px] md:min-w-[328px] transition-all transform hover:scale-105 active:scale-100"
+            className="group relative bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:min-w-[280px] md:min-w-[328px] transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-100 overflow-hidden"
             style={{
               fontFamily: 'Inter, sans-serif',
               fontSize: 'clamp(11px, 2.5vw, 11.4px)',
               lineHeight: '1.4em',
-              boxShadow: '0px 4px 6px -4px rgba(236, 72, 153, 0.3), 0px 10px 15px -3px rgba(236, 72, 153, 0.3)'
+              boxShadow: '0px 8px 20px -5px rgba(255, 77, 109, 0.4), 0px 0px 0px 1px rgba(255, 77, 109, 0.1)'
             }}
           >
+            <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
             <svg
               width="18"
               height="18"
-              className="sm:w-5 sm:h-5 text-white"
+              className="sm:w-5 sm:h-5 text-white relative z-10 transition-transform group-hover:scale-110"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -112,25 +129,25 @@ export default function Home() {
                 fill="currentColor"
               />
             </svg>
-            Mulai Kuis
+            <span className="relative z-10">Mulai Kuis</span>
           </Link>
 
           {/* Light Green Button - Tonton Video Edukasi */}
           <button 
             onClick={scrollToVideo}
-            className="bg-[#DCFCE7] text-[#374151] font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:min-w-[280px] md:min-w-[328px] transition-all transform hover:scale-105 active:scale-100 border-2 cursor-pointer"
+            className="group relative bg-gradient-to-br from-[#DCFCE7] to-[#E8F5E9] text-[#374151] font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:min-w-[280px] md:min-w-[328px] transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-100 border-2 cursor-pointer backdrop-blur-sm"
             style={{
               fontFamily: 'Inter, sans-serif',
               fontSize: 'clamp(11px, 2.5vw, 11.4px)',
               lineHeight: '1.4em',
-              borderColor: 'rgba(167, 209, 41, 0.2)',
-              boxShadow: '0px 1px 2px 0px rgba(0, 0, 0, 0.05)'
+              borderColor: 'rgba(167, 209, 41, 0.3)',
+              boxShadow: '0px 4px 15px -5px rgba(167, 209, 41, 0.3), inset 0px 1px 0px rgba(255, 255, 255, 0.5)'
             }}
           >
             <svg
               width="18"
               height="18"
-              className="sm:w-5 sm:h-5 text-[#374151]"
+              className="sm:w-5 sm:h-5 text-[#374151] transition-transform group-hover:scale-110"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -152,10 +169,10 @@ export default function Home() {
               <div className="relative md:mt-12 lg:mt-24 animate-slide-in-left">
                 <div className="flex flex-col items-center md:items-start relative">
                   <div 
-                    className="bg-white rounded-2xl p-3 sm:p-4 w-full max-w-[200px] sm:max-w-[220px] border relative z-10"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 w-full max-w-[200px] sm:max-w-[220px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
                     style={{
-                      borderColor: '#FFF0F3',
-                      boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.05)'
+                      borderColor: 'rgba(255, 240, 243, 0.5)',
+                      boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
                     }}
                   >
                     <div className="flex items-center gap-2.5 sm:gap-3">
@@ -205,9 +222,9 @@ export default function Home() {
               <div ref={videoRef} className="relative flex flex-col items-center order-first md:order-0 animate-scale-in w-full px-2 sm:px-0">
                 {/* YouTube Video Embed dengan styling lebih baik */}
                 <div 
-                  className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[650px] lg:max-w-[800px] xl:max-w-[900px] border-4 border-white rounded-3xl overflow-hidden bg-black"
+                  className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[650px] lg:max-w-[800px] xl:max-w-[900px] border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
                   style={{
-                    boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.3), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)',
                     borderRadius: '24px'
                   }}
                 >
@@ -228,10 +245,10 @@ export default function Home() {
               <div className="relative md:mt-12 lg:mt-24 animate-slide-in-right">
                 <div className="flex flex-col items-center md:items-end relative">
                   <div 
-                    className="bg-white rounded-2xl p-3 sm:p-4 w-full max-w-[200px] sm:max-w-[220px] border relative z-10"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 w-full max-w-[200px] sm:max-w-[220px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
                     style={{
-                      borderColor: '#FFF0F3',
-                      boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.05)'
+                      borderColor: 'rgba(255, 240, 243, 0.5)',
+                      boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
                     }}
                   >
                     <div className="flex items-center gap-2.5 sm:gap-3">
@@ -301,14 +318,14 @@ export default function Home() {
 
       {/* Footer */}
       <footer 
-        className="text-center py-6 sm:py-8 border-t px-4"
+        className="text-center py-6 sm:py-8 border-t px-4 relative z-10 backdrop-blur-sm bg-white/30"
         style={{
-          borderColor: '#F3F4F6',
+          borderColor: 'rgba(243, 244, 246, 0.5)',
           fontFamily: 'Inter, sans-serif'
         }}
       >
         <p 
-          className="text-xs sm:text-[12px] md:text-[13.1px] text-[#666666]" 
+          className="text-xs sm:text-[12px] md:text-[13.1px] text-[#666666] font-medium" 
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
           © 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.

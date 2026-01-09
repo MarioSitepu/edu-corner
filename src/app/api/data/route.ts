@@ -5,7 +5,7 @@ import sql from '@/lib/db';
 export async function GET() {
   try {
     const data = await sql`
-      SELECT id, nama, cita_cita, created_at 
+      SELECT id, nama, cita_cita, kelas, created_at 
       FROM edu_corner 
       ORDER BY created_at DESC
     `;
@@ -24,7 +24,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { nama, citaCita } = body;
+    const { nama, citaCita, kelas } = body;
 
     if (!nama || !citaCita) {
       return NextResponse.json(
@@ -33,11 +33,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await sql`
-      INSERT INTO edu_corner (nama, cita_cita)
-      VALUES (${nama.trim()}, ${citaCita.trim()})
-      RETURNING id, nama, cita_cita, created_at
-    `;
+    // Jika kelas ada, simpan dengan kelas, jika tidak gunakan query tanpa kelas
+    let result;
+    if (kelas) {
+      result = await sql`
+        INSERT INTO edu_corner (nama, cita_cita, kelas)
+        VALUES (${nama.trim()}, ${citaCita.trim()}, ${kelas.trim()})
+        RETURNING id, nama, cita_cita, kelas, created_at
+      `;
+    } else {
+      result = await sql`
+        INSERT INTO edu_corner (nama, cita_cita)
+        VALUES (${nama.trim()}, ${citaCita.trim()})
+        RETURNING id, nama, cita_cita, kelas, created_at
+      `;
+    }
 
     return NextResponse.json(
       { success: true, data: result[0] },

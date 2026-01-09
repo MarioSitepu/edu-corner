@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-interface QuizData {
+interface QuizResult {
   nama: string;
   kelas: string;
+  citaCita: string;
+  timestamp: string;
 }
 
 export default function KuisPage() {
@@ -18,6 +20,24 @@ export default function KuisPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [savedResult, setSavedResult] = useState<QuizResult | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Cek localStorage saat component mount
+  useEffect(() => {
+    const saved = localStorage.getItem("quizResult");
+    if (saved) {
+      try {
+        const result = JSON.parse(saved);
+        setSavedResult(result);
+        setShowResult(true);
+        setNama(result.nama);
+        setKelas(result.kelas);
+      } catch (e) {
+        console.error("Error parsing saved result:", e);
+      }
+    }
+  }, []);
 
   // Data pertanyaan kuis tentang cita-cita
   const questions = [
@@ -76,7 +96,14 @@ export default function KuisPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (nama.trim() && kelas) {
+      // Reset state untuk kuis baru
+      setShowResult(false);
+      setSavedResult(null);
+      setAnswers([]);
+      setCurrentQuestion(0);
       setShowQuiz(true);
+      // Hapus hasil lama dari localStorage
+      localStorage.removeItem("quizResult");
     }
   };
 
@@ -98,13 +125,56 @@ export default function KuisPage() {
 
       const sortedCitaCita = Object.entries(citaCitaCount).sort((a, b) => b[1] - a[1]);
       setScore(sortedCitaCita[0][1]);
+      
+      // Simpan hasil ke database dan localStorage
+      const hasilCitaCita = sortedCitaCita[0] ? sortedCitaCita[0][0] : "Belum ditentukan";
+      saveResult(hasilCitaCita);
+      
       setTimeout(() => {
         setShowResult(true);
       }, 500);
     }
   };
 
+  const saveResult = async (hasilCitaCita: string) => {
+    setIsSaving(true);
+    const result: QuizResult = {
+      nama: nama.trim(),
+      kelas: kelas,
+      citaCita: hasilCitaCita,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Simpan ke localStorage
+    localStorage.setItem("quizResult", JSON.stringify(result));
+    setSavedResult(result);
+
+    // Simpan ke database
+    try {
+      await fetch("/api/data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nama: result.nama,
+          citaCita: result.citaCita,
+          kelas: result.kelas,
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving to database:", error);
+      // Tetap lanjutkan meskipun gagal save ke database
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getResultCitaCita = () => {
+    if (savedResult) {
+      return savedResult.citaCita;
+    }
+
     const citaCitaCount: { [key: string]: number } = {};
     answers.forEach((answerIndex, qIndex) => {
       const citaCita = questions[qIndex].citaCita[answerIndex];
@@ -115,10 +185,24 @@ export default function KuisPage() {
     return sortedCitaCita[0] ? sortedCitaCita[0][0] : "Belum ditentukan";
   };
 
+  const handleCobaTesLagi = () => {
+    setShowResult(false);
+    setShowQuiz(false);
+    setSavedResult(null);
+    setAnswers([]);
+    setCurrentQuestion(0);
+    setNama("");
+    setKelas("");
+    localStorage.removeItem("quizResult");
+  };
+
   if (showResult) {
     const hasilCitaCita = getResultCitaCita();
+    const displayNama = savedResult?.nama || nama;
+    const displayKelas = savedResult?.kelas || kelas;
+
     return (
-      <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#FFF5F5] flex items-center justify-center px-4 py-8">
         <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="mb-6">
             <div className="w-20 h-20 bg-[#FFB6C1] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -136,8 +220,8 @@ export default function KuisPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2">Selamat, {nama}!</h2>
-            <p className="text-lg text-[#4A4A4A] mb-6">Kelas {kelas}</p>
+            <h2 className="text-3xl font-bold text-[#2D2D2D] mb-2">Selamat, {displayNama}!</h2>
+            <p className="text-lg text-[#4A4A4A] mb-6">Kelas {displayKelas}</p>
           </div>
 
           <div className="bg-[#B8E6B8] rounded-xl p-6 mb-6">
@@ -149,16 +233,26 @@ export default function KuisPage() {
             Teruslah belajar dan berusaha untuk mencapai cita-citamu! Semangat!
           </p>
 
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/kuis"
+          {isSaving && (
+            <p className="text-sm text-[#4A4A4A] mb-4">Menyimpan hasil...</p>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleCobaTesLagi}
               className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 py-3 rounded-lg transition-all"
             >
-              Ulangi Kuis
+              Coba Tes Lagi
+            </button>
+            <Link
+              href="/history"
+              className="bg-[#B8E6B8] hover:bg-[#A8D8A8] text-[#2D2D2D] font-semibold px-6 py-3 rounded-lg transition-all text-center"
+            >
+              Cek Petualanganmu (History)
             </Link>
             <Link
               href="/"
-              className="bg-[#B8E6B8] hover:bg-[#A8D8A8] text-[#2D2D2D] font-semibold px-6 py-3 rounded-lg transition-all"
+              className="bg-gray-200 hover:bg-gray-300 text-[#2D2D2D] font-semibold px-6 py-3 rounded-lg transition-all text-center"
             >
               Kembali ke Beranda
             </Link>

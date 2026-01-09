@@ -7,7 +7,7 @@
 Buat file `.env.local` di root folder `webeducorner` dengan konten berikut:
 
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_FCYx27AMIpGj@ep-misty-dream-a1vogvfs-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://neondb_owner:npg_f53BEuZkWnIl@ep-divine-fog-a1cvim1p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
 
 ### 2. Buat Tabel di Database
@@ -39,7 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_edu_corner_created_at ON edu_corner(created_at DE
 Jalankan perintah berikut di terminal:
 
 ```bash
-psql 'postgresql://neondb_owner:npg_FCYx27AMIpGj@ep-misty-dream-a1vogvfs-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require' -f scripts/create-table.sql
+psql 'postgresql://neondb_owner:npg_f53BEuZkWnIl@ep-divine-fog-a1cvim1p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require' -f scripts/create-table.sql
 ```
 
 ### 3. Jalankan Aplikasi

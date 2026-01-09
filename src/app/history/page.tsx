@@ -26,11 +26,12 @@ export default function HistoryPage() {
       setError("");
       const response = await fetch("/api/data");
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
       const result = await response.json();
+
+      if (!response.ok) {
+        // Jika response tidak OK, gunakan error dari result jika ada
+        throw new Error(result.error || `HTTP error! status: ${response.status}`);
+      }
 
       if (result.success) {
         setHistory(result.data || []);
@@ -40,7 +41,16 @@ export default function HistoryPage() {
       }
     } catch (err: any) {
       console.error("Error fetching history:", err);
-      setError(err.message || "Gagal mengambil data history. Pastikan koneksi database sudah terhubung.");
+      const errorMessage = err.message || "Gagal mengambil data history";
+      
+      // Tampilkan pesan error yang lebih informatif
+      if (errorMessage.includes('DATABASE_URL') || errorMessage.includes('konfigurasi')) {
+        setError("Konfigurasi database tidak ditemukan. Silakan cek file .env.local");
+      } else if (errorMessage.includes('does not exist') || errorMessage.includes('relation')) {
+        setError("Tabel database belum dibuat. Silakan coba lagi dalam beberapa saat.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }

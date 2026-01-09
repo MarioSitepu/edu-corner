@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useRef } from "react";
+import Image from "next/image";
+import logoWebp from "./logo.webp";
 
 export default function Home() {
   const videoRef = useRef<HTMLDivElement>(null);
@@ -15,21 +17,16 @@ export default function Home() {
       {/* Header - Nav dengan backdrop blur */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-custom border-b border-[#FCE7F3] px-4 sm:px-8 md:px-16 lg:px-[112px] py-4 md:py-5 animate-slide-in-left">
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Graduation Cap Icon - Pink dengan shadow */}
-          <div className="p-1.5 sm:p-2 rounded-lg" style={{ boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.1)' }}>
-            <svg
-              width="20"
-              height="20"
-              className="sm:w-6 sm:h-6 text-[#FF4D6D]"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 3L1 9L12 15L21 10.09V17H23V9M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z"
-                fill="currentColor"
-              />
-            </svg>
+          {/* Logo WebP */}
+          <div className="p-2 sm:p-2.5 rounded-lg" style={{ boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.1)' }}>
+            <Image
+              src={logoWebp}
+              alt="Logo Edu-Corner"
+              width={40}
+              height={40}
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
+              priority
+            />
           </div>
           <h1 
             className="text-base sm:text-lg md:text-[19.7px] font-bold text-[#FF4D6D] leading-[1.42] tracking-[-0.02em]" 

@@ -42,7 +42,7 @@ export default function Home() {
             />
           </div>
           <h1 
-            className="text-base sm:text-lg md:text-[19.7px] font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
             KKN T Margo Lestari
@@ -63,10 +63,10 @@ export default function Home() {
             }}
           >
             <span 
-              className="text-[10px] sm:text-[11px] md:text-[11.8px] font-bold text-[#A7D129] uppercase tracking-wide flex items-center gap-2" 
+              className="text-sm sm:text-base md:text-lg font-bold text-[#A7D129] uppercase tracking-wide flex items-center gap-2" 
               style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.36em' }}
             >
-              <span className="w-1.5 h-1.5 bg-[#A7D129] rounded-full animate-pulse"></span>
+              <span className="w-2 h-2 bg-[#A7D129] rounded-full animate-pulse"></span>
               Dashboard Cita-Cita Siswa
             </span>
           </div>
@@ -77,7 +77,7 @@ export default function Home() {
           <h2 
             className="font-bold text-[#111827] mb-3 sm:mb-4 leading-[1.01] px-2 sm:px-4"
             style={{
-              fontSize: 'clamp(32px, 8vw, 59.4px)',
+              fontSize: 'clamp(40px, 10vw, 72px)',
               fontFamily: 'Inter, sans-serif',
               letterSpacing: '-2.5%',
               lineHeight: '1.01em',
@@ -92,7 +92,7 @@ export default function Home() {
             dimulai.
           </h2>
           <p 
-            className="text-[#6B7280] max-w-full sm:max-w-[600px] md:max-w-[672px] mx-auto leading-[1.53] mt-3 sm:mt-4 px-2 sm:px-4 text-sm sm:text-[13.1px] font-medium"
+            className="text-[#6B7280] max-w-full sm:max-w-[600px] md:max-w-[672px] mx-auto leading-[1.53] mt-3 sm:mt-4 px-2 sm:px-4 text-base sm:text-lg md:text-xl font-medium"
             style={{
               fontFamily: 'Inter, sans-serif',
               lineHeight: '1.53em'
@@ -107,10 +107,10 @@ export default function Home() {
           {/* Pink Button - Mulai Kuis */}
           <Link 
             href="/kuis" 
-            className="group relative bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:min-w-[280px] md:min-w-[328px] transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-100 overflow-hidden"
+            className="group relative bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white font-bold px-8 sm:px-10 py-5 sm:py-6 rounded-2xl flex items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto sm:min-w-[320px] md:min-w-[380px] transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-100 overflow-hidden"
             style={{
               fontFamily: 'Inter, sans-serif',
-              fontSize: 'clamp(11px, 2.5vw, 11.4px)',
+              fontSize: 'clamp(14px, 2.5vw, 16px)',
               lineHeight: '1.4em',
               boxShadow: '0px 8px 20px -5px rgba(255, 77, 109, 0.4), 0px 0px 0px 1px rgba(255, 77, 109, 0.1)'
             }}
@@ -135,10 +135,10 @@ export default function Home() {
           {/* Light Green Button - Tonton Video Edukasi */}
           <button 
             onClick={scrollToVideo}
-            className="group relative bg-gradient-to-br from-[#DCFCE7] to-[#E8F5E9] text-[#374151] font-bold px-6 sm:px-8 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-2.5 sm:gap-3 w-full sm:w-auto sm:min-w-[280px] md:min-w-[328px] transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-100 border-2 cursor-pointer backdrop-blur-sm"
+            className="group relative bg-gradient-to-br from-[#DCFCE7] to-[#E8F5E9] text-[#374151] font-bold px-8 sm:px-10 py-5 sm:py-6 rounded-2xl flex items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto sm:min-w-[320px] md:min-w-[380px] transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-100 border-2 cursor-pointer backdrop-blur-sm"
             style={{
               fontFamily: 'Inter, sans-serif',
-              fontSize: 'clamp(11px, 2.5vw, 11.4px)',
+              fontSize: 'clamp(14px, 2.5vw, 16px)',
               lineHeight: '1.4em',
               borderColor: 'rgba(167, 209, 41, 0.3)',
               boxShadow: '0px 4px 15px -5px rgba(167, 209, 41, 0.3), inset 0px 1px 0px rgba(255, 255, 255, 0.5)'
@@ -201,13 +201,13 @@ export default function Home() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p 
-                          className="text-[10px] sm:text-[11px] md:text-[11.8px] font-bold text-[#9CA3AF] uppercase tracking-wide mb-0.5"
+                          className="text-xs sm:text-sm md:text-base font-bold text-[#9CA3AF] uppercase tracking-wide mb-1"
                           style={{ fontFamily: 'Inter, sans-serif' }}
                         >
                           TARGET
                         </p>
                         <p 
-                          className="text-xs sm:text-sm font-bold text-[#1F2937] truncate"
+                          className="text-sm sm:text-base md:text-lg font-bold text-[#1F2937] truncate"
                           style={{ fontFamily: 'Inter, sans-serif' }}
                         >
                           Jadi Dokter
@@ -325,7 +325,7 @@ export default function Home() {
         }}
       >
         <p 
-          className="text-xs sm:text-[12px] md:text-[13.1px] text-[#666666] font-medium" 
+          className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
           © 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.

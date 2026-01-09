@@ -51,7 +51,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-20 pt-6 sm:pt-8 md:pt-10 max-w-[896px] relative z-10">
+      <main className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pb-12 sm:pb-16 md:pb-20 pt-6 sm:pt-8 md:pt-10 max-w-[1400px] relative z-10">
         {/* Dashboard Tag - Green dengan background dan border */}
         <div className="flex justify-center mb-4 sm:mb-5 md:mb-6 animate-fade-in">
           <div 
@@ -163,25 +163,25 @@ export default function Home() {
 
         {/* Cards Section - Scattered Layout */}
         <div className="relative mb-12 sm:mb-16 md:mb-20 px-2 sm:px-4">
-          <div className="max-w-[896px] mx-auto">
+          <div className="max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
               {/* Left Card - Target Jadi Dokter */}
               <div className="relative md:mt-12 lg:mt-24 animate-slide-in-left">
                 <div className="flex flex-col items-center md:items-start relative">
                   <div 
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 w-full max-w-[200px] sm:max-w-[220px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] xl:max-w-[450px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
                     style={{
                       borderColor: 'rgba(255, 240, 243, 0.5)',
                       boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
                     }}
                   >
-                    <div className="flex items-center gap-2.5 sm:gap-3">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       {/* Pink Rocket Icon */}
-                      <div className="bg-[#FCE7F3] p-1.5 sm:p-2 rounded-lg shrink-0">
+                      <div className="bg-[#FCE7F3] p-2 sm:p-3 md:p-4 rounded-lg shrink-0">
                         <svg
-                          width="18"
-                          height="18"
-                          className="sm:w-5 sm:h-5 text-[#FF4D6D]"
+                          width="24"
+                          height="24"
+                          className="sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#FF4D6D]"
                           viewBox="0 0 24 24"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -222,7 +222,7 @@ export default function Home() {
               <div ref={videoRef} className="relative flex flex-col items-center order-first md:order-0 animate-scale-in w-full px-2 sm:px-0">
                 {/* YouTube Video Embed dengan styling lebih baik */}
                 <div 
-                  className="w-full max-w-[400px] sm:max-w-[500px] md:max-w-[650px] lg:max-w-[800px] xl:max-w-[900px] border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                  className="w-full max-w-[500px] sm:max-w-[600px] md:max-w-[1000px] lg:max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1800px] border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
                   style={{
                     boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.3), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)',
                     borderRadius: '24px'
@@ -245,19 +245,19 @@ export default function Home() {
               <div className="relative md:mt-12 lg:mt-24 animate-slide-in-right">
                 <div className="flex flex-col items-center md:items-end relative">
                   <div 
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 w-full max-w-[200px] sm:max-w-[220px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] xl:max-w-[450px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
                     style={{
                       borderColor: 'rgba(255, 240, 243, 0.5)',
                       boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
                     }}
                   >
-                    <div className="flex items-center gap-2.5 sm:gap-3">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       {/* Light Green Trophy Icon */}
-                      <div className="bg-[#DCFCE7] p-1.5 sm:p-2 rounded-lg shrink-0">
+                      <div className="bg-[#DCFCE7] p-2 sm:p-3 md:p-4 rounded-lg shrink-0">
                         <svg
-                          width="18"
-                          height="18"
-                          className="sm:w-5 sm:h-5 text-[#A7D129]"
+                          width="24"
+                          height="24"
+                          className="sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#A7D129]"
                           viewBox="0 0 24 24"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"

@@ -21,6 +21,9 @@ export default function KuisPage() {
   const [savedResult, setSavedResult] = useState<QuizResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
+  const [explanation, setExplanation] = useState<string>("");
 
   // Cek localStorage saat component mount
   useEffect(() => {
@@ -195,7 +198,44 @@ export default function KuisPage() {
     setCurrentQuestion(0);
     setNama("");
     setKelas("");
+    setIsExpanded(false);
+    setExplanation("");
     localStorage.removeItem("quizResult");
+  };
+
+  const handleToggleExpand = async () => {
+    if (!isExpanded && !explanation) {
+      // Fetch explanation jika belum ada
+      const citaCita = getResultCitaCita();
+      await fetchExplanation(citaCita);
+    }
+    setIsExpanded(!isExpanded);
+  };
+
+  const fetchExplanation = async (citaCita: string) => {
+    setIsLoadingExplanation(true);
+    try {
+      const response = await fetch("/api/explain-career", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ citaCita }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setExplanation(result.explanation);
+      } else {
+        setExplanation("Maaf, terjadi kesalahan saat mengambil penjelasan. Silakan coba lagi nanti.");
+      }
+    } catch (error) {
+      console.error("Error fetching explanation:", error);
+      setExplanation("Maaf, terjadi kesalahan saat mengambil penjelasan. Silakan coba lagi nanti.");
+    } finally {
+      setIsLoadingExplanation(false);
+    }
   };
 
   if (showResult) {
@@ -229,6 +269,97 @@ export default function KuisPage() {
           <div className="bg-[#B8E6B8] rounded-xl p-6 mb-6 animate-scale-in hover-lift">
             <p className="text-sm font-semibold text-[#2D2D2D] mb-2 uppercase tracking-wide">Cita-Citamu Adalah</p>
             <p className="text-4xl font-bold text-[#2D2D2D]">{hasilCitaCita}</p>
+          </div>
+
+          {/* Expandable Explanation Section */}
+          <div className="mb-6">
+            <button
+              onClick={handleToggleExpand}
+              disabled={isLoadingExplanation}
+              className="w-full bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoadingExplanation ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>Memuat penjelasan...</span>
+                </>
+              ) : isExpanded ? (
+                <>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 8L16 12L12 16M8 12H16"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>Sembunyikan Penjelasan</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 16L8 12L12 8M8 12H16"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>Pelajari Lebih Lanjut Tentang {hasilCitaCita}</span>
+                </>
+              )}
+            </button>
+
+            {isExpanded && (
+              <div className="mt-4 bg-[#FFF5F5] rounded-xl p-6 border-2 border-[#FFB6C1] animate-fade-in">
+                {explanation ? (
+                  <div className="text-left text-[#2D2D2D] space-y-4 whitespace-pre-line">
+                    {explanation.split('\n').map((paragraph, index) => (
+                      paragraph.trim() && (
+                        <p key={index} className="text-base leading-relaxed">
+                          {paragraph.trim()}
+                        </p>
+                      )
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-[#4A4A4A]">Memuat penjelasan...</p>
+                )}
+              </div>
+            )}
           </div>
 
           <p className="text-base text-[#4A4A4A] mb-8">

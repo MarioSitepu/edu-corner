@@ -19,6 +19,17 @@ export default function Home() {
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-[#DCFCE7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
         <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-[#FFE4E9] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Fun Floating Shapes */}
+        <div className="absolute top-1/4 left-[5%] w-16 h-16 bg-purple-300/30 rounded-lg rotate-12 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.5s' }}></div>
+        <div className="absolute top-1/3 right-[10%] w-12 h-12 bg-yellow-300/40 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}></div>
+        <div className="absolute bottom-1/4 left-[15%] w-20 h-20 bg-green-300/30 rounded-full animate-pulse" style={{ animationDuration: '2.5s' }}></div>
+        <div className="absolute top-[60%] right-[5%] w-14 h-14 bg-pink-300/35 rounded-lg rotate-45 animate-pulse" style={{ animationDuration: '3.5s' }}></div>
+        
+        {/* Star shapes */}
+        <div className="absolute top-[15%] right-[20%] text-4xl opacity-20 animate-pulse" style={{ animationDuration: '2s' }} suppressHydrationWarning>⭐</div>
+        <div className="absolute bottom-[20%] right-[15%] text-3xl opacity-20 animate-pulse" style={{ animationDuration: '2.8s', animationDelay: '0.5s' }} suppressHydrationWarning>✨</div>
+        <div className="absolute top-[45%] left-[8%] text-3xl opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }} suppressHydrationWarning>🌟</div>
       </div>
 
       {/* Header - Nav dengan backdrop blur */}
@@ -163,25 +174,25 @@ export default function Home() {
 
         {/* Cards Section - Scattered Layout */}
         <div className="relative mb-12 sm:mb-16 md:mb-20 px-2 sm:px-4">
-          <div className="max-w-[1400px] mx-auto">
+          <div className="max-w-[1800px] mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
               {/* Left Card - Target Jadi Dokter */}
-              <div className="relative md:mt-12 lg:mt-24 animate-slide-in-left">
-                <div className="flex flex-col items-center md:items-start relative">
+              <div className="relative md:mt-32 lg:mt-40 animate-slide-in-left">
+                <div className="flex flex-col items-center md:items-end relative">
                   <div 
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] xl:max-w-[450px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-[200px] sm:max-w-[220px] md:max-w-[240px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
                     style={{
                       borderColor: 'rgba(255, 240, 243, 0.5)',
                       boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
                     }}
                   >
-                    <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       {/* Pink Rocket Icon */}
-                      <div className="bg-[#FCE7F3] p-2 sm:p-3 md:p-4 rounded-lg shrink-0">
+                      <div className="bg-[#FCE7F3] p-2 sm:p-2.5 rounded-lg shrink-0">
                         <svg
-                          width="24"
-                          height="24"
-                          className="sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#FF4D6D]"
+                          width="20"
+                          height="20"
+                          className="sm:w-6 sm:h-6 text-[#FF4D6D]"
                           viewBox="0 0 24 24"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -201,13 +212,13 @@ export default function Home() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p 
-                          className="text-xs sm:text-sm md:text-base font-bold text-[#9CA3AF] uppercase tracking-wide mb-1"
+                          className="text-[9px] sm:text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wide mb-0.5"
                           style={{ fontFamily: 'Inter, sans-serif' }}
                         >
                           TARGET
                         </p>
                         <p 
-                          className="text-sm sm:text-base md:text-lg font-bold text-[#1F2937] truncate"
+                          className="text-xs sm:text-sm font-bold text-[#1F2937] truncate"
                           style={{ fontFamily: 'Inter, sans-serif' }}
                         >
                           Jadi Dokter
@@ -222,7 +233,7 @@ export default function Home() {
               <div ref={videoRef} className="relative flex flex-col items-center order-first md:order-0 animate-scale-in w-full px-2 sm:px-0">
                 {/* YouTube Video Embed dengan styling lebih baik */}
                 <div 
-                  className="w-full max-w-[500px] sm:max-w-[600px] md:max-w-[1000px] lg:max-w-[1400px] xl:max-w-[1600px] 2xl:max-w-[1800px] border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                  className="w-full border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
                   style={{
                     boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.3), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)',
                     borderRadius: '24px'
@@ -236,28 +247,29 @@ export default function Home() {
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
                       loading="lazy"
+                      suppressHydrationWarning
                     ></iframe>
                   </div>
                 </div>
               </div>
 
               {/* Right Card - Achievement Juara Kelas */}
-              <div className="relative md:mt-12 lg:mt-24 animate-slide-in-right">
-                <div className="flex flex-col items-center md:items-end relative">
+              <div className="relative md:mt-6 lg:mt-10 animate-slide-in-right">
+                <div className="flex flex-col items-center md:items-start relative">
                   <div 
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-5 md:p-6 lg:p-7 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] xl:max-w-[450px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-[200px] sm:max-w-[220px] md:max-w-[240px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
                     style={{
                       borderColor: 'rgba(255, 240, 243, 0.5)',
                       boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
                     }}
                   >
-                    <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       {/* Light Green Trophy Icon */}
-                      <div className="bg-[#DCFCE7] p-2 sm:p-3 md:p-4 rounded-lg shrink-0">
+                      <div className="bg-[#DCFCE7] p-2 sm:p-2.5 rounded-lg shrink-0">
                         <svg
-                          width="24"
-                          height="24"
-                          className="sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#A7D129]"
+                          width="20"
+                          height="20"
+                          className="sm:w-6 sm:h-6 text-[#A7D129]"
                           viewBox="0 0 24 24"
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
@@ -295,7 +307,7 @@ export default function Home() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p 
-                          className="text-[10px] sm:text-[11px] md:text-[11.8px] font-bold text-[#9CA3AF] uppercase tracking-wide mb-0.5"
+                          className="text-[9px] sm:text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wide mb-0.5"
                           style={{ fontFamily: 'Inter, sans-serif' }}
                         >
                           PENCAPAIAN

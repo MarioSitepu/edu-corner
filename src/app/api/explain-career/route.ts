@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
+import sql from '@/lib/db';
 
 // Simple in-memory rate limiting (untuk production, gunakan Redis atau database)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -144,10 +145,76 @@ export async function POST(request: NextRequest) {
                           apiKey.length >= 20 &&
                           apiKey.startsWith('gsk_');
 
+    // Cek apakah sudah ada penjelasan di database
+    try {
+      const dbResult = await sql`
+        SELECT explanation 
+        FROM career_explanations 
+        WHERE LOWER(cita_cita) = LOWER(${citaCita})
+        ORDER BY updated_at DESC
+        LIMIT 1
+      `;
+      
+      if (dbResult && dbResult.length > 0) {
+        // Gunakan penjelasan dari database
+        return NextResponse.json(
+          { 
+            success: true, 
+            explanation: dbResult[0].explanation,
+            source: 'database'
+          },
+          { 
+            status: 200,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type',
+            }
+          }
+        );
+      }
+    } catch (dbError: any) {
+      // Jika tabel belum ada, lanjutkan ke proses berikutnya
+      const errorMsg = dbError?.message || String(dbError);
+      if (!errorMsg.includes('does not exist') && !errorMsg.includes('relation')) {
+        console.warn('Failed to check database for explanation:', dbError);
+      }
+      // Lanjutkan ke proses berikutnya jika gagal cek database
+    }
+
     // Jika API key tidak valid, gunakan fallback explanation
     if (!isApiKeyValid) {
       console.log('Using fallback explanation for:', citaCita);
       const fallbackExplanation = getFallbackExplanation(citaCita);
+      
+      // Simpan fallback explanation ke database
+      try {
+        const existing = await sql`
+          SELECT id FROM career_explanations 
+          WHERE LOWER(cita_cita) = LOWER(${citaCita})
+          LIMIT 1
+        `;
+        
+        if (existing.length > 0) {
+          await sql`
+            UPDATE career_explanations 
+            SET explanation = ${fallbackExplanation}, updated_at = CURRENT_TIMESTAMP
+            WHERE LOWER(cita_cita) = LOWER(${citaCita})
+          `;
+        } else {
+          await sql`
+            INSERT INTO career_explanations (cita_cita, explanation)
+            VALUES (${citaCita}, ${fallbackExplanation})
+          `;
+        }
+      } catch (saveError: any) {
+        // Ignore error jika gagal save ke database (mungkin tabel belum ada)
+        const errorMsg = saveError?.message || String(saveError);
+        if (!errorMsg.includes('does not exist') && !errorMsg.includes('relation')) {
+          console.warn('Failed to save fallback explanation to database:', saveError);
+        }
+      }
+      
       return NextResponse.json(
         { 
           success: true, 
@@ -198,6 +265,35 @@ Buat penjelasan dalam 4-6 paragraf dengan bahasa yang ramah dan menarik untuk an
 
     const explanation = completion.choices[0]?.message?.content || getFallbackExplanation(citaCita);
 
+    // Simpan penjelasan ke database (async, tidak perlu menunggu)
+    try {
+      // Cek apakah sudah ada, jika ada update, jika tidak insert
+      const existing = await sql`
+        SELECT id FROM career_explanations 
+        WHERE LOWER(cita_cita) = LOWER(${citaCita})
+        LIMIT 1
+      `;
+      
+      if (existing.length > 0) {
+        await sql`
+          UPDATE career_explanations 
+          SET explanation = ${explanation}, updated_at = CURRENT_TIMESTAMP
+          WHERE LOWER(cita_cita) = LOWER(${citaCita})
+        `;
+      } else {
+        await sql`
+          INSERT INTO career_explanations (cita_cita, explanation)
+          VALUES (${citaCita}, ${explanation})
+        `;
+      }
+    } catch (saveError: any) {
+      // Ignore error jika gagal save ke database (mungkin tabel belum ada)
+      const errorMsg = saveError?.message || String(saveError);
+      if (!errorMsg.includes('does not exist') && !errorMsg.includes('relation')) {
+        console.warn('Failed to save explanation to database:', saveError);
+      }
+    }
+
     return NextResponse.json(
       { 
         success: true, 
@@ -220,6 +316,34 @@ Buat penjelasan dalam 4-6 paragraf dengan bahasa yang ramah dan menarik untuk an
     // Jika citaCita tidak tersedia, gunakan default
     const targetCitaCita = citaCita || 'Profesi Impian';
     const fallbackExplanation = getFallbackExplanation(targetCitaCita);
+    
+    // Simpan fallback explanation ke database
+    try {
+      const existing = await sql`
+        SELECT id FROM career_explanations 
+        WHERE LOWER(cita_cita) = LOWER(${targetCitaCita})
+        LIMIT 1
+      `;
+      
+      if (existing.length > 0) {
+        await sql`
+          UPDATE career_explanations 
+          SET explanation = ${fallbackExplanation}, updated_at = CURRENT_TIMESTAMP
+          WHERE LOWER(cita_cita) = LOWER(${targetCitaCita})
+        `;
+      } else {
+        await sql`
+          INSERT INTO career_explanations (cita_cita, explanation)
+          VALUES (${targetCitaCita}, ${fallbackExplanation})
+        `;
+      }
+    } catch (saveError: any) {
+      // Ignore error jika gagal save ke database
+      const errorMsg = saveError?.message || String(saveError);
+      if (!errorMsg.includes('does not exist') && !errorMsg.includes('relation')) {
+        console.warn('Failed to save fallback explanation to database:', saveError);
+      }
+    }
     
     // Log error untuk debugging
     if (process.env.NODE_ENV === 'development') {

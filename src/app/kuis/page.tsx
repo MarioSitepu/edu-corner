@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -27,6 +27,11 @@ export default function KuisPage() {
   const [explanation, setExplanation] = useState<string>("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
+  const [pdfError, setPdfError] = useState<string>("");
+  
+  // Refs untuk cleanup timer (fix race condition)
+  const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Data karakter
   const characters = [
@@ -44,28 +49,57 @@ export default function KuisPage() {
 
   // Cek localStorage saat component mount
   useEffect(() => {
-    const saved = localStorage.getItem("quizResult");
-    if (saved) {
-      try {
-        const result = JSON.parse(saved);
-        setSavedResult(result);
-        setShowResult(true);
-        setNama(result.nama);
-        setKelas(result.kelas);
-      } catch (e) {
-        console.error("Error parsing saved result:", e);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const saved = localStorage.getItem("quizResult");
+        if (saved) {
+          try {
+            const result = JSON.parse(saved);
+            // Validasi struktur data
+            if (result && typeof result === 'object' && result.nama && result.citaCita) {
+              setSavedResult(result);
+              setShowResult(true);
+              setNama(result.nama || "");
+              setKelas(result.kelas || "");
+            } else {
+              // Data tidak valid, hapus dari localStorage
+              localStorage.removeItem("quizResult");
+            }
+          } catch (e) {
+            console.error("Error parsing saved result:", e);
+            // Hapus data corrupt dari localStorage
+            localStorage.removeItem("quizResult");
+          }
+        }
       }
+    } catch (e) {
+      // localStorage tidak tersedia atau blocked
+      console.warn("localStorage tidak tersedia:", e);
     }
   }, []);
 
   // Trigger animasi muncul saat pertanyaan baru dimuat (harus di top level)
+  // Fix race condition dengan cleanup timer menggunakan useRef
   useEffect(() => {
     if (showQuiz) {
       setOptionsVisible(false);
-      const timer = setTimeout(() => {
+      
+      // Cleanup timer sebelumnya jika ada
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+      
+      animationTimerRef.current = setTimeout(() => {
         setOptionsVisible(true);
+        animationTimerRef.current = null;
       }, 200);
-      return () => clearTimeout(timer);
+      
+      return () => {
+        if (animationTimerRef.current) {
+          clearTimeout(animationTimerRef.current);
+          animationTimerRef.current = null;
+        }
+      };
     }
   }, [currentQuestion, showQuiz]);
 
@@ -169,10 +203,22 @@ export default function KuisPage() {
       setShowQuiz(true);
       setOptionsVisible(false);
       // Hapus hasil lama dari localStorage
-      localStorage.removeItem("quizResult");
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.removeItem("quizResult");
+        }
+      } catch (e) {
+        console.warn("Gagal menghapus dari localStorage:", e);
+      }
       // Trigger animasi muncul untuk pertanyaan pertama
-      setTimeout(() => {
+      // Cleanup timer sebelumnya jika ada
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+      
+      animationTimerRef.current = setTimeout(() => {
         setOptionsVisible(true);
+        animationTimerRef.current = null;
       }, 300);
     }
   };
@@ -183,14 +229,24 @@ export default function KuisPage() {
     setIsTransitioning(true);
     setOptionsVisible(false);
 
+    // Cleanup timer sebelumnya jika ada
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+    }
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current);
+    }
+
     if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
+      transitionTimerRef.current = setTimeout(() => {
         setCurrentQuestion(currentQuestion + 1);
         setIsTransitioning(false);
         // Trigger animasi muncul untuk pertanyaan baru
-        setTimeout(() => {
+        animationTimerRef.current = setTimeout(() => {
           setOptionsVisible(true);
+          animationTimerRef.current = null;
         }, 150);
+        transitionTimerRef.current = null;
       }, 500);
     } else {
       // Hitung hasil berdasarkan jawaban terbanyak
@@ -203,15 +259,21 @@ export default function KuisPage() {
       });
 
       const sortedCitaCita = Object.entries(citaCitaCount).sort((a, b) => b[1] - a[1]);
-      setScore(sortedCitaCita[0][1]);
+      setScore(sortedCitaCita[0] ? sortedCitaCita[0][1] : 0);
       
       // Simpan hasil ke database dan localStorage
       const hasilCitaCita = sortedCitaCita[0] ? sortedCitaCita[0][0] : "Belum ditentukan";
       saveResult(hasilCitaCita);
       
-      setTimeout(() => {
+      // Cleanup timer sebelumnya jika ada
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+      }
+      
+      transitionTimerRef.current = setTimeout(() => {
         setIsTransitioning(false);
         setShowResult(true);
+        transitionTimerRef.current = null;
       }, 800);
     }
   };
@@ -225,9 +287,20 @@ export default function KuisPage() {
       timestamp: new Date().toISOString(),
     };
 
-    // Simpan ke localStorage
-    localStorage.setItem("quizResult", JSON.stringify(result));
-    setSavedResult(result);
+    // Simpan ke localStorage dengan error handling
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem("quizResult", JSON.stringify(result));
+        setSavedResult(result);
+      } else {
+        // Jika localStorage tidak tersedia, tetap set state
+        setSavedResult(result);
+      }
+    } catch (e) {
+      console.warn("Gagal menyimpan ke localStorage:", e);
+      // Tetap set state meskipun localStorage gagal
+      setSavedResult(result);
+    }
 
     // Simpan ke database
     try {
@@ -277,7 +350,13 @@ export default function KuisPage() {
     setKelas("");
     setIsExpanded(false);
     setExplanation("");
-    localStorage.removeItem("quizResult");
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem("quizResult");
+      }
+    } catch (e) {
+      console.warn("Gagal menghapus dari localStorage:", e);
+    }
   };
 
   const handleToggleExpand = async () => {
@@ -347,14 +426,79 @@ export default function KuisPage() {
       // Dynamic import untuk jsPDF (kompatibel dengan Next.js)
       const { default: jsPDF } = await import('jspdf');
       
+      // Helper function untuk clean text - DEFINISI DI AWAL
+      const decodeHtmlEntities = (text: string): string => {
+        if (typeof window === 'undefined') return text;
+        
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.innerHTML = text;
+          return textarea.value;
+        } catch (e) {
+          // Fallback: manual decode common entities
+          return text
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&nbsp;/g, ' ');
+        }
+      };
+      
+      const cleanText = (text: string): string => {
+        if (!text) return '';
+        
+        // Decode HTML entities
+        let cleaned = decodeHtmlEntities(String(text));
+        // Remove HTML tags jika ada
+        cleaned = cleaned.replace(/<[^>]*>/g, '');
+        
+        // HAPUS KARAKTER ANEH - SANGAT AGRESIF - HANYA ASCII
+        // Step 1: Hapus pola spesifik yang bermasalah
+        cleaned = cleaned.replace(/Ø=[^\s]*/g, ''); // Hapus Ø= diikuti apapun
+        cleaned = cleaned.replace(/[ØÞÜþ•]/g, ''); // Hapus karakter aneh individual
+        cleaned = cleaned.replace(/&[^a-zA-Z0-9#;]/g, ''); // Hapus & diikuti karakter aneh
+        
+        // Step 2: Hanya allow ASCII printable (0x20-0x7E) dan newline/carriage return
+        cleaned = cleaned.replace(/[^\x20-\x7E\n\r]/g, ' ');
+        
+        // Step 3: Remove karakter kontrol dan non-printable
+        cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+        
+        // Step 4: Hapus pola spesifik yang bermasalah
+        cleaned = cleaned.replace(/0&lt;0/g, '');
+        cleaned = cleaned.replace(/0=/g, '');
+        cleaned = cleaned.replace(/#\s*0/g, '');
+        cleaned = cleaned.replace(/0&lt;/g, '');
+        cleaned = cleaned.replace(/&lt;0/g, '');
+        
+        // Step 5: Hanya allow karakter yang benar-benar valid - HANYA ASCII
+        cleaned = cleaned.replace(/[^a-zA-Z0-9\s.,!?;:()\-'":]/g, ' ');
+        
+        // Step 6: Clean up whitespace
+        cleaned = cleaned.replace(/\s+/g, ' '); // Multiple spaces menjadi satu
+        cleaned = cleaned.split('\n').map(line => line.trim()).join('\n'); // Trim setiap baris
+        cleaned = cleaned.trim(); // Trim akhir
+        
+        return cleaned;
+      };
+      
       const hasilCitaCita = getResultCitaCita();
       const displayNama = savedResult?.nama || nama;
       const displayKelas = savedResult?.kelas || kelas;
-      // Gunakan explanation yang sudah di-fetch atau fallback
-      const displayExplanation = finalExplanation || `Menjadi ${hasilCitaCita} adalah profesi yang sangat menarik! Untuk mencapai cita-citamu, kamu perlu belajar dengan rajin di sekolah dan selalu semangat.`;
       
-      // Ambil tanggal kuis dari timestamp
-      const quizDate = savedResult?.timestamp 
+      // CLEAN SEMUA TEKS SEBELUM DIGUNAKAN
+      const cleanedCitaCita = cleanText(hasilCitaCita);
+      const cleanedNama = cleanText(displayNama);
+      const cleanedKelas = cleanText(displayKelas);
+      
+      // Gunakan explanation yang sudah di-fetch atau fallback - CLEAN DULU
+      const rawExplanation = finalExplanation || `Menjadi ${cleanedCitaCita} adalah profesi yang sangat menarik! Untuk mencapai cita-citamu, kamu perlu belajar dengan rajin di sekolah dan selalu semangat.`;
+      const displayExplanation = cleanText(rawExplanation);
+      
+      // Ambil tanggal kuis dari timestamp - CLEAN DULU
+      const rawQuizDate = savedResult?.timestamp 
         ? new Date(savedResult.timestamp).toLocaleDateString('id-ID', {
             year: 'numeric',
             month: 'long',
@@ -369,6 +513,7 @@ export default function KuisPage() {
             hour: '2-digit',
             minute: '2-digit'
           });
+      const quizDate = cleanText(rawQuizDate);
 
       // Mapping cita-cita dengan mata pelajaran yang relevan
       const getRelatedSubject = (citaCita: string) => {
@@ -392,8 +537,8 @@ export default function KuisPage() {
         return "Berbagai Bidang";
       };
 
-      const relatedSubject = getRelatedSubject(hasilCitaCita);
-      const char = getCharacter(displayKelas);
+      const relatedSubject = cleanText(getRelatedSubject(cleanedCitaCita));
+      const char = getCharacter(cleanedKelas);
 
       // Mapping ikon untuk setiap profesi/cita-cita
       const getCareerIcon = (citaCita: string): string => {
@@ -419,7 +564,7 @@ export default function KuisPage() {
         return "💼"; // Default icon
       };
 
-      const careerIcon = getCareerIcon(hasilCitaCita);
+      const careerIcon = getCareerIcon(cleanedCitaCita);
 
       // Buat PDF
       const pdf = new jsPDF({
@@ -463,53 +608,15 @@ export default function KuisPage() {
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.rect(0, 0, pageWidth, 45, 'F');
       
-      // Load dan tambahkan logo webp dengan ukuran lebih besar
-      try {
-        // Coba load logo dari public folder
-        const logoResponse = await fetch('/logo.webp');
-        if (logoResponse.ok) {
-          const logoBlob = await logoResponse.blob();
-          
-          // Convert image to base64
-          const reader = new FileReader();
-          const logoBase64 = await new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(logoBlob);
-          });
-          
-          // Tambahkan logo ke PDF dengan ukuran lebih besar (25x25mm) dan efek shadow
-          // Background circle untuk logo
-          pdf.setFillColor(255, 255, 255, 0.2);
-          pdf.circle(margin + 12.5, 22.5, 14, 'F');
-          
-          // Logo dengan ukuran lebih besar
-          pdf.addImage(logoBase64, 'WEBP', margin, 10, 25, 25);
-          
-          // Border circle untuk efek lebih menarik
-          pdf.setDrawColor(255, 255, 255);
-          pdf.setLineWidth(1);
-          pdf.circle(margin + 12.5, 22.5, 13, 'D');
-        } else {
-          throw new Error('Logo tidak ditemukan');
-        }
-      } catch (logoError) {
-        console.warn('Gagal memuat logo, menggunakan emoji sebagai fallback:', logoError);
-        // Fallback ke emoji jika logo gagal dimuat
-        pdf.setFontSize(35);
-        pdf.setTextColor(255, 255, 255);
-        pdf.text('📚', margin, 30);
-      }
-      
-      // Title (disesuaikan karena logo lebih besar)
+      // Title (tanpa logo)
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(255, 255, 255);
-      pdf.text('KKN T Margo Lestari', margin + 30, 28);
+      pdf.text('KKN T Margo Lestari', margin, 28);
       
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Dashboard Cita-Cita Siswa', margin + 30, 35);
+      pdf.text('Dashboard Cita-Cita Siswa', margin, 35);
 
       let yPos = 65;
 
@@ -517,82 +624,70 @@ export default function KuisPage() {
       pdf.setFillColor(255, 255, 255);
       pdf.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
       pdf.setLineWidth(0.5);
-      pdf.roundedRect(margin, yPos - 5, contentWidth, 85, 3, 3, 'FD');
+      pdf.roundedRect(margin, yPos - 5, contentWidth, 70, 3, 3, 'FD');
 
-      // Avatar Circle dengan border dan shadow effect (seperti di splash)
-      // Shadow circle untuk efek depth
-      pdf.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2], 0.3);
-      pdf.circle(margin + 24, yPos + 14, 15, 'F');
-      
-      // Main circle dengan ukuran lebih besar
-      pdf.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      pdf.circle(margin + 22, yPos + 12, 15, 'F');
-      pdf.setDrawColor(255, 255, 255);
-      pdf.setLineWidth(3);
-      pdf.circle(margin + 22, yPos + 12, 15, 'D');
-      
-      // Emoji di circle (dengan ukuran lebih besar seperti di splash)
-      pdf.setFontSize(24);
-      pdf.setTextColor(255, 255, 255);
-      pdf.text(char.emoji, margin + 22, yPos + 17, { align: 'center' });
-
-      // Title "Hore! Kamu cocok menjadi..."
-      pdf.setFontSize(12);
+      // Title "Hore! Kamu cocok menjadi..." - clean text (tanpa avatar dan ikon)
+      pdf.setFontSize(11);
       pdf.setTextColor(233, 30, 99); // #E91E63
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Hore! Kamu cocok menjadi...', margin + 45, yPos + 5);
+      const titleText = cleanText('Hore! Kamu cocok menjadi...');
+      pdf.text(titleText, margin + 5, yPos + 6);
 
-      // Ikon profesi besar di sebelah cita-cita
-      pdf.setFontSize(35);
-      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      pdf.text(careerIcon, margin + 45, yPos + 13);
-
-      // Cita-cita besar (dengan text wrapping jika terlalu panjang)
-      pdf.setFontSize(20);
+      // Cita-cita besar (dengan text wrapping jika terlalu panjang) - sudah di-clean (tanpa ikon)
+      pdf.setFontSize(22);
       pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       pdf.setFont('helvetica', 'bold');
-      const citaCitaText = hasilCitaCita.toUpperCase();
-      const citaCitaLines = pdf.splitTextToSize(citaCitaText, contentWidth - 75);
-      pdf.text(citaCitaLines, margin + 80, yPos + 15);
+      const citaCitaText = cleanedCitaCita.toUpperCase();
+      const citaCitaLines = pdf.splitTextToSize(citaCitaText, contentWidth - 10);
+      pdf.text(citaCitaLines, margin + 5, yPos + 20);
 
       // Info Box - Nama, Kelas, dan Tanggal Kuis
-      yPos += 50;
+      yPos += 52;
       pdf.setFillColor(245, 249, 240); // Light green background
-      pdf.roundedRect(margin, yPos, contentWidth, 25, 2, 2, 'F');
+      pdf.roundedRect(margin, yPos, contentWidth, 28, 3, 3, 'F');
+      
+      // Border untuk info box
+      pdf.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(margin, yPos, contentWidth, 28, 3, 3, 'D');
       
       pdf.setFontSize(10);
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Nama:`, margin + 5, yPos + 8);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(`Nama: ${displayNama}`, margin + 5, yPos + 7);
-      pdf.text(`Kelas: ${displayKelas}`, margin + contentWidth / 2, yPos + 7);
+      pdf.text(cleanedNama, margin + 25, yPos + 8);
       
-      // Tanggal Kuis
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Kelas:`, margin + contentWidth / 2, yPos + 8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(cleanedKelas, margin + contentWidth / 2 + 20, yPos + 8);
+      
+      // Tanggal Kuis (sudah di-clean di atas)
       pdf.setFontSize(9);
       pdf.setTextColor(102, 102, 102);
-      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 15);
+      pdf.setFont('helvetica', 'italic');
+      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 18);
 
-      yPos += 30;
+      yPos += 35;
 
-      // Penjelasan Section Header dengan ikon profesi
-      pdf.setFontSize(13);
+      // Penjelasan Section Header (tanpa ikon profesi)
+      pdf.setFontSize(14);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      
-      // Ikon profesi kecil di sebelah judul
-      pdf.setFontSize(16);
-      pdf.text(careerIcon, margin, yPos - 2);
-      
-      pdf.setFontSize(13);
-      pdf.text('Mengenal ' + hasilCitaCita + ' Hebat', margin + 8, yPos);
+      const sectionTitle = `Mengenal ${cleanedCitaCita} Hebat`;
+      pdf.text(sectionTitle, margin, yPos);
 
       yPos += 8;
+
+      // Semua teks sudah di-clean di awal, langsung gunakan
 
       // Explanation text dengan paragraph handling yang lebih baik
       pdf.setFontSize(10);
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
       pdf.setFont('helvetica', 'normal');
       
-      // Split explanation into paragraphs
+      // Split explanation into paragraphs (sudah di-clean di atas)
       const paragraphs = displayExplanation.split('\n').filter(p => p.trim());
       let currentY = yPos;
       let pageNum = 1;
@@ -602,53 +697,58 @@ export default function KuisPage() {
           addFooter(pageNum, 0); // Temporary, will update later
           pdf.addPage();
           pageNum++;
-          currentY = margin;
+          currentY = margin + 5;
         }
         
-        // Split paragraph into lines
-        const lines = pdf.splitTextToSize(paragraph.trim(), contentWidth - 5);
+        // Split paragraph into lines dengan line height yang lebih baik
+        const lines = pdf.splitTextToSize(paragraph.trim(), contentWidth - 10);
         lines.forEach((line: string) => {
           if (currentY > pageHeight - footerHeight - 10) {
             addFooter(pageNum, 0);
             pdf.addPage();
             pageNum++;
-            currentY = margin;
+            currentY = margin + 5;
           }
-          pdf.text(line, margin + 2, currentY);
-          currentY += 5.5;
+          // Line sudah di-clean dari paragraph yang sudah di-clean
+          if (line.trim()) {
+            pdf.text(line.trim(), margin + 5, currentY);
+            currentY += 6; // Line height yang lebih baik
+          }
         });
         
         // Add spacing between paragraphs
         if (paraIndex < paragraphs.length - 1) {
-          currentY += 3;
+          currentY += 4;
         }
       });
 
       // Subject Info Box
-      currentY += 8;
-      if (currentY > pageHeight - footerHeight - 5) {
+      currentY += 10;
+      if (currentY > pageHeight - footerHeight - 25) {
         addFooter(pageNum, 0);
         pdf.addPage();
         pageNum++;
-        currentY = margin;
+        currentY = margin + 5;
       }
 
       pdf.setFillColor(250, 240, 245); // Light pink background
-      pdf.roundedRect(margin, currentY, contentWidth, 18, 2, 2, 'F');
+      pdf.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'F');
       
-      // Ikon buku untuk mata pelajaran
-      pdf.setFontSize(12);
-      pdf.text('📚', margin + 5, currentY + 6);
+      // Border untuk subject box
+      pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'D');
       
+      // Mata pelajaran (tanpa ikon buku)
       pdf.setFontSize(9);
       pdf.setTextColor(102, 102, 102);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Mata Pelajaran yang Relevan', margin + 12, currentY + 7);
+      pdf.text('Mata Pelajaran yang Relevan', margin + 5, currentY + 8);
       
-      pdf.setFontSize(11);
+      pdf.setFontSize(12);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-      pdf.text(relatedSubject, margin + 5, currentY + 13);
+      pdf.text(relatedSubject, margin + 5, currentY + 15);
 
       // Add footer to all pages
       const totalPages = pdf.getNumberOfPages();
@@ -661,9 +761,16 @@ export default function KuisPage() {
       const sanitizedName = displayNama.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-').substring(0, 50);
       const fileName = `Hasil-Kuis-Educorner-${sanitizedName}.pdf`;
       pdf.save(fileName);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating PDF:', error);
-      alert('Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+      const errorMessage = error?.message || 'Terjadi kesalahan saat membuat PDF';
+      setPdfError(errorMessage);
+      
+      // Tampilkan error message ke user dengan cara yang lebih baik
+      setTimeout(() => {
+        alert(`Terjadi kesalahan saat membuat PDF: ${errorMessage}\n\nSilakan coba lagi atau refresh halaman.`);
+        setPdfError("");
+      }, 100);
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -882,7 +989,13 @@ export default function KuisPage() {
                 
                 <button
                   onClick={() => {
-                    localStorage.removeItem("quizResult");
+                    try {
+                      if (typeof window !== 'undefined' && window.localStorage) {
+                        localStorage.removeItem("quizResult");
+                      }
+                    } catch (e) {
+                      console.warn("Gagal menghapus dari localStorage:", e);
+                    }
                     handleCobaTesLagi();
                   }}
                   className="bg-gradient-to-r from-[#A7C957] to-[#6A994E] hover:from-[#8FB84E] hover:to-[#588B3B] text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
@@ -895,7 +1008,13 @@ export default function KuisPage() {
               {/* Row 2: Kembali ke Beranda */}
               <button
                 onClick={() => {
-                  localStorage.removeItem("quizResult");
+                  try {
+                    if (typeof window !== 'undefined' && window.localStorage) {
+                      localStorage.removeItem("quizResult");
+                    }
+                  } catch (e) {
+                    console.warn("Gagal menghapus dari localStorage:", e);
+                  }
                   window.location.href = "/";
                 }}
                 className="w-full bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#E91E63] hover:text-[#C2185B] border-2 border-[#FFD4E5] hover:border-[#FFB6C1] font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md flex items-center justify-center gap-2"
@@ -1246,12 +1365,24 @@ export default function KuisPage() {
                 type="text"
                 id="nama"
                 value={nama}
-                onChange={(e) => setNama(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Validasi panjang maksimal di frontend
+                  if (value.length <= 255) {
+                    setNama(value);
+                  }
+                }}
                 placeholder="Ketik namamu di sini..."
+                maxLength={255}
                 className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-pink-400 bg-[#F9FAFB] text-[#2D2D2D] placeholder-gray-400 transition-all text-center text-base md:text-lg"
                 style={{ fontFamily: 'Inter, sans-serif' }}
                 required
               />
+              {nama.length > 200 && (
+                <p className="text-xs text-amber-600 text-center mt-1">
+                  Sisa karakter: {255 - nama.length}
+                </p>
+              )}
               <p className="text-xs md:text-sm text-[#999999] text-center mt-3 italic" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Karaktermu akan melambai jika kamu mulai mengetes!
               </p>

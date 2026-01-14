@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sql from '@/lib/db';
 
+// CORS headers helper
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
+
 // GET - Ambil semua data
 export async function GET() {
   try {
@@ -9,7 +24,10 @@ export async function GET() {
       console.error('DATABASE_URL tidak ditemukan');
       return NextResponse.json(
         { success: false, error: 'Konfigurasi database tidak ditemukan. Silakan cek file .env.local' },
-        { status: 500 }
+        { 
+          status: 500,
+          headers: corsHeaders
+        }
       );
     }
 
@@ -21,7 +39,13 @@ export async function GET() {
         ORDER BY created_at DESC
       `;
       
-      return NextResponse.json({ success: true, data: data || [] }, { status: 200 });
+      return NextResponse.json(
+        { success: true, data: data || [] }, 
+        { 
+          status: 200,
+          headers: corsHeaders
+        }
+      );
     } catch (tableError: any) {
       // Jika tabel tidak ada, buat tabel
       const errorMsg = tableError?.message || String(tableError);
@@ -66,21 +90,39 @@ export async function GET() {
             ORDER BY created_at DESC
           `;
           
-          return NextResponse.json({ success: true, data: data || [] }, { status: 200 });
+          return NextResponse.json(
+        { success: true, data: data || [] }, 
+        { 
+          status: 200,
+          headers: corsHeaders
+        }
+      );
         } catch (createError: any) {
           console.error('Error creating table:', createError);
+          const errorMsg = process.env.NODE_ENV === 'development' 
+            ? `Gagal membuat tabel: ${createError.message}`
+            : 'Gagal membuat tabel. Silakan hubungi administrator.';
           return NextResponse.json(
-            { success: false, error: `Gagal membuat tabel: ${createError.message}` },
-            { status: 500 }
+            { success: false, error: errorMsg },
+            { 
+              status: 500,
+              headers: corsHeaders
+            }
           );
         }
       }
       
       // Error lain selain tabel tidak ada
       console.error('Database error:', errorMsg);
+      const errorMsgPublic = process.env.NODE_ENV === 'development'
+        ? `Error database: ${errorMsg}`
+        : 'Terjadi kesalahan pada database. Silakan coba lagi nanti.';
       return NextResponse.json(
-        { success: false, error: `Error database: ${errorMsg}` },
-        { status: 500 }
+        { success: false, error: errorMsgPublic },
+        { 
+          status: 500,
+          headers: corsHeaders
+        }
       );
     }
   } catch (error: any) {
@@ -99,36 +141,102 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { nama, citaCita, kelas } = body;
 
+    // Validasi input
     if (!nama || !citaCita) {
       return NextResponse.json(
         { success: false, error: 'Nama dan cita-cita harus diisi' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
       );
     }
 
+    // Validasi panjang input
+    const trimmedNama = nama.trim();
+    const trimmedCitaCita = citaCita.trim();
+    const trimmedKelas = kelas ? kelas.trim() : '';
+
+    if (trimmedNama.length === 0 || trimmedCitaCita.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Nama dan cita-cita tidak boleh kosong' },
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
+      );
+    }
+
+    if (trimmedNama.length > 255) {
+      return NextResponse.json(
+        { success: false, error: 'Nama terlalu panjang (maksimal 255 karakter)' },
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
+      );
+    }
+
+    if (trimmedCitaCita.length > 1000) {
+      return NextResponse.json(
+        { success: false, error: 'Cita-cita terlalu panjang (maksimal 1000 karakter)' },
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
+      );
+    }
+
+    if (trimmedKelas && trimmedKelas.length > 10) {
+      return NextResponse.json(
+        { success: false, error: 'Kelas terlalu panjang (maksimal 10 karakter)' },
+        { 
+          status: 400,
+          headers: corsHeaders
+        }
+      );
+    }
+
+    // Sanitize input - remove potential XSS characters
+    const sanitizeInput = (input: string) => {
+      return input
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .trim();
+    };
+
+    const sanitizedNama = sanitizeInput(trimmedNama);
+    const sanitizedCitaCita = sanitizeInput(trimmedCitaCita);
+    const sanitizedKelas = trimmedKelas ? sanitizeInput(trimmedKelas) : '';
+
     // Jika kelas ada, simpan dengan kelas, jika tidak gunakan query tanpa kelas
     let result;
-    if (kelas) {
+    if (sanitizedKelas) {
       result = await sql`
         INSERT INTO edu_corner (nama, cita_cita, kelas)
-        VALUES (${nama.trim()}, ${citaCita.trim()}, ${kelas.trim()})
+        VALUES (${sanitizedNama}, ${sanitizedCitaCita}, ${sanitizedKelas})
         RETURNING id, nama, cita_cita, kelas, created_at
       `;
     } else {
       result = await sql`
         INSERT INTO edu_corner (nama, cita_cita)
-        VALUES (${nama.trim()}, ${citaCita.trim()})
+        VALUES (${sanitizedNama}, ${sanitizedCitaCita})
         RETURNING id, nama, cita_cita, kelas, created_at
       `;
     }
 
     return NextResponse.json(
       { success: true, data: result[0] },
-      { status: 201 }
+      { 
+        status: 201,
+        headers: corsHeaders
+      }
     );
   } catch (error: any) {
     console.error('Error saving data:', error);
-    const errorMessage = error?.message || 'Gagal menyimpan data ke database';
+    const errorMessage = process.env.NODE_ENV === 'development'
+      ? (error?.message || 'Gagal menyimpan data ke database')
+      : 'Gagal menyimpan data. Silakan coba lagi nanti.';
     return NextResponse.json(
       { success: false, error: errorMessage },
       { status: 500 }

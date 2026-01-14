@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
+// Simple in-memory rate limiting (untuk production, gunakan Redis atau database)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 menit
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per menit per IP
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
 // Fallback explanations untuk berbagai profesi
 const getFallbackExplanation = (citaCita: string): string => {
   const explanations: { [key: string]: string } = {
@@ -74,6 +96,29 @@ Ingat, setiap profesi itu penting dan mulia. Yang terpenting adalah kamu melakuk
 export async function POST(request: NextRequest) {
   let citaCita: string = '';
   
+  // Rate limiting
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+             request.headers.get('x-real-ip') || 
+             'unknown';
+  
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Terlalu banyak request. Silakan coba lagi dalam beberapa saat.' 
+      },
+      { 
+        status: 429,
+        headers: {
+          'Retry-After': '60',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      }
+    );
+  }
+  
   try {
     const body = await request.json();
     citaCita = body.citaCita || '';
@@ -81,7 +126,14 @@ export async function POST(request: NextRequest) {
     if (!citaCita) {
       return NextResponse.json(
         { success: false, error: 'Cita-cita tidak ditemukan' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
       );
     }
 
@@ -102,7 +154,14 @@ export async function POST(request: NextRequest) {
           explanation: fallbackExplanation,
           source: 'fallback'
         },
-        { status: 200 }
+        { 
+          status: 200,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
       );
     }
 
@@ -145,7 +204,14 @@ Buat penjelasan dalam 4-6 paragraf dengan bahasa yang ramah dan menarik untuk an
         explanation,
         source: 'groq'
       },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      }
     );
   } catch (error: any) {
     console.error('Error calling Groq API:', error);
@@ -172,7 +238,14 @@ Buat penjelasan dalam 4-6 paragraf dengan bahasa yang ramah dan menarik untuk an
         source: 'fallback',
         error: process.env.NODE_ENV === 'development' ? error?.message : undefined
       },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }
+      }
     );
   }
 }

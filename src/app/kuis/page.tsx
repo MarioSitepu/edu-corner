@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface QuizResult {
   nama: string;
@@ -24,6 +25,8 @@ export default function KuisPage() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
   const [explanation, setExplanation] = useState<string>("");
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [optionsVisible, setOptionsVisible] = useState(false);
 
   // Data karakter
   const characters = [
@@ -55,57 +58,103 @@ export default function KuisPage() {
     }
   }, []);
 
-  // Data pertanyaan kuis tentang cita-cita
+  // Trigger animasi muncul saat pertanyaan baru dimuat (harus di top level)
+  useEffect(() => {
+    if (showQuiz) {
+      setOptionsVisible(false);
+      const timer = setTimeout(() => {
+        setOptionsVisible(true);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [currentQuestion, showQuiz]);
+
+  // Data pertanyaan kuis tentang cita-cita (2 pilihan dengan gambar real)
   const questions = [
     {
       question: "Apa yang paling kamu sukai saat bermain?",
       options: [
-        "Membantu teman yang sakit",
-        "Menggambar dan mewarnai",
-        "Membaca buku cerita",
-        "Bermain dengan angka dan hitungan",
+        {
+          text: "Membantu teman yang sakit",
+          image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
+          emoji: "🏥",
+          citaCita: "Dokter"
+        },
+        {
+          text: "Menggambar dan mewarnai",
+          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
+          emoji: "🎨",
+          citaCita: "Seniman"
+        },
       ],
-      citaCita: ["Dokter", "Seniman", "Penulis", "Ilmuwan"],
     },
     {
       question: "Kegiatan apa yang paling menyenangkan bagimu?",
       options: [
-        "Mengajar teman-teman",
-        "Membuat sesuatu dengan tangan",
-        "Menulis cerita atau puisi",
-        "Menyelesaikan puzzle atau teka-teki",
+        {
+          text: "Mengajar teman-teman",
+          image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop",
+          emoji: "👨‍🏫",
+          citaCita: "Guru"
+        },
+        {
+          text: "Membuat sesuatu dengan tangan",
+          image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
+          emoji: "✂️",
+          citaCita: "Perancang"
+        },
       ],
-      citaCita: ["Guru", "Perancang", "Penulis", "Peneliti"],
     },
     {
       question: "Apa yang ingin kamu lakukan saat besar nanti?",
       options: [
-        "Menyembuhkan orang yang sakit",
-        "Membuat karya seni yang indah",
-        "Membuat cerita yang menarik",
-        "Menemukan hal-hal baru",
+        {
+          text: "Menyembuhkan orang yang sakit",
+          image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop",
+          emoji: "💊",
+          citaCita: "Dokter"
+        },
+        {
+          text: "Membuat karya seni yang indah",
+          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
+          emoji: "🖼️",
+          citaCita: "Seniman"
+        },
       ],
-      citaCita: ["Dokter", "Seniman", "Penulis", "Ilmuwan"],
     },
     {
       question: "Mata pelajaran apa yang paling kamu sukai?",
       options: [
-        "IPA (Ilmu Pengetahuan Alam)",
-        "Seni dan Keterampilan",
-        "Bahasa Indonesia",
-        "Matematika",
+        {
+          text: "IPA (Ilmu Pengetahuan Alam)",
+          image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=300&fit=crop",
+          emoji: "🔬",
+          citaCita: "Ilmuwan"
+        },
+        {
+          text: "Seni dan Keterampilan",
+          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
+          emoji: "🖌️",
+          citaCita: "Seniman"
+        },
       ],
-      citaCita: ["Dokter/Ilmuwan", "Seniman/Perancang", "Penulis/Jurnalis", "Ilmuwan/Matematikawan"],
     },
     {
       question: "Apa yang membuatmu merasa bangga?",
       options: [
-        "Membantu orang lain",
-        "Membuat sesuatu yang kreatif",
-        "Menceritakan ide-ideku",
-        "Memecahkan masalah yang sulit",
+        {
+          text: "Membantu orang lain",
+          image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
+          emoji: "🤝",
+          citaCita: "Dokter"
+        },
+        {
+          text: "Membuat sesuatu yang kreatif",
+          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
+          emoji: "✨",
+          citaCita: "Seniman"
+        },
       ],
-      citaCita: ["Dokter/Guru", "Seniman/Perancang", "Penulis", "Ilmuwan"],
     },
   ];
 
@@ -118,8 +167,13 @@ export default function KuisPage() {
       setAnswers([]);
       setCurrentQuestion(0);
       setShowQuiz(true);
+      setOptionsVisible(false);
       // Hapus hasil lama dari localStorage
       localStorage.removeItem("quizResult");
+      // Trigger animasi muncul untuk pertanyaan pertama
+      setTimeout(() => {
+        setOptionsVisible(true);
+      }, 300);
     }
   };
 
@@ -127,18 +181,23 @@ export default function KuisPage() {
     const newAnswers = [...answers, answerIndex];
     setAnswers(newAnswers);
     setIsTransitioning(true);
+    setOptionsVisible(false);
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestion(currentQuestion + 1);
         setIsTransitioning(false);
-      }, 300);
+        // Trigger animasi muncul untuk pertanyaan baru
+        setTimeout(() => {
+          setOptionsVisible(true);
+        }, 150);
+      }, 500);
     } else {
       // Hitung hasil berdasarkan jawaban terbanyak
       const citaCitaCount: { [key: string]: number } = {};
       newAnswers.forEach((answer, qIndex) => {
-        if (questions[qIndex] && questions[qIndex].citaCita && questions[qIndex].citaCita[answer]) {
-          const citaCita = questions[qIndex].citaCita[answer];
+        if (questions[qIndex] && questions[qIndex].options && questions[qIndex].options[answer]) {
+          const citaCita = questions[qIndex].options[answer].citaCita;
           citaCitaCount[citaCita] = (citaCitaCount[citaCita] || 0) + 1;
         }
       });
@@ -153,7 +212,7 @@ export default function KuisPage() {
       setTimeout(() => {
         setIsTransitioning(false);
         setShowResult(true);
-      }, 500);
+      }, 800);
     }
   };
 
@@ -198,8 +257,8 @@ export default function KuisPage() {
 
     const citaCitaCount: { [key: string]: number } = {};
     answers.forEach((answer, qIndex) => {
-      if (questions[qIndex] && questions[qIndex].citaCita && questions[qIndex].citaCita[answer]) {
-        const citaCita = questions[qIndex].citaCita[answer];
+      if (questions[qIndex] && questions[qIndex].options && questions[qIndex].options[answer]) {
+        const citaCita = questions[qIndex].options[answer].citaCita;
         citaCitaCount[citaCita] = (citaCitaCount[citaCita] || 0) + 1;
       }
     });
@@ -243,16 +302,370 @@ export default function KuisPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.success && result.explanation) {
         setExplanation(result.explanation);
       } else {
-        setExplanation("Maaf, terjadi kesalahan saat mengambil penjelasan. Silakan coba lagi nanti.");
+        // Fallback explanation jika API tidak mengembalikan explanation
+        const fallbackText = `Menjadi ${citaCita} adalah profesi yang sangat menarik! Untuk mencapai cita-citamu, kamu perlu belajar dengan rajin di sekolah dan selalu semangat. Dengan kerja keras dan tekad yang kuat, kamu pasti bisa menjadi ${citaCita} yang hebat!`;
+        setExplanation(fallbackText);
       }
     } catch (error) {
       console.error("Error fetching explanation:", error);
-      setExplanation("Maaf, terjadi kesalahan saat mengambil penjelasan. Silakan coba lagi nanti.");
+      // Fallback explanation jika terjadi error
+      const fallbackCitaCita = citaCita || getResultCitaCita();
+      const fallbackText = `Menjadi ${fallbackCitaCita} adalah profesi yang sangat menarik! Untuk mencapai cita-citamu, kamu perlu belajar dengan rajin di sekolah dan selalu semangat. Dengan kerja keras dan tekad yang kuat, kamu pasti bisa menjadi ${fallbackCitaCita} yang hebat!`;
+      setExplanation(fallbackText);
     } finally {
       setIsLoadingExplanation(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      // Jika explanation belum di-load, fetch dulu
+      let finalExplanation = explanation;
+      if (!finalExplanation) {
+        const hasilCitaCita = getResultCitaCita();
+        try {
+          const response = await fetch("/api/explain-career", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ citaCita: hasilCitaCita }),
+          });
+          const result = await response.json();
+          if (result.success && result.explanation) {
+            finalExplanation = result.explanation;
+          }
+        } catch (error) {
+          console.warn('Gagal fetch explanation untuk PDF:', error);
+        }
+      }
+      
+      // Dynamic import untuk jsPDF (kompatibel dengan Next.js)
+      const { default: jsPDF } = await import('jspdf');
+      
+      const hasilCitaCita = getResultCitaCita();
+      const displayNama = savedResult?.nama || nama;
+      const displayKelas = savedResult?.kelas || kelas;
+      // Gunakan explanation yang sudah di-fetch atau fallback
+      const displayExplanation = finalExplanation || `Menjadi ${hasilCitaCita} adalah profesi yang sangat menarik! Untuk mencapai cita-citamu, kamu perlu belajar dengan rajin di sekolah dan selalu semangat.`;
+      
+      // Ambil tanggal kuis dari timestamp
+      const quizDate = savedResult?.timestamp 
+        ? new Date(savedResult.timestamp).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : new Date().toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+      // Mapping cita-cita dengan mata pelajaran yang relevan
+      const getRelatedSubject = (citaCita: string) => {
+        const subjectMap: { [key: string]: string } = {
+          "Seniman": "Seni Budaya",
+          "Perancang": "Seni Budaya",
+          "Penulis": "Bahasa Indonesia",
+          "Jurnalis": "Bahasa Indonesia",
+          "Dokter": "IPA (Ilmu Pengetahuan Alam)",
+          "Ilmuwan": "IPA (Ilmu Pengetahuan Alam)",
+          "Guru": "Pendidikan",
+          "Peneliti": "Sains",
+          "Matematikawan": "Matematika",
+        };
+        
+        for (const [key, value] of Object.entries(subjectMap)) {
+          if (citaCita.includes(key)) {
+            return value;
+          }
+        }
+        return "Berbagai Bidang";
+      };
+
+      const relatedSubject = getRelatedSubject(hasilCitaCita);
+      const char = getCharacter(displayKelas);
+
+      // Mapping ikon untuk setiap profesi/cita-cita
+      const getCareerIcon = (citaCita: string): string => {
+        const iconMap: { [key: string]: string } = {
+          "Dokter": "👨‍⚕️",
+          "Seniman": "🎨",
+          "Guru": "👨‍🏫",
+          "Ilmuwan": "🔬",
+          "Penulis": "✍️",
+          "Perancang": "✂️",
+          "Jurnalis": "📰",
+          "Peneliti": "🔍",
+          "Matematikawan": "📐",
+        };
+        
+        // Cari ikon yang cocok (case-insensitive)
+        const normalizedCitaCita = citaCita.toLowerCase();
+        for (const [key, icon] of Object.entries(iconMap)) {
+          if (normalizedCitaCita.includes(key.toLowerCase())) {
+            return icon;
+          }
+        }
+        return "💼"; // Default icon
+      };
+
+      const careerIcon = getCareerIcon(hasilCitaCita);
+
+      // Buat PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
+      const footerHeight = 20;
+
+      // Warna
+      const primaryColor = [255, 77, 109]; // #FF4D6D
+      const secondaryColor = [167, 209, 41]; // #A7C957
+      const textColor = [45, 45, 45]; // #2D2D2D
+      const lightGray = [230, 230, 230];
+
+      // Helper function untuk add footer di setiap halaman
+      const addFooter = (pageNum: number, totalPages: number) => {
+        const footerY = pageHeight - 10;
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('© 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.', pageWidth / 2, footerY, { align: 'center' });
+        
+        const date = new Date().toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        pdf.text(`Dibuat pada: ${date}`, pageWidth / 2, footerY + 5, { align: 'center' });
+        
+        // Page number
+        pdf.text(`Halaman ${pageNum} dari ${totalPages}`, pageWidth / 2, footerY + 10, { align: 'center' });
+      };
+
+      // Header dengan gradient effect
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(0, 0, pageWidth, 45, 'F');
+      
+      // Load dan tambahkan logo webp dengan ukuran lebih besar
+      try {
+        // Coba load logo dari public folder
+        const logoResponse = await fetch('/logo.webp');
+        if (logoResponse.ok) {
+          const logoBlob = await logoResponse.blob();
+          
+          // Convert image to base64
+          const reader = new FileReader();
+          const logoBase64 = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(logoBlob);
+          });
+          
+          // Tambahkan logo ke PDF dengan ukuran lebih besar (25x25mm) dan efek shadow
+          // Background circle untuk logo
+          pdf.setFillColor(255, 255, 255, 0.2);
+          pdf.circle(margin + 12.5, 22.5, 14, 'F');
+          
+          // Logo dengan ukuran lebih besar
+          pdf.addImage(logoBase64, 'WEBP', margin, 10, 25, 25);
+          
+          // Border circle untuk efek lebih menarik
+          pdf.setDrawColor(255, 255, 255);
+          pdf.setLineWidth(1);
+          pdf.circle(margin + 12.5, 22.5, 13, 'D');
+        } else {
+          throw new Error('Logo tidak ditemukan');
+        }
+      } catch (logoError) {
+        console.warn('Gagal memuat logo, menggunakan emoji sebagai fallback:', logoError);
+        // Fallback ke emoji jika logo gagal dimuat
+        pdf.setFontSize(35);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('📚', margin, 30);
+      }
+      
+      // Title (disesuaikan karena logo lebih besar)
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(255, 255, 255);
+      pdf.text('KKN T Margo Lestari', margin + 30, 28);
+      
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Dashboard Cita-Cita Siswa', margin + 30, 35);
+
+      let yPos = 65;
+
+      // Card Background dengan shadow effect
+      pdf.setFillColor(255, 255, 255);
+      pdf.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(margin, yPos - 5, contentWidth, 85, 3, 3, 'FD');
+
+      // Avatar Circle dengan border dan shadow effect (seperti di splash)
+      // Shadow circle untuk efek depth
+      pdf.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2], 0.3);
+      pdf.circle(margin + 24, yPos + 14, 15, 'F');
+      
+      // Main circle dengan ukuran lebih besar
+      pdf.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.circle(margin + 22, yPos + 12, 15, 'F');
+      pdf.setDrawColor(255, 255, 255);
+      pdf.setLineWidth(3);
+      pdf.circle(margin + 22, yPos + 12, 15, 'D');
+      
+      // Emoji di circle (dengan ukuran lebih besar seperti di splash)
+      pdf.setFontSize(24);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(char.emoji, margin + 22, yPos + 17, { align: 'center' });
+
+      // Title "Hore! Kamu cocok menjadi..."
+      pdf.setFontSize(12);
+      pdf.setTextColor(233, 30, 99); // #E91E63
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Hore! Kamu cocok menjadi...', margin + 45, yPos + 5);
+
+      // Ikon profesi besar di sebelah cita-cita
+      pdf.setFontSize(35);
+      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.text(careerIcon, margin + 45, yPos + 13);
+
+      // Cita-cita besar (dengan text wrapping jika terlalu panjang)
+      pdf.setFontSize(20);
+      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.setFont('helvetica', 'bold');
+      const citaCitaText = hasilCitaCita.toUpperCase();
+      const citaCitaLines = pdf.splitTextToSize(citaCitaText, contentWidth - 75);
+      pdf.text(citaCitaLines, margin + 80, yPos + 15);
+
+      // Info Box - Nama, Kelas, dan Tanggal Kuis
+      yPos += 50;
+      pdf.setFillColor(245, 249, 240); // Light green background
+      pdf.roundedRect(margin, yPos, contentWidth, 25, 2, 2, 'F');
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Nama: ${displayNama}`, margin + 5, yPos + 7);
+      pdf.text(`Kelas: ${displayKelas}`, margin + contentWidth / 2, yPos + 7);
+      
+      // Tanggal Kuis
+      pdf.setFontSize(9);
+      pdf.setTextColor(102, 102, 102);
+      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 15);
+
+      yPos += 30;
+
+      // Penjelasan Section Header dengan ikon profesi
+      pdf.setFontSize(13);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      
+      // Ikon profesi kecil di sebelah judul
+      pdf.setFontSize(16);
+      pdf.text(careerIcon, margin, yPos - 2);
+      
+      pdf.setFontSize(13);
+      pdf.text('Mengenal ' + hasilCitaCita + ' Hebat', margin + 8, yPos);
+
+      yPos += 8;
+
+      // Explanation text dengan paragraph handling yang lebih baik
+      pdf.setFontSize(10);
+      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      pdf.setFont('helvetica', 'normal');
+      
+      // Split explanation into paragraphs
+      const paragraphs = displayExplanation.split('\n').filter(p => p.trim());
+      let currentY = yPos;
+      let pageNum = 1;
+      
+      paragraphs.forEach((paragraph, paraIndex) => {
+        if (currentY > pageHeight - footerHeight - 10) {
+          addFooter(pageNum, 0); // Temporary, will update later
+          pdf.addPage();
+          pageNum++;
+          currentY = margin;
+        }
+        
+        // Split paragraph into lines
+        const lines = pdf.splitTextToSize(paragraph.trim(), contentWidth - 5);
+        lines.forEach((line: string) => {
+          if (currentY > pageHeight - footerHeight - 10) {
+            addFooter(pageNum, 0);
+            pdf.addPage();
+            pageNum++;
+            currentY = margin;
+          }
+          pdf.text(line, margin + 2, currentY);
+          currentY += 5.5;
+        });
+        
+        // Add spacing between paragraphs
+        if (paraIndex < paragraphs.length - 1) {
+          currentY += 3;
+        }
+      });
+
+      // Subject Info Box
+      currentY += 8;
+      if (currentY > pageHeight - footerHeight - 5) {
+        addFooter(pageNum, 0);
+        pdf.addPage();
+        pageNum++;
+        currentY = margin;
+      }
+
+      pdf.setFillColor(250, 240, 245); // Light pink background
+      pdf.roundedRect(margin, currentY, contentWidth, 18, 2, 2, 'F');
+      
+      // Ikon buku untuk mata pelajaran
+      pdf.setFontSize(12);
+      pdf.text('📚', margin + 5, currentY + 6);
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(102, 102, 102);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Mata Pelajaran yang Relevan', margin + 12, currentY + 7);
+      
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      pdf.text(relatedSubject, margin + 5, currentY + 13);
+
+      // Add footer to all pages
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        addFooter(i, totalPages);
+      }
+
+      // Download PDF
+      const sanitizedName = displayNama.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-').substring(0, 50);
+      const fileName = `Hasil-Kuis-Educorner-${sanitizedName}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -447,14 +860,24 @@ export default function KuisPage() {
               {/* Row 1: Unduh PDF dan Coba Tes Lagi */}
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => {
-                    // Download PDF functionality (placeholder)
-                    alert("Fitur unduh PDF akan segera hadir!");
-                  }}
-                  className="bg-gradient-to-r from-[#E91E63] to-[#F06292] hover:from-[#C2185B] hover:to-[#E91E63] text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
+                  onClick={handleDownloadPDF}
+                  disabled={isGeneratingPDF}
+                  className="bg-gradient-to-r from-[#E91E63] to-[#F06292] hover:from-[#C2185B] hover:to-[#E91E63] disabled:from-gray-400 disabled:to-gray-500 text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  <span className="text-lg" suppressHydrationWarning>📥</span>
-                  <span>Unduh PDF</span>
+                  {isGeneratingPDF ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Membuat PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-lg" suppressHydrationWarning>📥</span>
+                      <span>Unduh PDF</span>
+                    </>
+                  )}
                 </button>
                 
                 <button
@@ -546,62 +969,168 @@ export default function KuisPage() {
 
         {/* Main Content */}
         <main className="container mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 max-w-4xl relative z-10">
-          {/* Progress Bar */}
+          {/* Progress Bar dengan Counter */}
           <div className="mb-8 animate-fade-in">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-sm font-semibold text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>Progres Kuis</span>
-              <span className="text-sm font-bold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>{Math.round(progress)}%</span>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                  Pertanyaan {currentQuestion + 1} dari {questions.length}
+                </div>
+                <span className="text-sm font-semibold text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>Progres Kuis</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>{Math.round(progress)}%</span>
+                <div className="w-3 h-3 bg-[#FF4D6D] rounded-full animate-pulse"></div>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
               <div
-                className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] h-2.5 rounded-full transition-all duration-500 ease-out"
+                className="bg-gradient-to-r from-[#FF4D6D] via-[#FF6B8A] to-[#FF8FA3] h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                 style={{ width: `${progress}%` }}
-              ></div>
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+              </div>
             </div>
           </div>
+
+          {/* Loading Overlay saat Transisi */}
+          {isTransitioning && (
+            <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-[#FF4D6D] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-[#FF4D6D] font-semibold text-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Memuat pertanyaan berikutnya...
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Question Card */}
           <div 
             key={currentQuestion}
-            className={`bg-white rounded-3xl shadow-lg border border-gray-100 p-8 md:p-12 mb-8 ${
-              isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-            } transition-all duration-300`}
+            className={`bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12 mb-8 relative overflow-hidden ${
+              isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
+            } transition-all duration-500 ease-out`}
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-10 text-center leading-snug" style={{ fontFamily: 'Inter, sans-serif' }}>
-              {question.question}
-            </h2>
+            {/* Decorative Background Pattern */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#FFE4E9]/30 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#FFF0F3]/30 to-transparent rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-center mb-6">
+                <div className="bg-gradient-to-r from-[#FF4D6D]/10 to-[#FF6B8A]/10 px-6 py-2 rounded-full border border-[#FF4D6D]/20">
+                  <span className="text-sm font-semibold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    Pilih salah satu yang paling sesuai denganmu
+                  </span>
+                </div>
+              </div>
+              
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#2D2D2D] mb-12 text-center leading-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+                {question.question}
+              </h2>
 
-            <div className="space-y-4">
-              {question.options.map((option, index) => (
-                <button
-                  key={`${currentQuestion}-${index}`}
-                  onClick={() => handleAnswer(index)}
-                  className="w-full bg-white hover:bg-[#FFF0F3] border-2 border-gray-200 hover:border-[#FF4D6D] text-[#2D2D2D] font-medium px-6 py-5 rounded-2xl text-left transition-all transform hover:scale-[1.01] active:scale-[0.99] shadow-sm hover:shadow-md group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#FFE4E9] to-[#FFB6C1] group-hover:from-[#FF4D6D] group-hover:to-[#FF6B8A] rounded-full flex items-center justify-center font-bold text-[#FF4D6D] group-hover:text-white transition-all flex-shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {question.options.map((option, index) => (
+                  <button
+                    key={`${currentQuestion}-${index}`}
+                    onClick={() => handleAnswer(index)}
+                    className={`relative w-full bg-gradient-to-br from-white to-[#FFF8F9] hover:from-[#FFF0F3] hover:to-[#FFE4E9] border-2 border-gray-200 hover:border-[#FF4D6D] text-[#2D2D2D] font-medium px-6 py-8 rounded-3xl text-center transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.98] shadow-md hover:shadow-2xl group flex flex-col items-center justify-center gap-5 min-h-[380px] md:min-h-[420px] overflow-hidden ${
+                      !optionsVisible ? 'opacity-0' : ''
+                    }`}
+                    style={{
+                      animationDelay: `${index * 200}ms`,
+                      animation: optionsVisible && !isTransitioning 
+                        ? (index === 0 
+                           ? 'slideInFromLeft 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' 
+                           : 'slideInFromRight 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards')
+                        : 'none'
+                    }}
+                  >
+                    {/* Animated Background Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/0 via-[#FF6B8A]/0 to-[#FF8FA3]/0 group-hover:from-[#FF4D6D]/5 group-hover:via-[#FF6B8A]/5 group-hover:to-[#FF8FA3]/5 transition-all duration-300 rounded-3xl"></div>
+                    
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#FF4D6D]/20 via-transparent to-[#FF6B8A]/20 blur-xl rounded-3xl"></div>
+                    </div>
+
+                    {/* Badge Label */}
+                    <div className="absolute top-4 right-4 w-8 h-8 bg-gradient-to-br from-[#FFE4E9] to-[#FFB6C1] group-hover:from-[#FF4D6D] group-hover:to-[#FF6B8A] rounded-full flex items-center justify-center font-bold text-sm text-[#FF4D6D] group-hover:text-white transition-all duration-300 shadow-md group-hover:shadow-lg z-10" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {String.fromCharCode(65 + index)}
                     </div>
-                    <span className="text-base md:text-lg leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>{option}</span>
-                  </div>
-                </button>
-              ))}
+
+                    {/* Gambar Real dengan Container */}
+                    <div className="relative z-10 w-full" style={{
+                      animationDelay: `${index * 200 + 150}ms`,
+                      animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
+                      opacity: optionsVisible ? 1 : 0
+                    }}>
+                      <div className="relative w-full h-48 md:h-56 rounded-2xl overflow-hidden bg-gradient-to-br from-[#FFE4E9] to-[#FFF0F3] group-hover:from-[#FF4D6D]/10 group-hover:to-[#FF6B8A]/10 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl mb-4 shadow-lg">
+                        {/* Gambar Real */}
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={option.image}
+                            alt={option.text}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-110"
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                            unoptimized
+                            onError={(e) => {
+                              // Fallback ke emoji jika gambar gagal dimuat
+                              const target = e.currentTarget;
+                              target.style.display = 'none';
+                              const fallback = target.parentElement?.querySelector('.image-fallback');
+                              if (fallback) {
+                                (fallback as HTMLElement).style.display = 'flex';
+                              }
+                            }}
+                          />
+                          {/* Fallback emoji jika gambar gagal dimuat */}
+                          <div className="image-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#FFE4E9] to-[#FFF0F3] hidden">
+                            <span className="text-6xl md:text-7xl" suppressHydrationWarning>{option.emoji}</span>
+                          </div>
+                        </div>
+                        {/* Overlay gradient untuk efek lebih menarik */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                      </div>
+                    </div>
+
+                    {/* Teks Pilihan */}
+                    <div className="relative z-10 w-full" style={{
+                      animationDelay: `${index * 200 + 200}ms`,
+                      animation: optionsVisible && !isTransitioning ? 'fadeInRotate 0.6s ease-out forwards' : 'none',
+                      opacity: optionsVisible ? 1 : 0
+                    }}>
+                      <span className="text-base md:text-lg lg:text-xl leading-relaxed font-bold text-[#2D2D2D] group-hover:text-[#FF4D6D] transition-colors duration-300 block" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {option.text}
+                      </span>
+                    </div>
+
+                    {/* Hover Arrow Indicator */}
+                    <div className="absolute bottom-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <div className="w-8 h-8 rounded-full bg-[#FF4D6D] flex items-center justify-center text-white shadow-lg">
+                        <span className="text-lg">→</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Bottom Info */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(255, 77, 109, 0.15)' }}>
+          {/* Bottom Info dengan Animasi */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8 animate-fade-in">
+            <div className="flex items-center gap-3 bg-gradient-to-r from-[#FFF0F3] to-[#FFE4E9] px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#FF4D6D] to-[#FF6B8A] shadow-lg animate-bounce-slow">
                 <span className="text-xl" suppressHydrationWarning>💪</span>
               </div>
               <span className="text-sm font-bold text-[#FF4D6D] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Kamu Pasti Bisa</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(167, 209, 41, 0.15)' }}>
+            <div className="flex items-center gap-3 bg-gradient-to-r from-[#F0FDF4] to-[#DCFCE7] px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#A7C957] to-[#6A994E] shadow-lg animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
                 <span className="text-xl" suppressHydrationWarning>🌟</span>
               </div>
-              <span className="text-sm font-bold text-[#A7D129] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Raih Mimpimu</span>
+              <span className="text-sm font-bold text-[#6A994E] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Raih Mimpimu</span>
             </div>
           </div>
         </main>

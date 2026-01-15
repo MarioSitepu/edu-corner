@@ -23,39 +23,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verifikasi token
+    // Verifikasi session token (dari verify-otp)
     try {
-      const tokenResult = await sql`
+      const sessionResult = await sql`
         SELECT email, expires_at, used
-        FROM password_reset_tokens
-        WHERE token = ${token}
+        FROM password_reset_sessions
+        WHERE session_token = ${token}
         LIMIT 1
       `;
 
-      if (tokenResult.length === 0) {
+      if (sessionResult.length === 0) {
         return NextResponse.json(
-          { success: false, error: 'Token tidak valid' },
+          { success: false, error: 'Session tidak valid. Silakan verifikasi OTP terlebih dahulu' },
           { status: 400 }
         );
       }
 
-      const tokenData = tokenResult[0];
+      const sessionData = sessionResult[0];
 
-      // Cek apakah token sudah digunakan
-      if (tokenData.used) {
+      // Cek apakah session sudah digunakan
+      if (sessionData.used) {
         return NextResponse.json(
-          { success: false, error: 'Token sudah digunakan' },
+          { success: false, error: 'Session sudah digunakan. Silakan minta OTP baru' },
           { status: 400 }
         );
       }
 
-      // Cek apakah token sudah kadaluarsa
-      const expiresAt = new Date(tokenData.expires_at);
+      // Cek apakah session sudah kadaluarsa
+      const expiresAt = new Date(sessionData.expires_at);
       const now = new Date();
 
       if (now > expiresAt) {
         return NextResponse.json(
-          { success: false, error: 'Token sudah kadaluarsa' },
+          { success: false, error: 'Session sudah kadaluarsa. Silakan minta OTP baru' },
           { status: 400 }
         );
       }
@@ -95,11 +95,11 @@ export async function POST(request: NextRequest) {
         // Untuk production, gunakan service seperti AWS Secrets Manager atau database
       }
 
-      // Tandai token sebagai sudah digunakan
+      // Tandai session sebagai sudah digunakan
       await sql`
-        UPDATE password_reset_tokens
+        UPDATE password_reset_sessions
         SET used = TRUE
-        WHERE token = ${token}
+        WHERE session_token = ${token}
       `;
 
       // Update environment variable (catatan: ini tidak akan bekerja di runtime)

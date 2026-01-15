@@ -94,7 +94,7 @@ EMAIL_FROM=onboarding@resend.dev  # Untuk development
 # EMAIL_FROM=noreply@educorner.my.id  # Untuk production (setelah domain verified)
 
 # Admin Configuration
-ADMIN_EMAIL=admin@example.com  # Email admin yang akan menerima reset password
+ADMIN_EMAIL=educorner.my.id@gmail.com  # Email admin yang akan menerima reset password
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123  # Password default (akan diupdate setelah reset)
 

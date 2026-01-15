@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import logoWebp from "../../../logo.webp";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -29,6 +31,10 @@ export default function ForgotPasswordPage() {
       const result = await response.json();
 
       if (result.success) {
+        // Simpan email ke sessionStorage untuk digunakan di halaman reset password
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('reset_password_email', email);
+        }
         setSuccess(true);
         setEmail("");
       } else {
@@ -61,7 +67,7 @@ export default function ForgotPasswordPage() {
               Lupa Password
             </h1>
             <p className="text-[#666666]">
-              Masukkan email Anda untuk mendapatkan link reset password
+              Masukkan email Anda untuk mendapatkan kode OTP reset password
             </p>
           </div>
 
@@ -84,13 +90,19 @@ export default function ForgotPasswordPage() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <span>Email reset password telah dikirim ke email Anda!</span>
+                  <span>Kode OTP telah dikirim ke email Anda!</span>
                 </div>
               </div>
               <p className="text-sm text-[#666666] text-center">
-                Silakan cek inbox email Anda dan ikuti instruksi untuk reset password.
-                Link akan berlaku selama 1 jam.
+                Silakan cek inbox email Anda untuk mendapatkan kode OTP 6 digit.
+                Kode OTP berlaku selama 10 menit.
               </p>
+              <Link
+                href="/cekhasil/login/reset-password"
+                className="block w-full bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:from-[#E91E63] hover:to-[#FF4D6D] text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl text-center mt-4"
+              >
+                Masukkan Kode OTP
+              </Link>
               <Link
                 href="/cekhasil/login"
                 className="block w-full bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:from-[#E91E63] hover:to-[#FF4D6D] text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl text-center"
@@ -152,7 +164,7 @@ export default function ForgotPasswordPage() {
                     Mengirim...
                   </span>
                 ) : (
-                  "Kirim Link Reset Password"
+                  "Kirim Kode OTP"
                 )}
               </button>
             </form>

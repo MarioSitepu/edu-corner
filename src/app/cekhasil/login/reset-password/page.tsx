@@ -1,50 +1,67 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import logoWebp from "../../../logo.webp";
 
 function ResetPasswordForm() {
+  const [step, setStep] = useState<"otp" | "password">("otp");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [tokenValid, setTokenValid] = useState<boolean | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
+  // Ambil email dari sessionStorage saat component mount
   useEffect(() => {
-    // Verify token saat halaman dimuat
-    if (token) {
-      verifyToken();
-    } else {
-      setTokenValid(false);
-      setError("Token tidak ditemukan");
-    }
-  }, [token]);
-
-  const verifyToken = async () => {
-    try {
-      const response = await fetch(`/api/auth/verify-reset-token?token=${token}`);
-      const result = await response.json();
-      
-      if (result.success) {
-        setTokenValid(true);
+    if (typeof window !== 'undefined') {
+      const savedEmail = sessionStorage.getItem('reset_password_email');
+      if (savedEmail) {
+        setEmail(savedEmail);
       } else {
-        setTokenValid(false);
-        setError(result.error || "Token tidak valid atau sudah kadaluarsa");
+        // Jika tidak ada email di sessionStorage, redirect ke forgot password
+        router.push('/cekhasil/login/forgot-password');
       }
-    } catch (err) {
-      setTokenValid(false);
-      setError("Terjadi kesalahan saat memverifikasi token");
+    }
+  }, [router]);
+
+  const handleOTPSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSessionToken(result.sessionToken);
+        setStep("password");
+        setError("");
+      } else {
+        setError(result.error || "OTP tidak valid");
+      }
+    } catch (err: any) {
+      setError("Terjadi kesalahan saat memverifikasi OTP");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
@@ -59,6 +76,11 @@ function ResetPasswordForm() {
       return;
     }
 
+    if (!sessionToken) {
+      setError("Session tidak valid. Silakan mulai dari awal");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -67,7 +89,7 @@ function ResetPasswordForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token: sessionToken, password }),
       });
 
       const result = await response.json();
@@ -87,55 +109,6 @@ function ResetPasswordForm() {
     }
   };
 
-  if (tokenValid === null) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] flex items-center justify-center px-4">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF69B4]"></div>
-          <p className="mt-4 text-[#4A4A4A]">Memverifikasi token...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (tokenValid === false) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] flex items-center justify-center px-4">
-        <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 animate-scale-in">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-red-500"
-                >
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-[#2D2D2D] mb-2">
-                Token Tidak Valid
-              </h1>
-              <p className="text-[#666666] mb-6">{error}</p>
-              <Link
-                href="/cekhasil/login/forgot-password"
-                className="inline-block bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:from-[#E91E63] hover:to-[#FF4D6D] text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
-              >
-                Minta Link Baru
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] flex items-center justify-center px-4">
       <div className="max-w-md w-full">
@@ -153,10 +126,12 @@ function ResetPasswordForm() {
               />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#2D2D2D] mb-2">
-              Reset Password
+              {step === "otp" ? "Verifikasi OTP" : "Reset Password"}
             </h1>
             <p className="text-[#666666]">
-              Masukkan password baru Anda
+              {step === "otp"
+                ? "Masukkan kode OTP yang telah dikirim ke email Anda"
+                : "Masukkan password baru Anda"}
             </p>
           </div>
 
@@ -183,8 +158,82 @@ function ResetPasswordForm() {
                 </div>
               </div>
             </div>
+          ) : step === "otp" ? (
+            <form onSubmit={handleOTPSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Tampilkan email yang digunakan (read-only) */}
+              {email && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                  <p className="text-xs text-blue-600 font-semibold mb-1">Email:</p>
+                  <p className="text-sm text-blue-900 font-medium">{email}</p>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="otp" className="block text-sm font-semibold text-[#2D2D2D] mb-2">
+                  Kode OTP (6 digit)
+                </label>
+                <input
+                  type="text"
+                  id="otp"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setOtp(value);
+                  }}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#FF4D6D] bg-[#F9FAFB] text-[#2D2D2D] transition-all text-center text-2xl font-bold tracking-widest"
+                  placeholder="000000"
+                  required
+                  disabled={loading}
+                  maxLength={6}
+                  pattern="[0-9]{6}"
+                />
+                <p className="text-xs text-[#666666] mt-2">
+                  Masukkan 6 digit kode OTP yang telah dikirim ke email Anda
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || otp.length !== 6}
+                className="w-full bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:from-[#E91E63] hover:to-[#FF4D6D] text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Memverifikasi...
+                  </span>
+                ) : (
+                  "Verifikasi OTP"
+                )}
+              </button>
+            </form>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handlePasswordSubmit} className="space-y-6">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {error}
@@ -258,6 +307,28 @@ function ResetPasswordForm() {
                   "Reset Password"
                 )}
               </button>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("otp");
+                    setSessionToken(null);
+                    setPassword("");
+                    setConfirmPassword("");
+                    setError("");
+                  }}
+                  className="w-full text-[#666666] hover:text-[#2D2D2D] text-sm transition-colors"
+                >
+                  ← Kembali ke Verifikasi OTP
+                </button>
+                <Link
+                  href="/cekhasil/login/forgot-password"
+                  className="w-full text-center text-[#666666] hover:text-[#2D2D2D] text-sm transition-colors"
+                >
+                  Minta OTP Baru
+                </Link>
+              </div>
             </form>
           )}
 

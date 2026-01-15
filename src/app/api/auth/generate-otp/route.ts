@@ -86,10 +86,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Kirim email dengan OTP
-    console.log('=== Mengirim OTP Email ===');
-    console.log('Email tujuan:', email);
-    console.log('OTP yang di-generate:', otp);
-    
     const emailSent = await sendEmail({
       to: email,
       subject: 'Kode OTP Reset Password - EduCorner: SahabatMimpi',
@@ -97,20 +93,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (!emailSent) {
-      console.error('❌ Email tidak terkirim!');
-      console.error('OTP yang di-generate:', otp);
-      console.error('Silakan cek:');
-      console.error('1. RESEND_API_KEY sudah di-set di environment variables');
-      console.error('2. EMAIL_FROM sudah di-set di environment variables');
-      console.error('3. API key masih aktif di dashboard Resend');
-      console.error('4. Email tujuan valid:', email);
-      
-      // Untuk development, tetap return success tapi dengan warning
-      // Di production, mungkin ingin return error
-      // Tapi untuk sekarang, kita tetap return success agar user bisa test dengan OTP dari console
-      console.warn('⚠️ OTP untuk development/testing:', otp);
-    } else {
-      console.log('✅ Email OTP berhasil dikirim ke:', email);
+      console.warn('Email tidak terkirim, tapi OTP sudah dibuat. OTP:', otp);
+      // Untuk development, kita tetap return success
     }
 
     return NextResponse.json(
@@ -121,7 +105,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('Error in forgot-password:', error);
+    console.error('Error in generate-otp:', error);
     return NextResponse.json(
       { success: false, error: 'Terjadi kesalahan saat memproses permintaan' },
       { status: 500 }

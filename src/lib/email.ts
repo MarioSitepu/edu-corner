@@ -8,60 +8,51 @@ interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
-    // Cek apakah menggunakan email service (Resend, SendGrid, dll)
-    // Atau menggunakan SMTP dengan nodemailer
+    // Menggunakan Resend sebagai email service utama
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const emailFrom = process.env.EMAIL_FROM || process.env.RESEND_FROM_EMAIL;
     
-    const emailService = process.env.EMAIL_SERVICE || 'smtp';
-    
-    if (emailService === 'resend' && process.env.RESEND_API_KEY) {
-      // Menggunakan Resend API
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: process.env.EMAIL_FROM || 'noreply@example.com',
-          to: options.to,
-          subject: options.subject,
-          html: options.html,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('Resend API error:', error);
-        return false;
-      }
-
-      return true;
-    } else if (emailService === 'smtp' && process.env.SMTP_HOST) {
-      // Menggunakan SMTP dengan nodemailer (perlu install nodemailer)
-      // Untuk sekarang, kita akan menggunakan fetch ke API route yang akan handle SMTP
-      const response = await fetch('/api/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(options),
-      });
-
-      return response.ok;
-    } else {
-      // Fallback: Log ke console untuk development
-      console.log('=== EMAIL (Development Mode) ===');
+    if (!resendApiKey) {
+      console.warn('RESEND_API_KEY tidak ditemukan. Email tidak dapat dikirim.');
+      console.log('=== EMAIL (Development Mode - Resend API Key Missing) ===');
       console.log('To:', options.to);
       console.log('Subject:', options.subject);
-      console.log('HTML:', options.html);
+      console.log('Reset Link akan muncul di console log');
       console.log('===============================');
-      
-      // Untuk development, kita anggap berhasil
-      // Di production, pastikan EMAIL_SERVICE dan credentials sudah di-set
-      return true;
+      return false;
     }
+
+    if (!emailFrom) {
+      console.error('EMAIL_FROM atau RESEND_FROM_EMAIL harus di-set untuk mengirim email');
+      return false;
+    }
+
+    // Menggunakan Resend API
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: emailFrom,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Resend API error:', error);
+      return false;
+    }
+
+    const result = await response.json();
+    console.log('Email berhasil dikirim via Resend:', result);
+    return true;
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Error sending email via Resend:', error);
     return false;
   }
 }

@@ -9,7 +9,7 @@ Disallow: /cekhasil/login/forgot-password
 Disallow: /cekhasil/login/reset-password
 
 # Sitemap
-Sitemap: https://sahabatmimpi.my.id/sitemap.xml
+Sitemap: https://educorner.my.id/sitemap.xml
 
 # Crawl-delay untuk bot tertentu
 User-agent: AhrefsBot

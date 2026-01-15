@@ -90,11 +90,11 @@ export default function Home() {
       </div>
 
       {/* Header - Nav dengan backdrop blur */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-8 md:px-16 lg:px-[112px] py-4 md:py-5 animate-slide-in-left shadow-sm">
-        <div className="flex items-center gap-3 sm:gap-4">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 animate-slide-in-left shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Logo WebP dengan efek glow */}
           <div 
-            className="p-2 sm:p-2.5 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-3" 
+            className="p-1.5 sm:p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:rotate-3" 
             style={{ 
               boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
@@ -103,18 +103,23 @@ export default function Home() {
             <Image
               src={logoWebp}
               alt="Logo EduCorner: SahabatMimpi"
-              width={40}
-              height={40}
-              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
+              width={32}
+              height={32}
+              className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
               priority
             />
           </div>
-          <h1 
-            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            EduCorner: SahabatMimpi
-          </h1>
+          <div className="flex flex-col">
+            <h1 
+              className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              EduCorner: SahabatMimpi
+            </h1>
+            <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
+            </p>
+          </div>
         </div>
       </header>
 
@@ -166,12 +171,12 @@ export default function Home() {
               lineHeight: '1.53em'
             }}
           >
-            Arsipkan kenangan, bangun motivasi, dan kejar cita-citamu dengan cara yang menyenangkan bersama kami.
+            Yuk, mulai perjalananmu dengan mengenali diri, menumbuhkan semangat, dan melangkah meraih mimpi dengan cara yang seru.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-12 sm:mb-14 md:mb-16 mt-6 sm:mt-8 md:mt-10 px-2 sm:px-4 animate-fade-in">
+        <div className="flex justify-center items-center mb-12 sm:mb-14 md:mb-16 mt-6 sm:mt-8 md:mt-10 px-2 sm:px-4 animate-fade-in">
           {/* Pink Button - Mulai Kuis */}
           <Link 
             href="/kuis" 
@@ -199,40 +204,12 @@ export default function Home() {
             </svg>
             <span className="relative z-10">Mulai Kuis</span>
           </Link>
-
-          {/* Light Green Button - Tonton Video Edukasi */}
-          <button 
-            onClick={scrollToVideo}
-            className="group relative bg-gradient-to-br from-[#DCFCE7] to-[#E8F5E9] text-[#374151] font-bold px-8 sm:px-10 py-5 sm:py-6 rounded-2xl flex items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto sm:min-w-[320px] md:min-w-[380px] transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-100 border-2 cursor-pointer backdrop-blur-sm"
-            style={{
-              fontFamily: 'Inter, sans-serif',
-              fontSize: 'clamp(14px, 2.5vw, 16px)',
-              lineHeight: '1.4em',
-              borderColor: 'rgba(167, 209, 41, 0.3)',
-              boxShadow: '0px 4px 15px -5px rgba(167, 209, 41, 0.3), inset 0px 1px 0px rgba(255, 255, 255, 0.5)'
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              className="sm:w-5 sm:h-5 text-[#374151] transition-transform group-hover:scale-110"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M8 5V19L19 12L8 5Z"
-                fill="currentColor"
-              />
-            </svg>
-            Tonton Video Edukasi
-          </button>
         </div>
 
         {/* Cards Section - Scattered Layout */}
         <div className="relative mb-12 sm:mb-16 md:mb-20 px-2 sm:px-4">
           <div className="max-w-[1800px] mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr_1fr] gap-6 md:gap-8 items-start">
               {/* Left Card - Target Jadi Dokter */}
               <div className="relative md:mt-32 lg:mt-40 animate-slide-in-left">
                 <div className="flex flex-col items-center md:items-end relative">
@@ -287,7 +264,7 @@ export default function Home() {
               </div>
 
               {/* Center Video Block */}
-              <div ref={videoRef} className="relative flex flex-col items-center order-first md:order-0 animate-scale-in w-full px-2 sm:px-0">
+              <div ref={videoRef} className="relative flex flex-col items-center order-first md:order-0 animate-scale-in w-full">
                 {/* YouTube Video Embed dengan styling lebih baik */}
                 <div 
                   className="w-full border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
@@ -387,17 +364,17 @@ export default function Home() {
 
       {/* Footer */}
       <footer 
-        className="text-center py-6 sm:py-8 border-t px-4 relative z-10 backdrop-blur-sm bg-white/30"
+        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
         style={{
           borderColor: 'rgba(243, 244, 246, 0.5)',
           fontFamily: 'Inter, sans-serif'
         }}
       >
         <p 
-          className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
+          className="text-xs sm:text-sm text-[#666666] font-medium" 
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
+          © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
         </p>
       </footer>
       </div>

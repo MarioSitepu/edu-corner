@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import logoWebp from "../../logo.webp";
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
@@ -62,36 +64,14 @@ export default function AdminLoginPage() {
           {/* Logo/Header */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-[#FF4D6D] to-[#FF6B8A] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-white"
-              >
-                <path
-                  d="M12 2L2 7L12 12L22 7L12 2Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M2 17L12 22L22 17"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M2 12L12 17L22 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Image
+                src={logoWebp}
+                alt="Logo EduCorner: SahabatMimpi"
+                width={48}
+                height={48}
+                className="w-12 h-12"
+                priority
+              />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#2D2D2D] mb-2">
               Admin Login

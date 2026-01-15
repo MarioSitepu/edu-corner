@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import StructuredData from "@/components/StructuredData";
+import logoWebp from "../logo.webp";
 
 interface QuizResult {
   nama: string;
@@ -592,7 +593,7 @@ export default function KuisPage() {
         pdf.setFontSize(8);
         pdf.setTextColor(150, 150, 150);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('© 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.', pageWidth / 2, footerY, { align: 'center' });
+        pdf.text('© 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi', pageWidth / 2, footerY, { align: 'center' });
         
         const date = new Date().toLocaleDateString('id-ID', {
           year: 'numeric',
@@ -752,7 +753,7 @@ export default function KuisPage() {
       pdf.text(relatedSubject, margin + 5, currentY + 15);
 
       // Add footer to all pages
-      const totalPages = pdf.getNumberOfPages();
+      const totalPages = (pdf as any).internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
         addFooter(i, totalPages);
@@ -836,23 +837,35 @@ export default function KuisPage() {
         </div>
 
         {/* Header */}
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-8 md:px-16 lg:px-28 py-4 md:py-5 shadow-sm">
-          <div className="flex items-center gap-3 sm:gap-4">
+        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div 
-              className="p-2 sm:p-2.5 rounded-xl transition-all duration-300" 
+              className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
               style={{ 
                 boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
               }}
             >
-              <span className="text-2xl sm:text-3xl">📚</span>
+              <Image
+                src={logoWebp}
+                alt="Logo EduCorner: SahabatMimpi"
+                width={32}
+                height={32}
+                className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
+                priority
+              />
             </div>
-            <h1 
-              className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              EduCorner: SahabatMimpi
-            </h1>
+            <div className="flex flex-col">
+              <h1 
+                className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                EduCorner: SahabatMimpi
+              </h1>
+              <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
+              </p>
+            </div>
           </div>
         </header>
 
@@ -873,7 +886,13 @@ export default function KuisPage() {
                   <>
                     <div className="absolute inset-0 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full blur-md opacity-30 animate-pulse"></div>
                     <div className="relative w-32 h-32 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-xl">
-                      <span className="text-6xl" suppressHydrationWarning>{char.emoji}</span>
+                      <Image
+                        src={logoWebp}
+                        alt="Logo EduCorner"
+                        width={64}
+                        height={64}
+                        className="w-16 h-16"
+                      />
                       {/* Badge indicator */}
                       <div className="absolute -top-1 -right-1 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center border-2 border-white animate-bounce">
                         <span className="text-xl" suppressHydrationWarning>🎯</span>
@@ -960,7 +979,13 @@ export default function KuisPage() {
             <div className="bg-gradient-to-r from-[#E91E63]/5 to-[#F06292]/5 rounded-2xl p-5 border border-[#E91E63]/20">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-[#E91E63] to-[#F06292] rounded-lg flex items-center justify-center shadow-md">
-                  <span className="text-xl" suppressHydrationWarning>📚</span>
+                  <Image
+                    src={logoWebp}
+                    alt="Logo"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
                 </div>
                 <div>
                   <p className="text-xs text-[#666666] font-medium">Mata Pelajaran yang Relevan</p>
@@ -1048,20 +1073,21 @@ export default function KuisPage() {
 
         {/* Footer */}
         <footer 
-          className="text-center py-6 sm:py-8 border-t px-4 relative z-10 backdrop-blur-sm bg-white/30"
+          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
           style={{
             borderColor: 'rgba(243, 244, 246, 0.5)',
             fontFamily: 'Inter, sans-serif'
           }}
         >
           <p 
-            className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
+            className="text-xs sm:text-sm text-[#666666] font-medium" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
+            © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
           </p>
         </footer>
       </div>
+      </>
     );
   }
 
@@ -1085,23 +1111,35 @@ export default function KuisPage() {
         </div>
 
         {/* Header - sama seperti page.tsx */}
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-8 md:px-16 lg:px-28 py-4 md:py-5 shadow-sm relative">
-          <div className="flex items-center gap-3 sm:gap-4">
+        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm relative">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div 
-              className="p-2 sm:p-2.5 rounded-xl transition-all duration-300" 
+              className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
               style={{ 
                 boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
               }}
             >
-              <span className="text-2xl sm:text-3xl">📚</span>
+              <Image
+                src={logoWebp}
+                alt="Logo EduCorner: SahabatMimpi"
+                width={32}
+                height={32}
+                className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
+                priority
+              />
             </div>
-            <h1 
-              className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              EduCorner: SahabatMimpi
-            </h1>
+            <div className="flex flex-col">
+              <h1 
+                className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                EduCorner: SahabatMimpi
+              </h1>
+              <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
+              </p>
+            </div>
           </div>
         </header>
 
@@ -1168,7 +1206,7 @@ export default function KuisPage() {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {question.options.map((option, index) => (
+                {question.options.map((option: any, index: number) => (
                   <button
                     key={`${currentQuestion}-${index}`}
                     onClick={() => handleAnswer(index)}
@@ -1275,17 +1313,17 @@ export default function KuisPage() {
 
         {/* Footer - sama seperti page.tsx */}
         <footer 
-          className="text-center py-6 sm:py-8 border-t px-4 relative z-10 backdrop-blur-sm bg-white/30"
+          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
           style={{
             borderColor: 'rgba(243, 244, 246, 0.5)',
             fontFamily: 'Inter, sans-serif'
           }}
         >
           <p 
-            className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
+            className="text-xs sm:text-sm text-[#666666] font-medium" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
+            © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
           </p>
         </footer>
       </div>
@@ -1308,23 +1346,35 @@ export default function KuisPage() {
       </div>
 
       {/* Header - sama seperti page.tsx */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-8 md:px-16 lg:px-28 py-4 md:py-5 shadow-sm relative">
-        <div className="flex items-center gap-3 sm:gap-4">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm relative">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div 
-            className="p-2 sm:p-2.5 rounded-xl transition-all duration-300" 
+            className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
             style={{ 
               boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
             }}
           >
-            <span className="text-2xl sm:text-3xl">📚</span>
+            <Image
+              src={logoWebp}
+              alt="Logo EduCorner: SahabatMimpi"
+              width={32}
+              height={32}
+              className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
+              priority
+            />
           </div>
-          <h1 
-            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            KKN T Margo Lestari
-          </h1>
+          <div className="flex flex-col">
+            <h1 
+              className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              EduCorner: SahabatMimpi
+            </h1>
+            <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
+            </p>
+          </div>
         </div>
       </header>
 
@@ -1435,20 +1485,19 @@ export default function KuisPage() {
 
       {/* Footer - sama seperti page.tsx */}
       <footer 
-        className="text-center py-6 sm:py-8 border-t px-4 relative z-10 backdrop-blur-sm bg-white/30"
+        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
         style={{
           borderColor: 'rgba(243, 244, 246, 0.5)',
           fontFamily: 'Inter, sans-serif'
         }}
       >
         <p 
-          className="text-xs sm:text-sm text-[#999999] font-medium" 
+          className="text-xs sm:text-sm text-[#666666] font-medium" 
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          © 2024 EduCorner: SahabatMimpi • TIM KKN T MARGO LESTARI
+          © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
         </p>
       </footer>
-      </div>
-      </>
-    );
-  }
+    </div>
+  );
+}

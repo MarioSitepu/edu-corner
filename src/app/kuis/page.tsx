@@ -1061,7 +1061,8 @@ export default function KuisPage() {
             © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
           </p>
         </footer>
-      </div>
+        </div>
+      </>
     );
   }
 

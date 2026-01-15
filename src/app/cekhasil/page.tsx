@@ -373,174 +373,193 @@ export default function CekHasilPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] py-12 px-4 animate-fade-in">
-      <div className="max-w-7xl mx-auto">
-        {/* Header dengan Logout */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-          <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#2D2D2D] mb-2">
-              Admin Dashboard
-            </h1>
-            <p className="text-lg text-[#4A4A4A]">
-              EduCorner: SahabatMimpi - Kelola dan lihat semua hasil tes cita-cita siswa
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-[#DCFCE7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-[#FFE4E9] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Fun Floating Shapes */}
+        <div className="absolute top-1/4 left-[5%] w-16 h-16 bg-purple-300/30 rounded-lg rotate-12 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.5s' }}></div>
+        <div className="absolute top-1/3 right-[10%] w-12 h-12 bg-yellow-300/40 rounded-full animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}></div>
+        <div className="absolute bottom-1/4 left-[15%] w-20 h-20 bg-green-300/30 rounded-full animate-pulse" style={{ animationDuration: '2.5s' }}></div>
+        <div className="absolute top-[60%] right-[5%] w-14 h-14 bg-pink-300/35 rounded-lg rotate-45 animate-pulse" style={{ animationDuration: '3.5s' }}></div>
+        
+        {/* Star shapes */}
+        <div className="absolute top-[15%] right-[20%] text-4xl opacity-20 animate-pulse" style={{ animationDuration: '2s' }}>⭐</div>
+        <div className="absolute bottom-[20%] right-[15%] text-3xl opacity-20 animate-pulse" style={{ animationDuration: '2.8s', animationDelay: '0.5s' }}>✨</div>
+        <div className="absolute top-[45%] left-[8%] text-3xl opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}>🌟</div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="relative bg-gradient-to-r from-[#FFB6C1] via-[#FFC0CB] to-[#FFD4E5] rounded-3xl shadow-2xl p-8 sm:p-10 mb-8 overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+          
+          {/* Animated Sparkles */}
+          <div className="absolute top-8 right-32 animate-pulse">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/40">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div className="absolute bottom-12 right-64 animate-pulse" style={{ animationDelay: '1s' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/30">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+            </svg>
           </div>
           
-          <div className="flex items-center gap-4 justify-center md:justify-end">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-[#4A4A4A] hover:text-[#2D2D2D] font-medium transition-colors px-4 py-2 rounded-lg hover:bg-white/50"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#AD1457] drop-shadow-lg mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Admin Dashboard
+              </h1>
+              <p className="text-[#880E4F] text-sm sm:text-base max-w-2xl leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
+                EduCorner: SahabatMimpi - Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 bg-white/40 hover:bg-white/60 backdrop-blur-sm text-[#AD1457] font-semibold px-5 py-3 rounded-xl transition-all duration-300 border border-white/50 hover:border-white/70 hover:scale-105 shadow-lg"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
-                <path
-                  d="M19 12H5M5 12L12 19M5 12L12 5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Beranda
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="hidden sm:inline">Beranda</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 bg-white hover:bg-white/95 text-[#C2185B] font-bold px-6 py-3 rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 border-2 border-white"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
-                <path
-                  d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Logout
-            </button>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="bg-white rounded-xl shadow-md p-4">
-            <div className="flex items-center gap-3">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-[#666666]"
-              >
-                <path
-                  d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          {/* Total Siswa */}
+          <div className="bg-gradient-to-br from-[#FFE8EC] to-[#FFD4E5] rounded-2xl shadow-md p-6 relative overflow-hidden border border-[#FFB6C1]/30">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/30 rounded-full -mr-8 -mt-8"></div>
+            <div className="relative text-center">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-10 h-10 bg-white/60 rounded-lg flex items-center justify-center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#F06292]">
+                    <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>TOTAL SISWA</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                {activeTab === 'edu_corner' ? history.length : careerExplanations.length}
+              </p>
+            </div>
+          </div>
+
+          {/* Hasil Filter */}
+          <div className="bg-gradient-to-br from-[#FCE4EC] to-[#F8BBD0] rounded-2xl shadow-md p-6 relative overflow-hidden border border-[#F06292]/30">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/30 rounded-full -mr-8 -mt-8"></div>
+            <div className="relative text-center">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-10 h-10 bg-white/60 rounded-lg flex items-center justify-center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#F06292]">
+                    <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>HASIL FILTER</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                {activeTab === 'edu_corner' ? sortedHistory.length : sortedCareerExplanations.length}
+              </p>
+            </div>
+          </div>
+
+          {/* Cita-Cita Unik */}
+          <div className="bg-gradient-to-br from-[#FFF0F3] to-[#FFE4E9] rounded-2xl shadow-md p-6 relative overflow-hidden border border-[#FFB6C1]/30">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/30 rounded-full -mr-8 -mt-8"></div>
+            <div className="relative text-center">
+              <div className="flex items-center justify-center mb-3">
+                <div className="w-10 h-10 bg-white/60 rounded-lg flex items-center justify-center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#F8BBD0]">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>CITA-CITA UNIK</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                {activeTab === 'edu_corner' 
+                  ? new Set(history.map((item) => item.cita_cita)).size
+                  : history.length + careerExplanations.length
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Tabs */}
+        <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6 mb-6">
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative">
+              <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <input
                 type="text"
-                placeholder={
-                  activeTab === 'edu_corner'
-                    ? "Cari berdasarkan nama, cita-cita, atau kelas..."
-                    : "Cari berdasarkan cita-cita atau penjelasan..."
-                }
+                placeholder="Cari berdasarkan nama, cita-cita..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 outline-none text-[#2D2D2D] placeholder-gray-400"
+                className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-xl text-[#2D2D2D] placeholder-gray-400 focus:ring-2 focus:ring-[#FF4D6D] outline-none transition-all"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
-                  className="text-[#666666] hover:text-[#2D2D2D] transition-colors"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M18 6L6 18M6 6L18 18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </button>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Tabs */}
-        <div className="mb-6">
-          <div className="bg-white rounded-xl shadow-md p-2 flex gap-2">
+          {/* Tabs */}
+          <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('edu_corner')}
-              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all ${
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === 'edu_corner'
-                  ? 'bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white shadow-lg'
-                  : 'text-[#4A4A4A] hover:bg-gray-100'
+                  ? 'bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] text-[#AD1457] shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               Data Siswa ({history.length})
             </button>
             <button
               onClick={() => setActiveTab('career_explanations')}
-              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all ${
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
                 activeTab === 'career_explanations'
-                  ? 'bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white shadow-lg'
-                  : 'text-[#4A4A4A] hover:bg-gray-100'
+                  ? 'bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] text-[#AD1457] shadow-md'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              Penjelasan Pekerjaan ({careerExplanations.length})
+              Pekerjaan ({careerExplanations.length})
             </button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="text-sm text-[#666666] mb-1">
-              {activeTab === 'edu_corner' ? 'Total Data Siswa' : 'Total Penjelasan'}
-            </div>
-            <div className="text-3xl font-bold text-[#2D2D2D]">
-              {activeTab === 'edu_corner' ? history.length : careerExplanations.length}
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="text-sm text-[#666666] mb-1">Hasil Filter</div>
-            <div className="text-3xl font-bold text-[#2D2D2D]">
-              {activeTab === 'edu_corner' ? sortedHistory.length : sortedCareerExplanations.length}
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="text-sm text-[#666666] mb-1">
-              {activeTab === 'edu_corner' ? 'Cita-Cita Unik' : 'Total Database'}
-            </div>
-            <div className="text-3xl font-bold text-[#2D2D2D]">
-              {activeTab === 'edu_corner' 
-                ? new Set(history.map((item) => item.cita_cita)).size
-                : history.length + careerExplanations.length
-              }
-            </div>
           </div>
         </div>
 
@@ -621,10 +640,10 @@ export default function CekHasilPage() {
             )}
           </div>
         ) : activeTab === 'edu_corner' ? (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             {/* Table Header */}
-            <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] px-6 py-4">
-              <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm">
+            <div className="bg-gradient-to-r from-[#F48FB1] to-[#FCE4EC] px-6 py-4">
+              <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
                 <button
                   onClick={() => handleSort('id')}
                   className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
@@ -635,147 +654,99 @@ export default function CekHasilPage() {
                   onClick={() => handleSort('nama')}
                   className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
                 >
-                  Nama{renderSortIcon('nama')}
+                  NAMA{renderSortIcon('nama')}
                 </button>
                 <button
                   onClick={() => handleSort('kelas')}
-                  className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                  className="col-span-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  Kelas{renderSortIcon('kelas')}
+                  KELAS{renderSortIcon('kelas')}
                 </button>
                 <button
                   onClick={() => handleSort('cita_cita')}
-                  className="col-span-3 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                  className="col-span-3 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  Cita-Cita{renderSortIcon('cita_cita')}
+                  CITA-CITA{renderSortIcon('cita_cita')}
                 </button>
                 <button
                   onClick={() => handleSort('created_at')}
-                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                  className="col-span-2 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  Tanggal{renderSortIcon('created_at')}
+                  TANGGAL{renderSortIcon('created_at')}
                 </button>
-                <div className="col-span-3 text-center">Aksi</div>
+                <div className="col-span-3 text-center">AKSI</div>
               </div>
             </div>
 
             {/* Table Body */}
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-100">
               {sortedHistory.map((item, index) => (
                 <div
                   key={item.id}
-                  className="px-6 py-4 hover:bg-gray-50 transition-colors animate-fade-in"
+                  className="px-6 py-4 hover:bg-[#FFF5F7] transition-colors animate-fade-in"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   <div className="grid grid-cols-12 gap-4 items-center">
-                    <div className="col-span-1 text-sm font-medium text-[#666666]">
+                    <div className="col-span-1 text-sm font-semibold text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {item.id}
                     </div>
-                    <div className="col-span-2 text-sm font-semibold text-[#2D2D2D]">
+                    <div className="col-span-2 text-sm font-bold text-[#2D2D2D]" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {item.nama}
                     </div>
-                    <div className="col-span-1 text-sm text-[#4A4A4A]">
+                    <div className="col-span-1 text-sm font-semibold text-[#4A4A4A] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {item.kelas || "-"}
                     </div>
-                    <div className="col-span-3 text-sm font-medium text-[#FF4D6D]">
-                      {item.cita_cita}
+                    <div className="col-span-3 text-sm text-center">
+                      <span className="inline-block bg-[#FCE4EC] text-[#C2185B] px-3 py-1 rounded-full font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {item.cita_cita}
+                      </span>
                     </div>
-                    <div className="col-span-2 text-xs text-[#666666]">
-                      {formatDate(item.created_at)}
+                    <div className="col-span-2 text-xs text-[#666666] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      {new Date(item.created_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </div>
                     <div className="col-span-3 flex justify-center gap-2">
                       <button
                         onClick={() => handleDownloadPDF(item)}
                         disabled={downloadingId === item.id}
-                        className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] hover:shadow-lg text-[#AD1457] font-medium px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs"
+                        style={{ fontFamily: 'Inter, sans-serif' }}
                       >
                         {downloadingId === item.id ? (
                           <>
-                            <svg
-                              className="animate-spin h-4 w-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              ></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              ></path>
+                            <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span>Mengunduh...</span>
                           </>
                         ) : (
                           <>
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M17 8L12 3M12 3L7 8M12 3V15"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
-                            <span>Unduh PDF</span>
+                            <span>PDF</span>
                           </>
                         )}
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
                         disabled={deletingId === item.id}
-                        className="text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors p-2 hover:bg-red-50 rounded-lg"
+                        className="text-[#F06292] hover:bg-[#FCE4EC] disabled:opacity-50 disabled:cursor-not-allowed transition-all p-2 rounded-lg"
                         title="Hapus data"
                       >
                         {deletingId === item.id ? (
-                          <svg
-                            className="animate-spin h-5 w-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
+                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                         ) : (
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
                       </button>
@@ -784,107 +755,186 @@ export default function CekHasilPage() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination Info */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+              <p className="text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Menampilkan 1-{sortedHistory.length} dari {sortedHistory.length} data
+              </p>
+            </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            {/* Table Header */}
-            <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] px-6 py-4">
-              <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm">
-                <button
-                  onClick={() => handleSort('id')}
-                  className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                >
-                  ID{renderSortIcon('id')}
-                </button>
-                <button
-                  onClick={() => handleSort('cita_cita')}
-                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                >
-                  Cita-Cita{renderSortIcon('cita_cita')}
-                </button>
-                <button
-                  onClick={() => handleSort('explanation')}
-                  className="col-span-6 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                >
-                  Penjelasan{renderSortIcon('explanation')}
-                </button>
-                <button
-                  onClick={() => handleSort('updated_at')}
-                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                >
-                  Diperbarui{renderSortIcon('updated_at')}
-                </button>
-                <div className="col-span-1 text-center">Aksi</div>
+          /* Career Explanations Tab */
+          <div className="space-y-6">
+            {/* Stats Cards untuk Pekerjaan */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Total Penjelasan</p>
+                <p className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>{careerExplanations.length}</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Hasil Filter</p>
+                <p className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>{sortedCareerExplanations.length}</p>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Total Database</p>
+                <p className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>{history.length}</p>
               </div>
             </div>
 
-            {/* Table Body */}
-            <div className="divide-y divide-gray-200">
-              {sortedCareerExplanations.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="px-6 py-4 hover:bg-gray-50 transition-colors animate-fade-in"
-                  style={{ animationDelay: `${index * 0.05}s` }}
+            {/* Empty State atau Data */}
+            {sortedCareerExplanations.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm p-16 text-center border border-gray-100">
+                <div className="w-24 h-24 bg-[#FFB6C1]/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-[#FF6B8A]"
+                  >
+                    <path
+                      d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="currentColor"
+                      opacity="0.3"
+                    />
+                    <path
+                      d="M14 2V8H20"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Belum Ada Data
+                </h2>
+                <p className="text-gray-500 mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Belum ada penjelasan pekerjaan yang tersimpan
+                </p>
+                <button
+                  onClick={fetchAllData}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] hover:shadow-lg text-[#AD1457] font-semibold px-8 py-3 rounded-lg transition-all"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
                 >
-                  <div className="grid grid-cols-12 gap-4 items-start">
-                    <div className="col-span-1 text-sm font-medium text-[#666666]">
-                      {item.id}
-                    </div>
-                    <div className="col-span-2 text-sm font-semibold text-[#FF4D6D]">
-                      {item.cita_cita}
-                    </div>
-                    <div className="col-span-6 text-sm text-[#4A4A4A] line-clamp-3">
-                      {item.explanation}
-                    </div>
-                    <div className="col-span-2 text-xs text-[#666666]">
-                      {formatDate(item.updated_at)}
-                    </div>
-                    <div className="col-span-1 flex justify-center">
-                      <button
-                        onClick={() => {
-                          if (confirm(`Apakah Anda yakin ingin menghapus penjelasan untuk "${item.cita_cita}"?`)) {
-                            // TODO: Implement delete for career explanations
-                            alert('Fitur hapus penjelasan pekerjaan akan segera tersedia');
-                          }
-                        }}
-                        className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-lg"
-                        title="Hapus penjelasan"
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
-                    </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 4V10H7M23 20V14H17M20.49 9C19.9828 7.56678 19.1209 6.28536 17.9845 5.27542C16.8482 4.26548 15.4745 3.55976 13.9917 3.22426C12.5089 2.88875 10.9652 2.93434 9.50481 3.35677C8.04437 3.77921 6.71475 4.56471 5.64 5.64L1 10M23 14L18.36 18.36C17.2853 19.4353 15.9556 20.2208 14.4952 20.6432C13.0348 21.0657 11.4911 21.1112 10.0083 20.7757C8.52547 20.4402 7.1518 19.7345 6.01547 18.7246C4.87913 17.7146 4.01717 16.4332 3.51 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Refresh Data
+                </button>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                {/* Table Header */}
+                <div className="bg-gradient-to-r from-[#F48FB1] to-[#FCE4EC] px-6 py-4">
+                  <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <button
+                      onClick={() => handleSort('id')}
+                      className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                    >
+                      ID{renderSortIcon('id')}
+                    </button>
+                    <button
+                      onClick={() => handleSort('cita_cita')}
+                      className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                    >
+                      Cita-Cita{renderSortIcon('cita_cita')}
+                    </button>
+                    <button
+                      onClick={() => handleSort('explanation')}
+                      className="col-span-6 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                    >
+                      Penjelasan{renderSortIcon('explanation')}
+                    </button>
+                    <button
+                      onClick={() => handleSort('updated_at')}
+                      className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                    >
+                      Diperbarui{renderSortIcon('updated_at')}
+                    </button>
+                    <div className="col-span-1 text-center">Aksi</div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Table Body */}
+                <div className="divide-y divide-gray-100">
+                  {sortedCareerExplanations.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <div className="grid grid-cols-12 gap-4 items-start">
+                        <div className="col-span-1 text-sm font-medium text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                          {item.id}
+                        </div>
+                        <div className="col-span-2">
+                          <span className="inline-block bg-[#FCE4EC] text-[#C2185B] px-3 py-1 rounded-full text-xs font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            {item.cita_cita}
+                          </span>
+                        </div>
+                        <div className="col-span-6 text-sm text-[#4A4A4A] line-clamp-3" style={{ fontFamily: 'Inter, sans-serif' }}>
+                          {item.explanation}
+                        </div>
+                        <div className="col-span-2 text-xs text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                          {formatDate(item.updated_at)}
+                        </div>
+                        <div className="col-span-1 flex justify-center">
+                          <button
+                            onClick={() => {
+                              if (confirm(`Apakah Anda yakin ingin menghapus penjelasan untuk "${item.cita_cita}"?`)) {
+                                // TODO: Implement delete for career explanations
+                                alert('Fitur hapus penjelasan pekerjaan akan segera tersedia');
+                              }
+                            }}
+                            className="text-[#F06292] hover:bg-[#FCE4EC] transition-all p-2 rounded-lg"
+                            title="Hapus penjelasan"
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination Info */}
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                  <p className="text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    Menampilkan 1-{sortedCareerExplanations.length} dari {sortedCareerExplanations.length} data
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Refresh Button */}
-        {!loading && !error && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={fetchAllData}
-              className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              Refresh Data
-            </button>
-          </div>
-        )}
+        {/* Footer dengan Copyright */}
+        <div className="mt-8 text-center pb-6">
+          <p className="text-sm text-gray-600" style={{ fontFamily: 'Inter, sans-serif' }}>
+            © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
+          </p>
+        </div>
       </div>
     </div>
   );

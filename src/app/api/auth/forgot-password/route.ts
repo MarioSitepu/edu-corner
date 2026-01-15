@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     // Generate reset link
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                     request.headers.get('origin') || 
-                    'http://localhost:3000';
+                    'https://educorner.my.id';
     const resetLink = `${baseUrl}/cekhasil/login/reset-password?token=${resetToken}`;
 
     // Kirim email

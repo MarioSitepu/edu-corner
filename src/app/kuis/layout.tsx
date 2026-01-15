@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sahabatmimpi.my.id';
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
 
 export const metadata: Metadata = {
   title: 'Kuis Cita-Cita - Temukan Profesi Impianmu',

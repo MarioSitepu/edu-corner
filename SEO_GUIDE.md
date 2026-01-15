@@ -70,7 +70,7 @@ Tambahkan ke `.env.local`:
 
 ```env
 # Base URL untuk SEO
-NEXT_PUBLIC_BASE_URL=https://sahabatmimpi.my.id
+NEXT_PUBLIC_BASE_URL=https://educorner.my.id
 
 # Site Verification (opsional)
 GOOGLE_SITE_VERIFICATION=your_google_verification_code
@@ -98,7 +98,7 @@ YAHOO_VERIFICATION=your_yahoo_verification_code
 ## 🚀 Langkah Selanjutnya untuk SEO
 
 ### 1. **Google Search Console**
-- Submit sitemap: `https://sahabatmimpi.my.id/sitemap.xml`
+- Submit sitemap: `https://educorner.my.id/sitemap.xml`
 - Monitor indexing status
 - Fix any crawl errors
 

@@ -806,7 +806,7 @@ export default function KuisPage() {
       return "Berbagai Bidang";
     };
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sahabatmimpi.my.id';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
     
     const quizStructuredData = {
       "@context": "https://schema.org",

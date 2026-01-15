@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sahabatmimpi.my.id';
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

@@ -17,68 +17,89 @@ Fitur lupa password telah ditambahkan ke aplikasi. Dokumen ini menjelaskan cara 
    - `GET /api/auth/verify-reset-token` - Verifikasi token reset
    - `POST /api/auth/reset-password` - Reset password dengan token
 
-## Setup Email Service
+## Setup Email Service dengan Resend
 
-Untuk mengirim email reset password, Anda perlu mengkonfigurasi email service. Ada beberapa opsi:
+Aplikasi menggunakan **Resend** sebagai email service untuk mengirim email reset password.
 
-### Opsi 1: Resend (Recommended untuk Production)
+### Langkah-langkah Setup Resend
 
-1. Daftar di [Resend](https://resend.com)
-2. Dapatkan API key
-3. Tambahkan ke `.env.local`:
+1. **Daftar di Resend**
+   - Kunjungi [https://resend.com](https://resend.com)
+   - Buat akun gratis (free tier: 3,000 emails/bulan)
+   - Verifikasi email Anda
 
-```env
-EMAIL_SERVICE=resend
-RESEND_API_KEY=re_your_api_key_here
-EMAIL_FROM=noreply@yourdomain.com
-```
+2. **Buat API Key**
+   - Login ke dashboard Resend
+   - Buka menu "API Keys"
+   - Klik "Create API Key"
+   - Beri nama (contoh: "EduCorner Production")
+   - Copy API key (format: `re_xxxxxxxxxxxxx`)
 
-### Opsi 2: SMTP (Gmail, Outlook, dll)
+3. **Setup Domain (Opsional untuk Production)**
+   - Untuk production, sebaiknya verifikasi domain Anda
+   - Buka menu "Domains" di Resend
+   - Add domain: `educorner.my.id`
+   - Ikuti instruksi untuk setup DNS records
+   - Setelah verified, Anda bisa menggunakan email seperti `noreply@educorner.my.id`
 
-1. Install nodemailer:
-```bash
-npm install nodemailer
-npm install --save-dev @types/nodemailer
-```
+4. **Tambahkan ke Environment Variables**
+   
+   Tambahkan ke `.env.local`:
+   
+   ```env
+   # Resend Configuration (Required)
+   RESEND_API_KEY=re_your_api_key_here
+   
+   # Email From Address
+   # Untuk development/testing, gunakan domain Resend: onboarding@resend.dev
+   # Untuk production, gunakan domain verified Anda: noreply@educorner.my.id
+   EMAIL_FROM=onboarding@resend.dev
+   # atau untuk production:
+   # EMAIL_FROM=noreply@educorner.my.id
+   ```
 
-2. Buat API route untuk email di `src/app/api/email/send/route.ts` (opsional, bisa menggunakan langsung di `lib/email.ts`)
+### Testing Email
 
-3. Tambahkan ke `.env.local`:
+1. **Development Mode:**
+   - Gunakan `onboarding@resend.dev` sebagai EMAIL_FROM
+   - Email akan dikirim ke alamat yang Anda masukkan
+   - Cocok untuk testing
 
-```env
-EMAIL_SERVICE=smtp
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-EMAIL_FROM=your-email@gmail.com
-```
+2. **Production Mode:**
+   - Verifikasi domain `educorner.my.id` di Resend
+   - Gunakan `noreply@educorner.my.id` sebagai EMAIL_FROM
+   - Email akan dikirim dengan domain Anda sendiri
 
-**Catatan untuk Gmail:**
-- Gunakan App Password, bukan password biasa
-- Aktifkan 2-Step Verification terlebih dahulu
-- Generate App Password di: https://myaccount.google.com/apppasswords
+### Troubleshooting
 
-### Opsi 3: Development Mode (Default)
+**Email tidak terkirim:**
+- Pastikan `RESEND_API_KEY` sudah benar
+- Pastikan `EMAIL_FROM` sudah di-set
+- Cek console log untuk error message
+- Pastikan API key masih aktif di dashboard Resend
 
-Jika tidak ada konfigurasi email, sistem akan:
-- Log email ke console (untuk development)
-- Tetap membuat token reset password
-- Link reset password akan muncul di console log
+**Email masuk ke spam:**
+- Verifikasi domain di Resend
+- Setup SPF, DKIM, dan DMARC records
+- Gunakan domain verified sebagai EMAIL_FROM
 
 ## Environment Variables
 
 Tambahkan ke `.env.local`:
 
 ```env
-# Email Configuration
-EMAIL_SERVICE=smtp  # atau 'resend'
+# Resend Email Configuration (Required)
+RESEND_API_KEY=re_your_api_key_here
+EMAIL_FROM=onboarding@resend.dev  # Untuk development
+# EMAIL_FROM=noreply@educorner.my.id  # Untuk production (setelah domain verified)
+
+# Admin Configuration
 ADMIN_EMAIL=admin@example.com  # Email admin yang akan menerima reset password
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123  # Password default (akan diupdate setelah reset)
 
 # Base URL untuk reset link
-NEXT_PUBLIC_BASE_URL=http://localhost:3000  # Ganti dengan domain production
+NEXT_PUBLIC_BASE_URL=https://educorner.my.id
 ```
 
 ## Database Tables

@@ -6,6 +6,22 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 );
 
+interface EduCornerItem {
+  id: number;
+  nama: string;
+  cita_cita: string;
+  kelas?: string;
+  created_at: string;
+}
+
+interface CareerExplanationItem {
+  id: number;
+  cita_cita: string;
+  explanation: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Helper untuk verify admin token
 async function verifyAdmin(request: NextRequest) {
   try {
@@ -33,26 +49,26 @@ export async function GET(request: NextRequest) {
 
   try {
     // Ambil semua data dari tabel edu_corner
-    let eduCornerData = [];
+    let eduCornerData: EduCornerItem[] = [];
     try {
       eduCornerData = await sql`
         SELECT id, nama, cita_cita, kelas, created_at 
         FROM edu_corner 
         ORDER BY created_at DESC
-      `;
+      ` as EduCornerItem[];
     } catch (error: any) {
       console.warn('Error fetching edu_corner data:', error);
       // Jika tabel tidak ada, tetap lanjutkan
     }
 
     // Ambil semua data dari tabel career_explanations
-    let careerExplanationsData = [];
+    let careerExplanationsData: CareerExplanationItem[] = [];
     try {
       careerExplanationsData = await sql`
         SELECT id, cita_cita, explanation, created_at, updated_at 
         FROM career_explanations 
         ORDER BY updated_at DESC
-      `;
+      ` as CareerExplanationItem[];
     } catch (error: any) {
       console.warn('Error fetching career_explanations data:', error);
       // Jika tabel tidak ada, tetap lanjutkan

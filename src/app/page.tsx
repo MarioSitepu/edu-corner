@@ -4,8 +4,61 @@ import Link from "next/link";
 import { useRef } from "react";
 import Image from "next/image";
 import logoWebp from "./logo.webp";
+import StructuredData from "@/components/StructuredData";
 
 export default function Home() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sahabatmimpi.my.id';
+  
+  const websiteStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "EduCorner: SahabatMimpi",
+    "alternateName": "SahabatMimpi",
+    "url": baseUrl,
+    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka",
+    "inLanguage": "id-ID",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}/kuis?search={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const organizationStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "EduCorner: SahabatMimpi",
+    "alternateName": "SahabatMimpi",
+    "url": baseUrl,
+    "logo": `${baseUrl}/logo.webp`,
+    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka",
+    "foundingOrganization": {
+      "@type": "Organization",
+      "name": "KKN T Margo Lestari"
+    }
+  };
+
+  const educationalToolStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "EduCorner: SahabatMimpi",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "IDR"
+    },
+    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis dan dashboard cita-cita",
+    "inLanguage": "id-ID",
+    "audience": {
+      "@type": "EducationalAudience",
+      "educationalRole": "student"
+    }
+  };
   const videoRef = useRef<HTMLDivElement>(null);
 
   const scrollToVideo = () => {
@@ -13,7 +66,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden">
+    <>
+      <StructuredData data={websiteStructuredData} />
+      <StructuredData data={organizationStructuredData} />
+      <StructuredData data={educationalToolStructuredData} />
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
@@ -45,7 +102,7 @@ export default function Home() {
           >
             <Image
               src={logoWebp}
-              alt="Logo Edu-Corner"
+              alt="Logo EduCorner: SahabatMimpi"
               width={40}
               height={40}
               className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
@@ -56,7 +113,7 @@ export default function Home() {
             className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            KKN T Margo Lestari
+            EduCorner: SahabatMimpi
           </h1>
         </div>
       </header>
@@ -78,7 +135,7 @@ export default function Home() {
               style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.36em' }}
             >
               <span className="w-2 h-2 bg-[#A7D129] rounded-full animate-pulse"></span>
-              Dashboard Cita-Cita Siswa
+              EduCorner: SahabatMimpi
             </span>
           </div>
         </div>
@@ -340,9 +397,10 @@ export default function Home() {
           className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          © 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.
+          © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
         </p>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

@@ -13,14 +13,30 @@ interface HistoryItem {
   created_at: string;
 }
 
+interface CareerExplanation {
+  id: number;
+  cita_cita: string;
+  explanation: string;
+  created_at: string;
+  updated_at: string;
+}
+
+type TabType = 'edu_corner' | 'career_explanations';
+type SortField = 'id' | 'nama' | 'kelas' | 'cita_cita' | 'created_at' | 'updated_at' | 'explanation';
+type SortOrder = 'asc' | 'desc';
+
 export default function CekHasilPage() {
   const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [careerExplanations, setCareerExplanations] = useState<CareerExplanation[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>('edu_corner');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [authenticated, setAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
@@ -28,13 +44,20 @@ export default function CekHasilPage() {
     checkAuth();
   }, []);
 
+  // Reset search term and sorting when tab changes
+  useEffect(() => {
+    setSearchTerm("");
+    setSortField(activeTab === 'edu_corner' ? 'created_at' : 'updated_at');
+    setSortOrder('desc');
+  }, [activeTab]);
+
   const checkAuth = async () => {
     try {
       const response = await fetch("/api/auth/verify");
       const result = await response.json();
       if (result.authenticated) {
         setAuthenticated(true);
-        fetchHistory();
+        fetchAllData();
       } else {
         router.push("/cekhasil/login");
       }
@@ -93,11 +116,11 @@ export default function CekHasilPage() {
     }
   };
 
-  const fetchHistory = async () => {
+  const fetchAllData = async () => {
     try {
       setLoading(true);
       setError("");
-      const response = await fetch("/api/data");
+      const response = await fetch("/api/admin/all-data");
       
       const result = await response.json();
 
@@ -106,18 +129,24 @@ export default function CekHasilPage() {
       }
 
       if (result.success) {
-        setHistory(result.data || []);
+        setHistory(result.data.edu_corner || []);
+        setCareerExplanations(result.data.career_explanations || []);
         setError("");
       } else {
-        setError(result.error || "Gagal mengambil data history");
+        setError(result.error || "Gagal mengambil data");
       }
     } catch (err: any) {
-      console.error("Error fetching history:", err);
-      const errorMessage = err.message || "Gagal mengambil data history";
+      console.error("Error fetching all data:", err);
+      const errorMessage = err.message || "Gagal mengambil data";
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchHistory = async () => {
+    // Alias untuk kompatibilitas dengan kode yang sudah ada
+    await fetchAllData();
   };
 
   const handleDelete = async (id: number) => {
@@ -169,6 +198,165 @@ export default function CekHasilPage() {
     );
   });
 
+  const filteredCareerExplanations = careerExplanations.filter((item) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      item.cita_cita.toLowerCase().includes(searchLower) ||
+      item.explanation.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Handle sorting
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle sort order jika field sama
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set field baru dan default ke ascending
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  // Sort filtered data
+  const getSortedHistory = () => {
+    const sorted = [...filteredHistory];
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'nama':
+          aValue = a.nama.toLowerCase();
+          bValue = b.nama.toLowerCase();
+          break;
+        case 'kelas':
+          aValue = (a.kelas || '').toLowerCase();
+          bValue = (b.kelas || '').toLowerCase();
+          break;
+        case 'cita_cita':
+          aValue = a.cita_cita.toLowerCase();
+          bValue = b.cita_cita.toLowerCase();
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  };
+
+  const getSortedCareerExplanations = () => {
+    const sorted = [...filteredCareerExplanations];
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'cita_cita':
+          aValue = a.cita_cita.toLowerCase();
+          bValue = b.cita_cita.toLowerCase();
+          break;
+        case 'explanation':
+          aValue = a.explanation.toLowerCase();
+          bValue = b.explanation.toLowerCase();
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        case 'updated_at':
+          aValue = new Date(a.updated_at).getTime();
+          bValue = new Date(b.updated_at).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  };
+
+  const sortedHistory = getSortedHistory();
+  const sortedCareerExplanations = getSortedCareerExplanations();
+
+  // Helper untuk render sort icon
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return (
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="ml-1 opacity-30"
+        >
+          <path
+            d="M7 10L12 15L17 10H7Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    }
+    return sortOrder === 'asc' ? (
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="ml-1"
+      >
+        <path
+          d="M7 14L12 9L17 14H7Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ) : (
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="ml-1"
+      >
+        <path
+          d="M7 10L12 15L17 10H7Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  };
+
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] flex items-center justify-center">
@@ -194,7 +382,7 @@ export default function CekHasilPage() {
               Admin Dashboard
             </h1>
             <p className="text-lg text-[#4A4A4A]">
-              Kelola dan lihat semua hasil tes cita-cita siswa
+              EduCorner: SahabatMimpi - Kelola dan lihat semua hasil tes cita-cita siswa
             </p>
           </div>
           
@@ -266,7 +454,11 @@ export default function CekHasilPage() {
               </svg>
               <input
                 type="text"
-                placeholder="Cari berdasarkan nama, cita-cita, atau kelas..."
+                placeholder={
+                  activeTab === 'edu_corner'
+                    ? "Cari berdasarkan nama, cita-cita, atau kelas..."
+                    : "Cari berdasarkan cita-cita atau penjelasan..."
+                }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 outline-none text-[#2D2D2D] placeholder-gray-400"
@@ -297,20 +489,57 @@ export default function CekHasilPage() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="mb-6">
+          <div className="bg-white rounded-xl shadow-md p-2 flex gap-2">
+            <button
+              onClick={() => setActiveTab('edu_corner')}
+              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all ${
+                activeTab === 'edu_corner'
+                  ? 'bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white shadow-lg'
+                  : 'text-[#4A4A4A] hover:bg-gray-100'
+              }`}
+            >
+              Data Siswa ({history.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('career_explanations')}
+              className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all ${
+                activeTab === 'career_explanations'
+                  ? 'bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white shadow-lg'
+                  : 'text-[#4A4A4A] hover:bg-gray-100'
+              }`}
+            >
+              Penjelasan Pekerjaan ({careerExplanations.length})
+            </button>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="text-sm text-[#666666] mb-1">Total Data</div>
-            <div className="text-3xl font-bold text-[#2D2D2D]">{history.length}</div>
+            <div className="text-sm text-[#666666] mb-1">
+              {activeTab === 'edu_corner' ? 'Total Data Siswa' : 'Total Penjelasan'}
+            </div>
+            <div className="text-3xl font-bold text-[#2D2D2D]">
+              {activeTab === 'edu_corner' ? history.length : careerExplanations.length}
+            </div>
           </div>
           <div className="bg-white rounded-xl shadow-md p-6">
             <div className="text-sm text-[#666666] mb-1">Hasil Filter</div>
-            <div className="text-3xl font-bold text-[#2D2D2D]">{filteredHistory.length}</div>
+            <div className="text-3xl font-bold text-[#2D2D2D]">
+              {activeTab === 'edu_corner' ? sortedHistory.length : sortedCareerExplanations.length}
+            </div>
           </div>
           <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="text-sm text-[#666666] mb-1">Cita-Cita Unik</div>
+            <div className="text-sm text-[#666666] mb-1">
+              {activeTab === 'edu_corner' ? 'Cita-Cita Unik' : 'Total Database'}
+            </div>
             <div className="text-3xl font-bold text-[#2D2D2D]">
-              {new Set(history.map((item) => item.cita_cita)).size}
+              {activeTab === 'edu_corner' 
+                ? new Set(history.map((item) => item.cita_cita)).size
+                : history.length + careerExplanations.length
+              }
             </div>
           </div>
         </div>
@@ -342,7 +571,7 @@ export default function CekHasilPage() {
             <p className="text-red-500 mb-6 text-sm">{error}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={fetchHistory}
+                onClick={fetchAllData}
                 className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105"
               >
                 Coba Lagi
@@ -355,7 +584,7 @@ export default function CekHasilPage() {
               </Link>
             </div>
           </div>
-        ) : filteredHistory.length === 0 ? (
+        ) : (activeTab === 'edu_corner' && filteredHistory.length === 0) || (activeTab === 'career_explanations' && filteredCareerExplanations.length === 0) ? (
           <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
             <div className="w-24 h-24 bg-[#FFB6C1] rounded-full flex items-center justify-center mx-auto mb-6">
               <svg
@@ -378,7 +607,9 @@ export default function CekHasilPage() {
             <p className="text-[#4A4A4A] mb-6">
               {searchTerm
                 ? "Coba gunakan kata kunci lain untuk mencari"
-                : "Belum ada hasil tes cita-cita yang tersimpan"}
+                : activeTab === 'edu_corner'
+                ? "Belum ada hasil tes cita-cita yang tersimpan"
+                : "Belum ada penjelasan pekerjaan yang tersimpan"}
             </p>
             {searchTerm && (
               <button
@@ -389,23 +620,48 @@ export default function CekHasilPage() {
               </button>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'edu_corner' ? (
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             {/* Table Header */}
             <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] px-6 py-4">
               <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm">
-                <div className="col-span-1">ID</div>
-                <div className="col-span-2">Nama</div>
-                <div className="col-span-1">Kelas</div>
-                <div className="col-span-3">Cita-Cita</div>
-                <div className="col-span-2">Tanggal</div>
+                <button
+                  onClick={() => handleSort('id')}
+                  className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  ID{renderSortIcon('id')}
+                </button>
+                <button
+                  onClick={() => handleSort('nama')}
+                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Nama{renderSortIcon('nama')}
+                </button>
+                <button
+                  onClick={() => handleSort('kelas')}
+                  className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Kelas{renderSortIcon('kelas')}
+                </button>
+                <button
+                  onClick={() => handleSort('cita_cita')}
+                  className="col-span-3 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Cita-Cita{renderSortIcon('cita_cita')}
+                </button>
+                <button
+                  onClick={() => handleSort('created_at')}
+                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Tanggal{renderSortIcon('created_at')}
+                </button>
                 <div className="col-span-3 text-center">Aksi</div>
               </div>
             </div>
 
             {/* Table Body */}
             <div className="divide-y divide-gray-200">
-              {filteredHistory.map((item, index) => (
+              {sortedHistory.map((item, index) => (
                 <div
                   key={item.id}
                   className="px-6 py-4 hover:bg-gray-50 transition-colors animate-fade-in"
@@ -529,13 +785,100 @@ export default function CekHasilPage() {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            {/* Table Header */}
+            <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] px-6 py-4">
+              <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm">
+                <button
+                  onClick={() => handleSort('id')}
+                  className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  ID{renderSortIcon('id')}
+                </button>
+                <button
+                  onClick={() => handleSort('cita_cita')}
+                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Cita-Cita{renderSortIcon('cita_cita')}
+                </button>
+                <button
+                  onClick={() => handleSort('explanation')}
+                  className="col-span-6 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Penjelasan{renderSortIcon('explanation')}
+                </button>
+                <button
+                  onClick={() => handleSort('updated_at')}
+                  className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
+                >
+                  Diperbarui{renderSortIcon('updated_at')}
+                </button>
+                <div className="col-span-1 text-center">Aksi</div>
+              </div>
+            </div>
+
+            {/* Table Body */}
+            <div className="divide-y divide-gray-200">
+              {sortedCareerExplanations.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="px-6 py-4 hover:bg-gray-50 transition-colors animate-fade-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <div className="grid grid-cols-12 gap-4 items-start">
+                    <div className="col-span-1 text-sm font-medium text-[#666666]">
+                      {item.id}
+                    </div>
+                    <div className="col-span-2 text-sm font-semibold text-[#FF4D6D]">
+                      {item.cita_cita}
+                    </div>
+                    <div className="col-span-6 text-sm text-[#4A4A4A] line-clamp-3">
+                      {item.explanation}
+                    </div>
+                    <div className="col-span-2 text-xs text-[#666666]">
+                      {formatDate(item.updated_at)}
+                    </div>
+                    <div className="col-span-1 flex justify-center">
+                      <button
+                        onClick={() => {
+                          if (confirm(`Apakah Anda yakin ingin menghapus penjelasan untuk "${item.cita_cita}"?`)) {
+                            // TODO: Implement delete for career explanations
+                            alert('Fitur hapus penjelasan pekerjaan akan segera tersedia');
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-lg"
+                        title="Hapus penjelasan"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Refresh Button */}
         {!loading && !error && (
           <div className="mt-6 text-center">
             <button
-              onClick={fetchHistory}
+              onClick={fetchAllData}
               className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-8 py-3 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               Refresh Data

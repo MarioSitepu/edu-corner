@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
               Admin Login
             </h1>
             <p className="text-[#666666]">
-              Masuk ke dashboard admin
+              EduCorner: SahabatMimpi
             </p>
           </div>
 
@@ -126,9 +126,17 @@ export default function AdminLoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-[#2D2D2D] mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-[#2D2D2D]">
+                  Password
+                </label>
+                <a
+                  href="/cekhasil/login/forgot-password"
+                  className="text-sm text-[#FF4D6D] hover:text-[#E91E63] transition-colors font-medium"
+                >
+                  Lupa Password?
+                </a>
+              </div>
               <input
                 type="password"
                 id="password"

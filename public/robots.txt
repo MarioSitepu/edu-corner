@@ -1,0 +1,22 @@
+# robots.txt untuk EduCorner: SahabatMimpi
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /cekhasil/
+Disallow: /cekhasil/login/
+Disallow: /cekhasil/login/forgot-password
+Disallow: /cekhasil/login/reset-password
+
+# Sitemap
+Sitemap: https://sahabatmimpi.my.id/sitemap.xml
+
+# Crawl-delay untuk bot tertentu
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: DotBot
+Crawl-delay: 10

@@ -114,7 +114,7 @@ export async function generatePDFFromData(data: {
     pdf.setFontSize(8);
     pdf.setTextColor(150, 150, 150);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('© 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.', pageWidth / 2, footerY, { align: 'center' });
+    pdf.text('© 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.', pageWidth / 2, footerY, { align: 'center' });
     
     const date = new Date().toLocaleDateString('id-ID', {
       year: 'numeric',
@@ -132,11 +132,11 @@ export async function generatePDFFromData(data: {
   pdf.setFontSize(18);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(255, 255, 255);
-  pdf.text('KKN T Margo Lestari', margin, 28);
+  pdf.text('EduCorner: SahabatMimpi', margin, 28);
   
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'normal');
-  pdf.text('Dashboard Cita-Cita Siswa', margin, 35);
+  pdf.text('KKN T Margo Lestari', margin, 35);
 
   let yPos = 65;
 

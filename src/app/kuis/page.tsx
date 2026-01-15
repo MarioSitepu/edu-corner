@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import StructuredData from "@/components/StructuredData";
 
 interface QuizResult {
   nama: string;
@@ -591,7 +592,7 @@ export default function KuisPage() {
         pdf.setFontSize(8);
         pdf.setTextColor(150, 150, 150);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('© 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.', pageWidth / 2, footerY, { align: 'center' });
+        pdf.text('© 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.', pageWidth / 2, footerY, { align: 'center' });
         
         const date = new Date().toLocaleDateString('id-ID', {
           year: 'numeric',
@@ -612,11 +613,11 @@ export default function KuisPage() {
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(255, 255, 255);
-      pdf.text('KKN T Margo Lestari', margin, 28);
+      pdf.text('EduCorner: SahabatMimpi', margin, 28);
       
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Dashboard Cita-Cita Siswa', margin, 35);
+      pdf.text('KKN T Margo Lestari', margin, 35);
 
       let yPos = 65;
 
@@ -804,8 +805,26 @@ export default function KuisPage() {
       return "Berbagai Bidang";
     };
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://sahabatmimpi.my.id';
+    
+    const quizStructuredData = {
+      "@context": "https://schema.org",
+      "@type": "Quiz",
+      "name": "Kuis Cita-Cita - Temukan Profesi Impianmu",
+      "description": "Ikuti kuis interaktif untuk menemukan profesi yang cocok dengan kepribadian dan minatmu",
+      "url": `${baseUrl}/kuis`,
+      "educationalUse": "assessment",
+      "learningResourceType": "Quiz",
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student"
+      }
+    };
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFE8EC] via-[#FFF5F7] to-[#FFE8EC] flex flex-col relative overflow-hidden">
+      <>
+        <StructuredData data={quizStructuredData} />
+        <div className="min-h-screen bg-gradient-to-br from-[#FFE8EC] via-[#FFF5F7] to-[#FFE8EC] flex flex-col relative overflow-hidden">
         {/* Decorative Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-10 left-10 w-64 h-64 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
@@ -832,7 +851,7 @@ export default function KuisPage() {
               className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              KKN T Margo Lestari
+              EduCorner: SahabatMimpi
             </h1>
           </div>
         </header>
@@ -1039,7 +1058,7 @@ export default function KuisPage() {
             className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            © 2024 KKN T Margo Lestari. Dashboard Cita-Cita Siswa.
+            © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
           </p>
         </footer>
       </div>
@@ -1081,7 +1100,7 @@ export default function KuisPage() {
               className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              KKN T Margo Lestari
+              EduCorner: SahabatMimpi
             </h1>
           </div>
         </header>
@@ -1266,7 +1285,7 @@ export default function KuisPage() {
             className="text-sm sm:text-base md:text-lg text-[#666666] font-medium" 
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            © 2024 KKN T Margo Lestari.
+            © 2024 EduCorner: SahabatMimpi. KKN T Margo Lestari.
           </p>
         </footer>
       </div>
@@ -1426,9 +1445,10 @@ export default function KuisPage() {
           className="text-xs sm:text-sm text-[#999999] font-medium" 
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          © 2024 DASHBOARD CITA-CITA SISWA • TIM KKN T MARGO LESTARI
+          © 2024 EduCorner: SahabatMimpi • TIM KKN T MARGO LESTARI
         </p>
       </footer>
-    </div>
-  );
-}
+      </div>
+      </>
+    );
+  }

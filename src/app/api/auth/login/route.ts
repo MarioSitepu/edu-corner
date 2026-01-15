@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
+import sql from '@/lib/db';
 
 // Admin credentials (untuk production, simpan di environment variables)
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -21,8 +22,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Cek apakah password ada di database (jika sudah direset)
+    let validPassword = ADMIN_PASSWORD;
+    try {
+      const dbResult = await sql`
+        SELECT password_hash
+        FROM admin_credentials
+        WHERE username = ${username}
+        LIMIT 1
+      `;
+      
+      if (dbResult.length > 0) {
+        validPassword = dbResult[0].password_hash;
+      }
+    } catch (dbError: any) {
+      // Jika tabel belum ada atau error, gunakan password dari env
+      console.log('Using default password from environment');
+    }
+
     // Cek credentials
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    if (username === ADMIN_USERNAME && password === validPassword) {
       // Buat JWT token
       const token = await new SignJWT({ username, role: 'admin' })
         .setProtectedHeader({ alg: 'HS256' })

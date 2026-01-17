@@ -398,7 +398,7 @@ export default function Home() {
               className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              EduCorner - Platform Cita-Cita Terbaik
+              EduCorner: SahabatMimpi
             </h1>
             <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
@@ -424,7 +424,7 @@ export default function Home() {
               style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.36em' }}
             >
               <span className="w-2 h-2 bg-[#A7D129] rounded-full animate-pulse"></span>
-              EduCorner - Platform Cita-Cita Terbaik
+              EduCorner: SahabatMimpi
             </span>
           </div>
         </div>
@@ -441,8 +441,7 @@ export default function Home() {
               textShadow: '0px 2px 10px rgba(0, 0, 0, 0.05)'
             }}
           >
-            <span className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent">EduCorner</span>{" "}
-            - Di mana{" "}
+            Di mana{" "}
             <span className="relative inline-block">
               <span className="relative z-10">mimpi</span>
               <span className="absolute bottom-2 left-0 right-0 h-3 sm:h-4 md:h-5 bg-gradient-to-r from-[#FFB6C1] via-[#FFC0CB] to-[#FFB6C1] opacity-70 -z-10 rounded-sm transform rotate-[-1deg]"></span>
@@ -456,7 +455,7 @@ export default function Home() {
               lineHeight: '1.53em'
             }}
           >
-            <strong>EduCorner</strong> adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka. Yuk, mulai perjalananmu dengan <strong>EduCorner</strong> - mengenali diri, menumbuhkan semangat, dan melangkah meraih mimpi dengan cara yang seru.
+            Yuk, mulai perjalananmu dengan mengenali diri, menumbuhkan semangat, dan melangkah meraih mimpi dengan cara yang seru.
           </p>
         </div>
 

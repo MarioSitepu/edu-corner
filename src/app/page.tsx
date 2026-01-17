@@ -18,6 +18,8 @@ export default function Home() {
     "description": "EduCorner adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka. EduCorner menyediakan kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap.",
     "inLanguage": "id-ID",
     "keywords": "edu corner, educorner, edu corner indonesia, edu corner platform, edu corner cita-cita",
+    "datePublished": "2024-01-01",
+    "dateModified": new Date().toISOString().split('T')[0],
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -41,7 +43,8 @@ export default function Home() {
       "height": 512
     },
     "image": `${baseUrl}/logo.webp`,
-    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap",
+    "description": "EduCorner adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap",
+    "foundingDate": "2024",
     "foundingOrganization": {
       "@type": "Organization",
       "name": "KKN T Margo Lestari"
@@ -53,7 +56,7 @@ export default function Home() {
       "@type": "ContactPoint",
       "contactType": "Customer Service",
       "email": "educorner.my.id@gmail.com",
-      "availableLanguage": ["Indonesian"]
+      "availableLanguage": ["Indonesian", "id-ID"]
     },
     "areaServed": {
       "@type": "Country",
@@ -70,7 +73,7 @@ export default function Home() {
   const educationalToolStructuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "EduCorner: SahabatMimpi",
+    "name": "EduCorner",
     "applicationCategory": "EducationalApplication",
     "applicationSubCategory": "Career Guidance Application",
     "operatingSystem": "Web Browser",
@@ -85,7 +88,7 @@ export default function Home() {
       "priceValidUntil": "2025-12-31",
       "url": baseUrl
     },
-    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis dan dashboard cita-cita. Gratis dan mudah digunakan untuk siswa SD, SMP, dan SMA di Indonesia.",
+    "description": "EduCorner adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis dan dashboard cita-cita. EduCorner gratis dan mudah digunakan untuk siswa SD, SMP, dan SMA di Indonesia.",
     "inLanguage": "id-ID",
     "audience": {
       "@type": "EducationalAudience",
@@ -132,42 +135,58 @@ export default function Home() {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Apa itu EduCorner: SahabatMimpi?",
+        "name": "Apa itu EduCorner?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "EduCorner: SahabatMimpi adalah platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap. Platform ini dibuat oleh KKN T Margo Lestari untuk membantu siswa SD, SMP, dan SMA di Indonesia."
+          "text": "EduCorner adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap. EduCorner dibuat oleh KKN T Margo Lestari untuk membantu siswa SD, SMP, dan SMA di Indonesia. EduCorner dapat diakses di edu corner.my.id secara gratis."
         }
       },
       {
         "@type": "Question",
-        "name": "Bagaimana cara menggunakan kuis cita-cita?",
+        "name": "Apa itu edu corner?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Untuk menggunakan kuis cita-cita, kunjungi halaman Kuis, masukkan nama dan kelas Anda, lalu jawab pertanyaan-pertanyaan yang diberikan. Setelah selesai, Anda akan mendapatkan rekomendasi profesi yang sesuai dengan kepribadian dan minat Anda."
+          "text": "Edu corner adalah platform interaktif untuk membantu siswa menemukan cita-cita mereka. Edu corner menyediakan kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap. Edu corner dapat diakses di edu corner.my.id secara gratis."
         }
       },
       {
         "@type": "Question",
-        "name": "Apakah platform ini gratis?",
+        "name": "Bagaimana cara menggunakan EduCorner?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Ya, EduCorner: SahabatMimpi sepenuhnya gratis untuk digunakan oleh semua siswa di Indonesia. Tidak ada biaya tersembunyi atau langganan berbayar."
+          "text": "Untuk menggunakan EduCorner, kunjungi edu corner.my.id, lalu pilih menu Kuis. Masukkan nama dan kelas Anda, lalu jawab pertanyaan-pertanyaan yang diberikan oleh EduCorner. Setelah selesai, EduCorner akan memberikan rekomendasi profesi yang sesuai dengan kepribadian dan minat Anda."
         }
       },
       {
         "@type": "Question",
-        "name": "Untuk siapa platform ini ditujukan?",
+        "name": "Apakah EduCorner gratis?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Platform ini ditujukan untuk siswa SD, SMP, dan SMA di Indonesia yang ingin menemukan dan mengembangkan cita-cita mereka. Platform ini juga dapat digunakan oleh guru, orang tua, dan konselor untuk membantu siswa dalam proses pengembangan karir."
+          "text": "Ya, EduCorner sepenuhnya gratis untuk digunakan oleh semua siswa di Indonesia. Tidak ada biaya tersembunyi atau langganan berbayar di EduCorner. EduCorner dapat diakses di edu corner.my.id tanpa biaya apapun."
         }
       },
       {
         "@type": "Question",
-        "name": "Bagaimana cara melihat riwayat hasil tes?",
+        "name": "Untuk siapa EduCorner ditujukan?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Anda dapat melihat riwayat hasil tes dengan mengunjungi halaman History. Di sana Anda akan menemukan semua hasil kuis yang telah Anda ikuti sebelumnya beserta penjelasan profesi yang telah Anda lihat."
+          "text": "EduCorner ditujukan untuk siswa SD, SMP, dan SMA di Indonesia yang ingin menemukan dan mengembangkan cita-cita mereka. EduCorner juga dapat digunakan oleh guru, orang tua, dan konselor untuk membantu siswa dalam proses pengembangan karir melalui platform EduCorner."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bagaimana cara melihat riwayat hasil tes di EduCorner?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Anda dapat melihat riwayat hasil tes dengan mengunjungi halaman History di EduCorner. Di sana Anda akan menemukan semua hasil kuis yang telah Anda ikuti sebelumnya di EduCorner beserta penjelasan profesi yang telah Anda lihat."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Dimana saya bisa mengakses EduCorner?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Anda dapat mengakses EduCorner di edu corner.my.id. EduCorner tersedia secara online dan dapat diakses dari mana saja menggunakan browser web. EduCorner juga dapat diakses melalui perangkat mobile dan desktop."
         }
       }
     ]
@@ -176,7 +195,7 @@ export default function Home() {
   const howToStructuredData = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    "name": "Cara Menggunakan Kuis Cita-Cita di EduCorner: SahabatMimpi",
+    "name": "Cara Menggunakan EduCorner - Platform Kuis Cita-Cita",
     "description": "Panduan langkah demi langkah untuk menggunakan kuis cita-cita dan menemukan profesi yang sesuai dengan Anda",
     "image": `${baseUrl}/logo.webp`,
     "totalTime": "PT10M",
@@ -287,8 +306,8 @@ export default function Home() {
   const itemListStructuredData = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "Fitur-Fitur EduCorner: SahabatMimpi",
-    "description": "Daftar fitur utama yang tersedia di platform EduCorner: SahabatMimpi",
+    "name": "Fitur-Fitur EduCorner",
+    "description": "Daftar fitur utama yang tersedia di platform EduCorner - edu corner.my.id",
     "itemListElement": [
       {
         "@type": "ListItem",

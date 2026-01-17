@@ -854,7 +854,8 @@ export default function KuisPage() {
       },
       "provider": {
         "@type": "Organization",
-        "name": "EduCorner: SahabatMimpi",
+        "name": "EduCorner",
+        "alternateName": "edu corner",
         "url": baseUrl
       },
       "aggregateRating": {

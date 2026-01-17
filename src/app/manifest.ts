@@ -3,7 +3,6 @@ import { MetadataRoute } from 'next';
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
 
 export default function manifest(): MetadataRoute.Manifest {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
   
   return {
     name: 'EduCorner: SahabatMimpi - Platform Cita-Cita Siswa Indonesia',

@@ -31,8 +31,6 @@ Crawl-delay: 5
 # Allow Googlebot untuk semua halaman publik
 User-agent: Googlebot
 Allow: /
-Allow: /kuis
-Allow: /history
 Disallow: /api/
 Disallow: /cekhasil/
 

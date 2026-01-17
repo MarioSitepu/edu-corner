@@ -54,8 +54,8 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "KKN T Margo Lestari", url: baseUrl }],
   creator: "KKN T Margo Lestari",
-  publisher: "EduCorner: SahabatMimpi",
-  applicationName: "EduCorner: SahabatMimpi",
+  publisher: "EduCorner",
+  applicationName: "EduCorner",
   referrer: 'origin-when-cross-origin',
   formatDetection: {
     email: false,
@@ -171,7 +171,6 @@ export default function RootLayout({
           }}
         />
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-        <link rel="canonical" href={baseUrl} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href={baseUrl} />

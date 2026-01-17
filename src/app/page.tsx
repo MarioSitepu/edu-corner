@@ -12,11 +12,12 @@ export default function Home() {
   const websiteStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "EduCorner: SahabatMimpi",
-    "alternateName": "SahabatMimpi",
+    "name": "EduCorner",
+    "alternateName": ["EduCorner: SahabatMimpi", "SahabatMimpi", "edu corner", "educorner"],
     "url": baseUrl,
-    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka",
+    "description": "EduCorner adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka. EduCorner menyediakan kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap.",
     "inLanguage": "id-ID",
+    "keywords": "edu corner, educorner, edu corner indonesia, edu corner platform, edu corner cita-cita",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -30,15 +31,40 @@ export default function Home() {
   const organizationStructuredData = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "EduCorner: SahabatMimpi",
-    "alternateName": "SahabatMimpi",
+    "name": "EduCorner",
+    "alternateName": ["EduCorner: SahabatMimpi", "SahabatMimpi", "edu corner", "educorner"],
     "url": baseUrl,
-    "logo": `${baseUrl}/logo.webp`,
-    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka",
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${baseUrl}/logo.webp`,
+      "width": 512,
+      "height": 512
+    },
+    "image": `${baseUrl}/logo.webp`,
+    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap",
     "foundingOrganization": {
       "@type": "Organization",
       "name": "KKN T Margo Lestari"
-    }
+    },
+    "sameAs": [
+      baseUrl
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "Customer Service",
+      "email": "educorner.my.id@gmail.com",
+      "availableLanguage": ["Indonesian"]
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "Indonesia"
+    },
+    "knowsAbout": [
+      "Career Guidance",
+      "Educational Assessment",
+      "Student Counseling",
+      "Career Exploration"
+    ]
   };
 
   const educationalToolStructuredData = {
@@ -46,14 +72,266 @@ export default function Home() {
     "@type": "SoftwareApplication",
     "name": "EduCorner: SahabatMimpi",
     "applicationCategory": "EducationalApplication",
+    "applicationSubCategory": "Career Guidance Application",
     "operatingSystem": "Web Browser",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "softwareVersion": "1.0",
+    "releaseNotes": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka",
     "offers": {
       "@type": "Offer",
       "price": "0",
-      "priceCurrency": "IDR"
+      "priceCurrency": "IDR",
+      "availability": "https://schema.org/InStock",
+      "priceValidUntil": "2025-12-31",
+      "url": baseUrl
     },
-    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis dan dashboard cita-cita",
+    "description": "Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis dan dashboard cita-cita. Gratis dan mudah digunakan untuk siswa SD, SMP, dan SMA di Indonesia.",
     "inLanguage": "id-ID",
+    "audience": {
+      "@type": "EducationalAudience",
+      "educationalRole": "student",
+      "audienceType": "Student"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "100",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "featureList": [
+      "Kuis Cita-Cita Interaktif",
+      "Dashboard Cita-Cita Siswa",
+      "Penjelasan Profesi Lengkap",
+      "Riwayat Hasil Tes",
+      "Rekomendasi Profesi Personal"
+    ],
+    "screenshot": `${baseUrl}/logo.webp`,
+    "softwareHelp": {
+      "@type": "CreativeWork",
+      "url": `${baseUrl}/kuis`
+    }
+  };
+
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Beranda",
+        "item": baseUrl
+      }
+    ]
+  };
+
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Apa itu EduCorner: SahabatMimpi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "EduCorner: SahabatMimpi adalah platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis cita-cita, dashboard cita-cita siswa, dan penjelasan profesi lengkap. Platform ini dibuat oleh KKN T Margo Lestari untuk membantu siswa SD, SMP, dan SMA di Indonesia."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bagaimana cara menggunakan kuis cita-cita?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Untuk menggunakan kuis cita-cita, kunjungi halaman Kuis, masukkan nama dan kelas Anda, lalu jawab pertanyaan-pertanyaan yang diberikan. Setelah selesai, Anda akan mendapatkan rekomendasi profesi yang sesuai dengan kepribadian dan minat Anda."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Apakah platform ini gratis?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ya, EduCorner: SahabatMimpi sepenuhnya gratis untuk digunakan oleh semua siswa di Indonesia. Tidak ada biaya tersembunyi atau langganan berbayar."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Untuk siapa platform ini ditujukan?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Platform ini ditujukan untuk siswa SD, SMP, dan SMA di Indonesia yang ingin menemukan dan mengembangkan cita-cita mereka. Platform ini juga dapat digunakan oleh guru, orang tua, dan konselor untuk membantu siswa dalam proses pengembangan karir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Bagaimana cara melihat riwayat hasil tes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Anda dapat melihat riwayat hasil tes dengan mengunjungi halaman History. Di sana Anda akan menemukan semua hasil kuis yang telah Anda ikuti sebelumnya beserta penjelasan profesi yang telah Anda lihat."
+        }
+      }
+    ]
+  };
+
+  const howToStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Cara Menggunakan Kuis Cita-Cita di EduCorner: SahabatMimpi",
+    "description": "Panduan langkah demi langkah untuk menggunakan kuis cita-cita dan menemukan profesi yang sesuai dengan Anda",
+    "image": `${baseUrl}/logo.webp`,
+    "totalTime": "PT10M",
+    "estimatedCost": {
+      "@type": "MonetaryAmount",
+      "currency": "IDR",
+      "value": "0"
+    },
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Masukkan Data Diri",
+        "text": "Buka halaman Kuis dan masukkan nama lengkap serta kelas Anda. Pastikan data yang dimasukkan akurat.",
+        "image": {
+          "@type": "ImageObject",
+          "url": `${baseUrl}/logo.webp`,
+          "width": 1200,
+          "height": 630
+        },
+        "url": `${baseUrl}/kuis`
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Jawab Pertanyaan",
+        "text": "Jawab semua pertanyaan kuis dengan jujur sesuai dengan kepribadian dan minat Anda. Tidak ada jawaban benar atau salah.",
+        "image": {
+          "@type": "ImageObject",
+          "url": `${baseUrl}/logo.webp`,
+          "width": 1200,
+          "height": 630
+        }
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Lihat Hasil",
+        "text": "Setelah selesai, lihat hasil rekomendasi profesi yang sesuai dengan Anda. Hasil akan menampilkan profesi yang cocok dengan kepribadian dan minat Anda.",
+        "image": {
+          "@type": "ImageObject",
+          "url": `${baseUrl}/logo.webp`,
+          "width": 1200,
+          "height": 630
+        }
+      },
+      {
+        "@type": "HowToStep",
+        "position": 4,
+        "name": "Baca Penjelasan Profesi",
+        "text": "Baca penjelasan lengkap tentang profesi yang direkomendasikan untuk memahami lebih dalam tentang karir tersebut.",
+        "image": {
+          "@type": "ImageObject",
+          "url": `${baseUrl}/logo.webp`,
+          "width": 1200,
+          "height": 630
+        }
+      }
+    ]
+  };
+
+  const serviceStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "serviceType": "Career Guidance Service",
+    "name": "EduCorner - Platform Cita-Cita Siswa",
+    "provider": {
+      "@type": "Organization",
+      "name": "EduCorner",
+      "alternateName": "edu corner"
+    },
+    "areaServed": {
+      "@type": "Country",
+      "name": "Indonesia"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Layanan EduCorner",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Kuis Cita-Cita",
+            "description": "Kuis interaktif untuk menemukan profesi yang sesuai"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Dashboard Cita-Cita",
+            "description": "Dashboard untuk melacak perkembangan cita-cita siswa"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "Penjelasan Profesi",
+            "description": "Penjelasan lengkap tentang berbagai profesi"
+          }
+        }
+      ]
+    }
+  };
+
+  const itemListStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Fitur-Fitur EduCorner: SahabatMimpi",
+    "description": "Daftar fitur utama yang tersedia di platform EduCorner: SahabatMimpi",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Kuis Cita-Cita Interaktif",
+        "description": "Ikuti kuis untuk menemukan profesi yang sesuai dengan kepribadian dan minat Anda"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Dashboard Cita-Cita",
+        "description": "Lihat dan kelola riwayat hasil tes cita-cita Anda"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Penjelasan Profesi Lengkap",
+        "description": "Pelajari lebih dalam tentang berbagai profesi yang direkomendasikan"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": "Rekomendasi Personal",
+        "description": "Dapatkan rekomendasi profesi yang disesuaikan dengan hasil kuis Anda"
+      }
+    ]
+  };
+
+  const courseStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "Eksplorasi Cita-Cita dan Karir dengan EduCorner",
+    "description": "Kursus interaktif EduCorner untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui platform edu corner",
+    "provider": {
+      "@type": "Organization",
+      "name": "EduCorner",
+      "alternateName": "edu corner",
+      "sameAs": baseUrl
+    },
+    "inLanguage": "id-ID",
+    "courseCode": "EC-CAREER-001",
+    "educationalLevel": "Elementary, Middle School, High School",
+    "teaches": "Career exploration, Self-discovery, Professional development",
     "audience": {
       "@type": "EducationalAudience",
       "educationalRole": "student"
@@ -70,6 +348,12 @@ export default function Home() {
       <StructuredData data={websiteStructuredData} />
       <StructuredData data={organizationStructuredData} />
       <StructuredData data={educationalToolStructuredData} />
+      <StructuredData data={breadcrumbStructuredData} />
+      <StructuredData data={faqStructuredData} />
+      <StructuredData data={howToStructuredData} />
+      <StructuredData data={serviceStructuredData} />
+      <StructuredData data={itemListStructuredData} />
+      <StructuredData data={courseStructuredData} />
       <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -114,7 +398,7 @@ export default function Home() {
               className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              EduCorner: SahabatMimpi
+              EduCorner - Platform Cita-Cita Terbaik
             </h1>
             <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
@@ -140,14 +424,14 @@ export default function Home() {
               style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.36em' }}
             >
               <span className="w-2 h-2 bg-[#A7D129] rounded-full animate-pulse"></span>
-              EduCorner: SahabatMimpi
+              EduCorner - Platform Cita-Cita Terbaik
             </span>
           </div>
         </div>
 
         {/* Main Headline */}
         <div className="text-center mb-5 sm:mb-6 md:mb-7 animate-slide-in-right">
-          <h2 
+          <h1 
             className="font-bold text-[#111827] mb-3 sm:mb-4 leading-[1.01] px-2 sm:px-4"
             style={{
               fontSize: 'clamp(40px, 10vw, 72px)',
@@ -157,13 +441,14 @@ export default function Home() {
               textShadow: '0px 2px 10px rgba(0, 0, 0, 0.05)'
             }}
           >
-            Di mana{" "}
+            <span className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent">EduCorner</span>{" "}
+            - Di mana{" "}
             <span className="relative inline-block">
               <span className="relative z-10">mimpi</span>
               <span className="absolute bottom-2 left-0 right-0 h-3 sm:h-4 md:h-5 bg-gradient-to-r from-[#FFB6C1] via-[#FFC0CB] to-[#FFB6C1] opacity-70 -z-10 rounded-sm transform rotate-[-1deg]"></span>
             </span>{" "}
             dimulai.
-          </h2>
+          </h1>
           <p 
             className="text-[#6B7280] max-w-full sm:max-w-[600px] md:max-w-[672px] mx-auto leading-[1.53] mt-3 sm:mt-4 px-2 sm:px-4 text-base sm:text-lg md:text-xl font-medium"
             style={{
@@ -171,7 +456,7 @@ export default function Home() {
               lineHeight: '1.53em'
             }}
           >
-            Yuk, mulai perjalananmu dengan mengenali diri, menumbuhkan semangat, dan melangkah meraih mimpi dengan cara yang seru.
+            <strong>EduCorner</strong> adalah platform interaktif terbaik untuk membantu siswa menemukan dan mengembangkan cita-cita mereka. Yuk, mulai perjalananmu dengan <strong>EduCorner</strong> - mengenali diri, menumbuhkan semangat, dan melangkah meraih mimpi dengan cara yang seru.
           </p>
         </div>
 

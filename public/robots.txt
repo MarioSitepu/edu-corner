@@ -1,12 +1,16 @@
 # robots.txt untuk EduCorner: SahabatMimpi
+# https://educorner.my.id
 
 User-agent: *
 Allow: /
+Allow: /kuis
+Allow: /history
 Disallow: /api/
 Disallow: /cekhasil/
 Disallow: /cekhasil/login/
 Disallow: /cekhasil/login/forgot-password
 Disallow: /cekhasil/login/reset-password
+Disallow: /cekhasil/profile
 
 # Sitemap
 Sitemap: https://educorner.my.id/sitemap.xml
@@ -20,3 +24,19 @@ Crawl-delay: 10
 
 User-agent: DotBot
 Crawl-delay: 10
+
+User-agent: Bingbot
+Crawl-delay: 5
+
+# Allow Googlebot untuk semua halaman publik
+User-agent: Googlebot
+Allow: /
+Allow: /kuis
+Allow: /history
+Disallow: /api/
+Disallow: /cekhasil/
+
+# Allow Googlebot-Image untuk gambar
+User-agent: Googlebot-Image
+Allow: /logo.webp
+Allow: /logo.svg

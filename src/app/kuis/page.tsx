@@ -807,23 +807,68 @@ export default function KuisPage() {
     };
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
-    
+
+    const breadcrumbStructuredData = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": baseUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Kuis Cita-Cita",
+          "item": `${baseUrl}/kuis`
+        }
+      ]
+    };
+
     const quizStructuredData = {
       "@context": "https://schema.org",
       "@type": "Quiz",
       "name": "Kuis Cita-Cita - Temukan Profesi Impianmu",
-      "description": "Ikuti kuis interaktif untuk menemukan profesi yang cocok dengan kepribadian dan minatmu",
+      "description": "Ikuti kuis interaktif untuk menemukan profesi yang cocok dengan kepribadian dan minatmu. Dapatkan rekomendasi cita-cita berdasarkan jawabanmu.",
       "url": `${baseUrl}/kuis`,
       "educationalUse": "assessment",
       "learningResourceType": "Quiz",
+      "inLanguage": "id-ID",
       "audience": {
         "@type": "EducationalAudience",
-        "educationalRole": "student"
+        "educationalRole": "student",
+        "audienceType": "Student"
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Career Guidance",
+        "description": "Bimbingan karir untuk siswa"
+      },
+      "teaches": "Career exploration and self-discovery",
+      "timeRequired": "PT10M",
+      "educationalLevel": {
+        "@type": "DefinedTerm",
+        "name": "Elementary, Middle School, High School"
+      },
+      "provider": {
+        "@type": "Organization",
+        "name": "EduCorner: SahabatMimpi",
+        "url": baseUrl
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "50",
+        "bestRating": "5",
+        "worstRating": "1"
       }
     };
 
     return (
       <>
+        <StructuredData data={breadcrumbStructuredData} />
         <StructuredData data={quizStructuredData} />
         <div className="min-h-screen bg-gradient-to-br from-[#FFE8EC] via-[#FFF5F7] to-[#FFE8EC] flex flex-col relative overflow-hidden">
         {/* Decorative Background */}

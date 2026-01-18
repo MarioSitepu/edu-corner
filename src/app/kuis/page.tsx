@@ -19,7 +19,11 @@ export default function KuisPage() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
-  const [score, setScore] = useState(0);
+  const [scores, setScores] = useState<{ [key: string]: number }>({
+    E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0
+  });
+  const [mbtiCode, setMbtiCode] = useState<string>("");
+  const [topCareers, setTopCareers] = useState<any[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [savedResult, setSavedResult] = useState<QuizResult | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -105,92 +109,335 @@ export default function KuisPage() {
     }
   }, [currentQuestion, showQuiz]);
 
-  // Data pertanyaan kuis tentang cita-cita (2 pilihan dengan gambar real)
+  // Database 32 Soal MBTI (dari Python)
   const questions = [
+    // === E vs I (8 soal) ===
     {
-      question: "Apa yang paling kamu sukai saat bermain?",
+      question: "Saat jam istirahat di sekolah, kamu biasanya...",
       options: [
-        {
-          text: "Membantu teman yang sakit",
-          image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
-          emoji: "🏥",
-          citaCita: "Dokter"
-        },
-        {
-          text: "Menggambar dan mewarnai",
-          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
-          emoji: "🎨",
-          citaCita: "Seniman"
-        },
+        { text: "Main rame-rame sama banyak teman", emoji: "🏃", traits: { E: 1 } },
+        { text: "Main sama satu atau dua teman dekat saja", emoji: "👫", traits: { I: 1 } }
       ],
     },
     {
-      question: "Kegiatan apa yang paling menyenangkan bagimu?",
+      question: "Kalau hari ulang tahunmu, kamu lebih suka...",
       options: [
-        {
-          text: "Mengajar teman-teman",
-          image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=300&fit=crop",
-          emoji: "👨‍🏫",
-          citaCita: "Guru"
-        },
-        {
-          text: "Membuat sesuatu dengan tangan",
-          image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
-          emoji: "✂️",
-          citaCita: "Perancang"
-        },
+        { text: "Ngundang banyak teman buat kumpul", emoji: "🎉", traits: { E: 1 } },
+        { text: "Rayain sederhana sama keluarga", emoji: "🎂", traits: { I: 1 } }
       ],
     },
     {
-      question: "Apa yang ingin kamu lakukan saat besar nanti?",
+      question: "Setelah pulang sekolah, kamu biasanya...",
       options: [
-        {
-          text: "Menyembuhkan orang yang sakit",
-          image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop",
-          emoji: "💊",
-          citaCita: "Dokter"
-        },
-        {
-          text: "Membuat karya seni yang indah",
-          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
-          emoji: "🖼️",
-          citaCita: "Seniman"
-        },
+        { text: "Main dulu sama teman di sekitar rumah", emoji: "⚽", traits: { E: 1 } },
+        { text: "Langsung istirahat atau main sendiri di rumah", emoji: "🏠", traits: { I: 1 } }
       ],
     },
     {
-      question: "Mata pelajaran apa yang paling kamu sukai?",
+      question: "Kalau ada tugas kelompok dari guru, kamu lebih suka...",
       options: [
-        {
-          text: "IPA (Ilmu Pengetahuan Alam)",
-          image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=300&fit=crop",
-          emoji: "🔬",
-          citaCita: "Ilmuwan"
-        },
-        {
-          text: "Seni dan Keterampilan",
-          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
-          emoji: "🖌️",
-          citaCita: "Seniman"
-        },
+        { text: "Diskusi bareng-bareng sama teman", emoji: "👥", traits: { E: 1 } },
+        { text: "Ngerjain pelan-pelan sendiri", emoji: "✏️", traits: { I: 1 } }
       ],
     },
     {
-      question: "Apa yang membuatmu merasa bangga?",
+      question: "Kalau ada acara di sekolah (lomba, pentas, atau upacara besar)...",
       options: [
-        {
-          text: "Membantu orang lain",
-          image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
-          emoji: "🤝",
-          citaCita: "Dokter"
-        },
-        {
-          text: "Membuat sesuatu yang kreatif",
-          image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
-          emoji: "✨",
-          citaCita: "Seniman"
-        },
+        { text: "Aku senang ikut kumpul dan ngobrol", emoji: "🗣️", traits: { E: 1 } },
+        { text: "Aku lebih nyaman bareng teman dekat saja", emoji: "🙂", traits: { I: 1 } }
       ],
+    },
+    {
+      question: "Saat main bareng teman, kamu biasanya...",
+      options: [
+        { text: "Banyak cerita dan bercanda", emoji: "😆", traits: { E: 1 } },
+        { text: "Lebih sering dengerin dan sedikit bicara", emoji: "🤫", traits: { I: 1 } }
+      ],
+    },
+    {
+      question: "Kalau ada lomba 17-an di desa, kamu...",
+      options: [
+        { text: "Ikut ramai-ramai dan kenalan sama banyak teman", emoji: "🎈", traits: { E: 1 } },
+        { text: "Ikut lomba bareng teman yang sudah dekat", emoji: "🪁", traits: { I: 1 } }
+      ],
+    },
+    {
+      question: "Setelah main lama dengan banyak teman, kamu merasa...",
+      options: [
+        { text: "Senang dan makin semangat", emoji: "⚡", traits: { E: 1 } },
+        { text: "Capek dan ingin sendirian dulu", emoji: "😌", traits: { I: 1 } }
+      ],
+    },
+    // === S vs N (8 soal) ===
+    {
+      question: "Kalau guru jelasin pelajaran, kamu lebih cepat paham kalau...",
+      options: [
+        { text: "Ada contoh yang bisa dilihat langsung", emoji: "👀", traits: { S: 1 } },
+        { text: "Diceritain dulu maksud dari pelajarannya", emoji: "🌈", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Kalau dengar cerita, kamu lebih suka cerita tentang...",
+      options: [
+        { text: "Kehidupan nyata sehari-hari", emoji: "🏠", traits: { S: 1 } },
+        { text: "Cerita khayalan atau dongeng", emoji: "🐉", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Kalau main balok atau lego, kamu biasanya...",
+      options: [
+        { text: "Menyusun pelan-pelan sesuai contoh", emoji: "📋", traits: { S: 1 } },
+        { text: "Bikin bentuk sesuai ide sendiri", emoji: "✨", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Pelajaran yang paling kamu nikmati biasanya...",
+      options: [
+        { text: "Yang ada praktiknya", emoji: "🔧", traits: { S: 1 } },
+        { text: "Yang bisa pakai imajinasi", emoji: "💭", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Kalau diminta menggambar, kamu lebih sering menggambar...",
+      options: [
+        { text: "Hal-hal yang sering kamu lihat", emoji: "🌾", traits: { S: 1 } },
+        { text: "Hal-hal dari bayangan di kepala", emoji: "🌟", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Saat mendengar cerita yang panjang, kamu biasanya...",
+      options: [
+        { text: "Suka mengingat semua nama-nama tokoh di ceritanya", emoji: "📝", traits: { S: 1 } },
+        { text: "Ingat dan paham keseluruhan ceritanya saja", emoji: "💡", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Kalau belajar atau bermain, kamu lebih suka...",
+      options: [
+        { text: "Fokus dan mendalami satu hal", emoji: "🎯", traits: { S: 1 } },
+        { text: "Mencoba banyak hal baru", emoji: "🎈", traits: { N: 1 } }
+      ],
+    },
+    {
+      question: "Kalau main puzzle biasanya kamu...",
+      options: [
+        { text: "Langsung pasang kepingan yang cocok satu-satu", emoji: "🧩", traits: { S: 1 } },
+        { text: "Membayangkan dulu gambar apa yang akan terbentuk", emoji: "🖼️", traits: { N: 1 } }
+      ],
+    },
+    // === T vs F (8 soal) ===
+    {
+      question: "Kalau ada teman yang sedang sedih atau menangis, kamu biasanya...",
+      options: [
+        { text: "Tanya kenapanya dan coba bantu cari jalan keluar", emoji: "🤔", traits: { T: 1 } },
+        { text: "Menemani dan menghiburnya dulu", emoji: "🤗", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Saat mengerjakan soal atau tugas, kamu merasa senang kalau...",
+      options: [
+        { text: "Jawabannya jelas dan masuk akal", emoji: "✅", traits: { T: 1 } },
+        { text: "Semua teman bisa bekerja dengan nyaman", emoji: "😊", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Kalau main permainan bareng teman, kamu lebih senang kalau...",
+      options: [
+        { text: "Permainannya rapi dan aturannya jelas", emoji: "📏", traits: { T: 1 } },
+        { text: "Semua teman bisa ikut dan senang", emoji: "🎮", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Kalau ada teman melakukan kesalahan, kamu biasanya...",
+      options: [
+        { text: "Menjelaskan apa yang seharusnya dilakukan", emoji: "📘", traits: { T: 1 } },
+        { text: "Menegur dengan kata-kata yang lembut", emoji: "💝", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Saat harus memilih sesuatu bersama-sama, kamu lebih sering...",
+      options: [
+        { text: "Memikirkan mana yang paling masuk akal", emoji: "⚖️", traits: { T: 1 } },
+        { text: "Memikirkan agar tidak ada yang tersinggung", emoji: "❤️", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Kalau menonton cerita atau film yang sedih, kamu biasanya...",
+      options: [
+        { text: "Berpikir kenapa cerita itu bisa terjadi", emoji: "🧠", traits: { T: 1 } },
+        { text: "Ikut merasakan sedihnya", emoji: "😢", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Hal yang membuat kamu merasa bangga adalah...",
+      options: [
+        { text: "Bisa menyelesaikan masalah dengan baik", emoji: "💪", traits: { T: 1 } },
+        { text: "Bisa membantu dan membuat orang lain senang", emoji: "🌟", traits: { F: 1 } }
+      ],
+    },
+    {
+      question: "Kalau ada teman yang sedang bertengkar, kamu cenderung...",
+      options: [
+        { text: "Mencari tahu masalahnya supaya selesai", emoji: "🔍", traits: { T: 1 } },
+        { text: "Menenangkan dan mendamaikan mereka", emoji: "☮️", traits: { F: 1 } }
+      ],
+    },
+    // === J vs P (8 soal) ===
+    {
+      question: "Kondisi kamarmu biasanya...",
+      options: [
+        { text: "Rapi dan barangnya tersusun", emoji: "🛏️", traits: { J: 1 } },
+        { text: "Tidak selalu rapi, tapi aku tahu barangku di mana", emoji: "🎨", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Kalau dapat PR dari guru, kamu biasanya...",
+      options: [
+        { text: "Langsung kerjakan saat pulang sekolah", emoji: "✍️", traits: { J: 1 } },
+        { text: "Mengerjakannya setelah tidur siang atau main", emoji: "⏰", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Dalam kegiatan sehari-hari, kamu lebih suka...",
+      options: [
+        { text: "Tahu rencana dari awal", emoji: "📅", traits: { J: 1 } },
+        { text: "Melihat situasi dulu baru menentukan", emoji: "🌊", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Kalau mau bermain bersama teman, kamu biasanya...",
+      options: [
+        { text: "Sepakati aturan main dulu", emoji: "📜", traits: { J: 1 } },
+        { text: "Main dulu, aturannya sambil jalan", emoji: "🎲", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Kamu lebih suka permainan yang...",
+      options: [
+        { text: "Ada aturan dan urutan bermainnya", emoji: "🗓️", traits: { J: 1 } },
+        { text: "Tidak banyak aturan, yang penting asik", emoji: "🎭", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Kalau rencana berubah tiba-tiba, kamu biasanya...",
+      options: [
+        { text: "Perlu waktu sebentar buat menyesuaikan", emoji: "🙂", traits: { J: 1 } },
+        { text: "Bisa langsung menyesuaikan", emoji: "😎", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Saat mengerjakan tugas atau pekerjaan, kamu lebih sering...",
+      options: [
+        { text: "Menyelesaikannya sampai selesai", emoji: "✔️", traits: { J: 1 } },
+        { text: "Mengerjakannya bertahap", emoji: "⏸️", traits: { P: 1 } }
+      ],
+    },
+    {
+      question: "Kondisi tas sekolahmu biasanya...",
+      options: [
+        { text: "Buku dan alat tulis tertata rapi", emoji: "🎒", traits: { J: 1 } },
+        { text: "Isinya kadang rapi, kadang campur", emoji: "👜", traits: { P: 1 } }
+      ],
+    },
+  ];
+
+  // Database 12 Profesi (dari Python)
+  const activities = [
+    {
+      name: "Ahli Robotik & Komputer",
+      desc: "Kamu punya otak yang suka berpikir dan memecahkan masalah! Kamu senang mencari tahu \"kenapa\" dan \"bagaimana\". Anak seperti kamu bisa membuat mesin jadi pintar, membuat komputer bisa membantu manusia, bahkan menciptakan teknologi masa depan. Kalau kamu rajin belajar dan terus mencoba, suatu hari kamu bisa bikin robot, game, atau aplikasi yang dipakai banyak orang!\n• Pembuat robot\n• Pembuat game\n• Programmer komputer\n• Teknisi komputer\n• Ahli IT",
+      rolemodel: "Marc Raibert, Dr. Eng. Eniya Listiani Dewi, Alan Turing",
+      traits: ["I", "N", "T", "P"],
+      subjects: ["Matematika", "Komputer"],
+      icon: "🤖"
+    },
+    {
+      name: "Penemu & Ilmuwan",
+      desc: "Kamu adalah anak yang penuh rasa ingin tahu! Kamu suka bertanya, mencoba, dan mencari jawaban dari hal-hal di sekitarmu. Anak seperti kamu bisa menemukan hal baru yang membuat hidup manusia lebih baik. Siapa tahu, suatu hari nanti kamu menemukan obat, alat, atau pengetahuan baru yang membuat dunia bangga padamu!\n• Ilmuwan sains\n• Peneliti\n• Penemu alat\n• Ahli IPA\n• Dosen atau guru sains",
+      rolemodel: "Albert Einstein, Marie Curie, Dr. Jonas Salk",
+      traits: ["I", "N", "T", "J"],
+      subjects: ["IPA", "Matematika"],
+      icon: "🔬"
+    },
+    {
+      name: "Arsitek & Pembangun",
+      desc: "Kamu punya kemampuan membuat sesuatu jadi nyata! Kamu bisa membayangkan bentuk, menghitung dengan teliti, dan membuat bangunan berdiri kuat dan indah. Anak seperti kamu bisa membangun rumah, jembatan, atau gedung yang dipakai banyak orang. Karyamu bisa dilihat, disentuh, dan dirasakan oleh semua orang!\n• Arsitek\n• Insinyur bangunan\n• Tukang ahli\n• Perencana bangunan\n• Desainer konstruksi",
+      rolemodel: "Zaha Hadid, Ridwan Kamil, Gustave Eiffel",
+      traits: ["I", "S", "T", "P"],
+      subjects: ["Matematika", "Seni Budaya"],
+      icon: "🏗️"
+    },
+    {
+      name: "Dokter & Tenaga Medis",
+      desc: "Kamu punya hati yang baik dan suka menolong orang lain. Kamu peduli saat melihat orang sakit dan ingin membuat mereka kembali sehat. Anak seperti kamu bisa menjadi pahlawan yang membantu banyak orang setiap hari. Dengan belajar sungguh-sungguh, suatu hari kamu bisa merawat, menyembuhkan, dan memberi harapan bagi banyak keluarga!\n• Dokter\n• Perawat\n• Bidan\n• Petugas kesehatan\n• Relawan medis",
+      rolemodel: "Dr. Terawan, Dr. Ben Carson, Dr. Elizabeth Blackwell",
+      traits: ["E", "S", "F", "J"],
+      subjects: ["IPA", "PJOK", "Biologi", "Kesehatan"],
+      icon: "👨‍⚕️"
+    },
+    {
+      name: "Psikolog & Konselor",
+      desc: "Kamu adalah anak yang tenang, sabar, dan pintar mendengarkan. Kamu bisa membuat orang lain merasa dimengerti dan tidak sendirian. Anak seperti kamu sangat dibutuhkan untuk membantu teman-teman yang sedang sedih atau bingung. Suatu hari nanti, kamu bisa menjadi orang yang memberi semangat dan membantu banyak orang menemukan kebahagiaan mereka.\n• Psikolog\n• Konselor sekolah\n• Guru BK\n• Pendamping anak\n• Pekerja sosial",
+      rolemodel: "Seto Mulyadi (Kak Seto), Viktor Frankl, Carl Jung",
+      traits: ["I", "N", "F", "J"],
+      subjects: ["IPS", "Bahasa Indonesia", "PPKn"],
+      icon: "🧠"
+    },
+    {
+      name: "Penulis & Pembuat Cerita",
+      desc: "Kamu punya imajinasi yang luas dan suka bercerita. Ide-ide di kepalamu bisa menjadi kisah seru yang membuat orang tertawa, terharu, atau berani bermimpi. Anak seperti kamu bisa membuat cerita yang dibaca banyak orang dan dikenang lama. Dengan rajin membaca dan menulis, kamu bisa menciptakan dunia buatanmu sendiri lewat kata-kata!\n• Penulis buku cerita\n• Penulis komik\n• Penulis cerita anak\n• Penulis film\n• Jurnalis",
+      rolemodel: "JK Rowling, Andrea Hirata, George Lucas, Mario Vargas Llosa",
+      traits: ["I", "N", "F", "P"],
+      subjects: ["Bahasa Indonesia", "Seni Budaya", "Sastra"],
+      icon: "✍️"
+    },
+    {
+      name: "Seniman & Desainer",
+      desc: "Kamu bisa melihat keindahan dari hal-hal sederhana. Kamu suka menggambar, mewarnai, dan mengekspresikan perasaan lewat karya. Anak seperti kamu bisa menciptakan gambar dan desain yang membuat orang kagum. Karyamu bisa menghiasi buku, baju, poster, atau bahkan bangunan!\n• Pelukis\n• Desainer gambar\n• Ilustrator\n• Pembuat poster\n• Perajin seni",
+      rolemodel: "Raden Saleh, Affandi, Nyoman Nuarta",
+      traits: ["I", "S", "F", "P"],
+      subjects: ["Seni Budaya"],
+      icon: "🎨"
+    },
+    {
+      name: "Aktor & Penghibur",
+      desc: "Kamu berani tampil dan suka menghibur orang lain. Kamu bisa membuat orang tertawa, tersenyum, atau terharu lewat peran yang kamu mainkan. Anak seperti kamu bisa tampil di panggung, film, atau pertunjukan. Dengan latihan dan percaya diri, kamu bisa menjadi penghibur yang disukai banyak orang!\n• Aktor film\n• Pemeran teater\n• Pengisi acara\n• Komedian\n• Presenter",
+      rolemodel: "Reza Rahadian, Raffi Ahmad, Christine Hakim",
+      traits: ["E", "S", "F", "P"],
+      subjects: ["Teater", "Bahasa"],
+      icon: "🎭"
+    },
+    {
+      name: "Pemimpin (CEO) & Manajer",
+      desc: "Kamu punya keberanian untuk memimpin dan mengambil keputusan. Kamu suka mengatur, mengajak teman bekerja sama, dan membuat rencana agar semuanya berjalan baik. Anak seperti kamu bisa menjadi pemimpin yang adil dan bertanggung jawab. Suatu hari nanti, kamu bisa memimpin sebuah tim besar dan membuat banyak orang bekerja bersama untuk tujuan yang baik!\n• Pemimpin tim\n• Manajer\n• Ketua organisasi\n• Kepala proyek\n• Direktur perusahaan",
+      rolemodel: "Bill Gates, Elon Musk, Nadiem Makarim",
+      traits: ["E", "N", "T", "J"],
+      subjects: ["Organisasi", "IPS"],
+      icon: "👔"
+    },
+    {
+      name: "Pengusaha & Pedagang",
+      desc: "Kamu berani mencoba hal baru dan tidak mudah menyerah. Kamu pandai melihat kesempatan dan suka mencari cara agar sesuatu bisa berjalan lebih baik. Anak seperti kamu bisa membangun usaha sendiri dan menciptakan lapangan kerja untuk orang lain. Dengan belajar berhitung, merencanakan, dan berusaha, kamu bisa mewujudkan ide-idemu menjadi sesuatu yang nyata!\n• Pemilik usaha\n• Pedagang\n• Wirausaha\n• Pembuat produk\n• Pengelola bisnis",
+      rolemodel: "Jack Ma, Warren Buffett, Bob Sadino",
+      traits: ["E", "S", "T", "P"],
+      subjects: ["Matematika", "IPS"],
+      icon: "💼"
+    },
+    {
+      name: "Polisi, TNI & Penegak Hukum",
+      desc: "Kamu punya keberanian dan rasa tanggung jawab yang besar. Kamu suka aturan, keadilan, dan ingin melindungi orang lain. Anak seperti kamu bisa menjadi penjaga keamanan dan pembela kebenaran. Dengan disiplin dan latihan, kamu bisa menjaga ketertiban dan membuat lingkungan jadi aman dan damai.\n• Polisi\n• Tentara (TNI)\n• Penjaga keamanan\n• Petugas hukum\n• Aparat negara",
+      rolemodel: "Eliot Ness, Alexander the Great, Jenderal Hoegeng Iman Santoso",
+      traits: ["I", "S", "T", "J"],
+      subjects: ["PJOK", "PPKn"],
+      icon: "👮"
+    },
+    {
+      name: "Diplomat & Juru Bicara",
+      desc: "Kamu pandai berbicara dan bisa menyampaikan pendapat dengan baik. Kamu juga mampu mendengarkan dan menyatukan banyak orang yang berbeda. Anak seperti kamu bisa menjadi penyampai pesan yang membawa kedamaian dan pengertian. Suaramu bisa membuat orang lain saling memahami dan bekerja sama.\n• Diplomat\n• Juru bicara\n• Pembawa acara\n• Duta\n• Negosiator",
+      rolemodel: "Najwa Shihab, Angelina Jolie",
+      traits: ["E", "N", "F", "J"],
+      subjects: ["Bahasa Indonesia", "Bahasa Inggris", "PPKn", "IPS"],
+      icon: "🎤"
     },
   ];
 
@@ -202,6 +449,9 @@ export default function KuisPage() {
       setSavedResult(null);
       setAnswers([]);
       setCurrentQuestion(0);
+      setScores({ E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 });
+      setMbtiCode("");
+      setTopCareers([]);
       setShowQuiz(true);
       setOptionsVisible(false);
       // Hapus hasil lama dari localStorage
@@ -228,6 +478,26 @@ export default function KuisPage() {
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...answers, answerIndex];
     setAnswers(newAnswers);
+    
+    // Update scores berdasarkan traits dari jawaban
+    const question = questions[currentQuestion];
+    const selectedOption = question.options[answerIndex];
+    const newScores = { ...scores };
+    
+    if (selectedOption.traits) {
+      const traitsObj = selectedOption.traits as unknown as Record<string, number>;
+      Object.keys(traitsObj).forEach((trait) => {
+        const traitKey = trait as keyof typeof newScores;
+        if (traitKey in newScores && trait in traitsObj) {
+          const traitValue = traitsObj[trait];
+          if (typeof traitValue === 'number') {
+            newScores[traitKey] = (newScores[traitKey] || 0) + traitValue;
+          }
+        }
+      });
+    }
+    setScores(newScores);
+    
     setIsTransitioning(true);
     setOptionsVisible(false);
 
@@ -251,20 +521,38 @@ export default function KuisPage() {
         transitionTimerRef.current = null;
       }, 500);
     } else {
-      // Hitung hasil berdasarkan jawaban terbanyak
-      const citaCitaCount: { [key: string]: number } = {};
-      newAnswers.forEach((answer, qIndex) => {
-        if (questions[qIndex] && questions[qIndex].options && questions[qIndex].options[answer]) {
-          const citaCita = questions[qIndex].options[answer].citaCita;
-          citaCitaCount[citaCita] = (citaCitaCount[citaCita] || 0) + 1;
-        }
-      });
-
-      const sortedCitaCita = Object.entries(citaCitaCount).sort((a, b) => b[1] - a[1]);
-      setScore(sortedCitaCita[0] ? sortedCitaCita[0][1] : 0);
+      // Hitung Kode Kepribadian MBTI (E/I, S/N, T/F, J/P)
+      const myCode = 
+        (newScores.E >= newScores.I ? "E" : "I") +
+        (newScores.S >= newScores.N ? "S" : "N") +
+        (newScores.T >= newScores.F ? "T" : "F") +
+        (newScores.J >= newScores.P ? "J" : "P");
       
-      // Simpan hasil ke database dan localStorage
-      const hasilCitaCita = sortedCitaCita[0] ? sortedCitaCita[0][0] : "Belum ditentukan";
+      setMbtiCode(myCode);
+      
+      // Algoritma Pencocokan dengan Profesi
+      const matches = activities.map((career) => {
+        // Hitung berapa banyak huruf yang cocok (0 sampai 4)
+        let matchPoints = 0;
+        career.traits.forEach((trait) => {
+          if (myCode.includes(trait)) {
+            matchPoints += 1;
+          }
+        });
+        
+        return {
+          data: career,
+          score: matchPoints
+        };
+      });
+      
+      // Urutkan dari poin tertinggi dan ambil top 3
+      matches.sort((a, b) => b.score - a.score);
+      const top3 = matches.slice(0, 3);
+      setTopCareers(top3);
+      
+      // Simpan hasil ke database dan localStorage (gunakan profesi teratas)
+      const hasilCitaCita = top3[0] ? top3[0].data.name : "Belum ditentukan";
       saveResult(hasilCitaCita);
       
       // Cleanup timer sebelumnya jika ada
@@ -329,17 +617,11 @@ export default function KuisPage() {
     if (savedResult) {
       return savedResult.citaCita;
     }
-
-    const citaCitaCount: { [key: string]: number } = {};
-    answers.forEach((answer, qIndex) => {
-      if (questions[qIndex] && questions[qIndex].options && questions[qIndex].options[answer]) {
-        const citaCita = questions[qIndex].options[answer].citaCita;
-        citaCitaCount[citaCita] = (citaCitaCount[citaCita] || 0) + 1;
-      }
-    });
-
-    const sortedCitaCita = Object.entries(citaCitaCount).sort((a, b) => b[1] - a[1]);
-    return sortedCitaCita[0] ? sortedCitaCita[0][0] : "Belum ditentukan";
+    // Gunakan profesi teratas dari topCareers jika ada
+    if (topCareers.length > 0) {
+      return topCareers[0].data.name;
+    }
+    return "Belum ditentukan";
   };
 
   const handleCobaTesLagi = () => {
@@ -348,6 +630,9 @@ export default function KuisPage() {
     setSavedResult(null);
     setAnswers([]);
     setCurrentQuestion(0);
+    setScores({ E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 });
+    setMbtiCode("");
+    setTopCareers([]);
     setNama("");
     setKelas("");
     setIsExpanded(false);
@@ -783,28 +1068,6 @@ export default function KuisPage() {
     const displayNama = savedResult?.nama || nama;
     const displayKelas = savedResult?.kelas || kelas;
 
-    // Mapping cita-cita dengan mata pelajaran yang relevan
-    const getRelatedSubject = (citaCita: string) => {
-      const subjectMap: { [key: string]: string } = {
-        "Seniman": "Seni Budaya",
-        "Perancang": "Seni Budaya",
-        "Penulis": "Bahasa Indonesia",
-        "Jurnalis": "Bahasa Indonesia",
-        "Dokter": "IPA (Ilmu Pengetahuan Alam)",
-        "Ilmuwan": "IPA (Ilmu Pengetahuan Alam)",
-        "Guru": "Pendidikan",
-        "Peneliti": "Sains",
-        "Matematikawan": "Matematika",
-      };
-      
-      // Cek apakah citaCita mengandung salah satu kata kunci
-      for (const [key, value] of Object.entries(subjectMap)) {
-        if (citaCita.includes(key)) {
-          return value;
-        }
-      }
-      return "Berbagai Bidang";
-    };
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
 
@@ -950,95 +1213,131 @@ export default function KuisPage() {
             </div>
 
             {/* Title dengan animasi */}
-            <div className="space-y-2 animate-fade-in">
+            <div className="space-y-3 animate-fade-in">
               <p className="text-[#E91E63] text-lg font-bold italic flex items-center justify-center gap-2">
                 <span suppressHydrationWarning>🎉</span>
-                <span>Hore! Kamu cocok menjadi...</span>
+                <span>Hasil Analisis Misi</span>
               </p>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-gradient-to-r from-[#A7C957] to-[#6A994E] bg-clip-text tracking-tight">
-                {hasilCitaCita.toUpperCase()}
-              </h1>
+              
+              {/* MBTI Code */}
+              {mbtiCode && (
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-4 border-2 border-[#FF4D6D]">
+                  <p className="text-sm text-[#666666] mb-1">Kode Kepribadianmu:</p>
+                  <p className="text-3xl font-bold text-[#FF4D6D]">{mbtiCode}</p>
+                  <p className="text-xs text-[#999999] mt-2">Kamu adalah anak yang unik! Kombinasi sifatmu menunjukkan potensi hebat.</p>
+                </div>
+              )}
+              
+              <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-4">
+                🌟 Pekerjaan Masa Depan yang Cocok: 🌟
+              </h2>
             </div>
           </div>
 
           {/* Content Section */}
           <div className="px-8 py-8 space-y-6">
-            {/* Info Section dengan Icon */}
-            <div className="bg-gradient-to-r from-[#F5F9F0] to-[#F0F7E8] rounded-2xl p-6 border-l-4 border-[#A7C957]">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-                  <span className="text-2xl" suppressHydrationWarning>💡</span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">
-                    Mengenal {hasilCitaCita} Hebat
-                  </h3>
-                  {!isExpanded && (
-                    <button
-                      onClick={handleToggleExpand}
-                      disabled={isLoadingExplanation}
-                      className="text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
-                    >
-                      {isLoadingExplanation ? (
-                        <>
-                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span>Memuat penjelasan...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Lihat penjelasan lengkap</span>
-                          <span>→</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Expandable Explanation */}
-              {isExpanded && explanation && (
-                <div className="mt-4 pt-4 border-t border-[#D4E5C0] animate-fade-in">
-                  <div className="text-[#4A4A4A] space-y-3 leading-relaxed">
-                    {explanation.split('\n').map((paragraph, index) => (
-                      paragraph.trim() && (
-                        <p key={index} className="text-sm">
-                          {paragraph.trim()}
-                        </p>
-                      )
-                    ))}
+            {/* Top 3 Profesi */}
+            {topCareers.length > 0 ? (
+              topCareers.map((item, index) => {
+                const career = item.data;
+                const matchPercent = Math.round((item.score / 4) * 100);
+                
+                return (
+                  <div key={index} className="bg-gradient-to-br from-white to-[#FFF8F9] rounded-2xl p-6 border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all">
+                    {/* Header Card */}
+                    <div className="bg-gradient-to-r from-[#FFE4E9] to-[#FFD4E5] rounded-xl p-4 mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-4xl" suppressHydrationWarning>{career.icon}</span>
+                        <div>
+                          <h3 className="text-xl font-bold text-[#2D2D2D]">{career.name}</h3>
+                          <p className="text-sm text-[#666666]">Posisi #{index + 1}</p>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-full px-4 py-2 border-2 border-[#FF4D6D]">
+                        <p className="text-sm font-bold text-[#FF4D6D]">Kecocokan: {matchPercent}%</p>
+                      </div>
+                    </div>
+                    
+                    {/* Deskripsi */}
+                    <div className="mb-4">
+                      <p className="text-[#4A4A4A] leading-relaxed whitespace-pre-line">
+                        {career.desc}
+                      </p>
+                    </div>
+                    
+                    {/* Role Model */}
+                    <div className="bg-gradient-to-r from-[#FFF0F3] to-[#FFE8EC] rounded-xl p-3 mb-3">
+                      <p className="text-sm font-semibold text-[#666666] mb-1">🦸 Tokoh Hebat:</p>
+                      <p className="text-sm text-[#2D2D2D] font-medium">{career.rolemodel}</p>
+                    </div>
+                    
+                    {/* Subjects */}
+                    <div className="bg-gradient-to-r from-[#E1F5FE] to-[#B3E5FC] rounded-xl p-3">
+                      <p className="text-sm font-semibold text-[#0277BD] mb-1">📚 Pelajaran Favorit:</p>
+                      <p className="text-sm font-bold text-[#01579B]">{career.subjects.join(", ")}</p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setIsExpanded(false)}
-                    className="mt-4 text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all"
-                  >
-                    <span>Sembunyikan</span>
-                    <span>↑</span>
-                  </button>
+                );
+              })
+            ) : (
+              <div className="bg-gradient-to-r from-[#F5F9F0] to-[#F0F7E8] rounded-2xl p-6 border-l-4 border-[#A7C957]">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full flex items-center justify-center shrink-0 shadow-lg">
+                    <span className="text-2xl" suppressHydrationWarning>💡</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">
+                      Mengenal {hasilCitaCita} Hebat
+                    </h3>
+                    {!isExpanded && (
+                      <button
+                        onClick={handleToggleExpand}
+                        disabled={isLoadingExplanation}
+                        className="text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
+                      >
+                        {isLoadingExplanation ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Memuat penjelasan...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Lihat penjelasan lengkap</span>
+                            <span>→</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-
-            {/* Subject Info */}
-            <div className="bg-gradient-to-r from-[#E91E63]/5 to-[#F06292]/5 rounded-2xl p-5 border border-[#E91E63]/20">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#E91E63] to-[#F06292] rounded-lg flex items-center justify-center shadow-md">
-                  <Image
-                    src={logoWebp}
-                    alt="Logo"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-[#666666] font-medium">Mata Pelajaran yang Relevan</p>
-                  <p className="text-lg font-bold text-[#2D2D2D]">{getRelatedSubject(hasilCitaCita)}</p>
-                </div>
+                
+                {/* Expandable Explanation */}
+                {isExpanded && explanation && (
+                  <div className="mt-4 pt-4 border-t border-[#D4E5C0] animate-fade-in">
+                    <div className="text-[#4A4A4A] space-y-3 leading-relaxed">
+                      {explanation.split('\n').map((paragraph, index) => (
+                        paragraph.trim() && (
+                          <p key={index} className="text-sm">
+                            {paragraph.trim()}
+                          </p>
+                        )
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setIsExpanded(false)}
+                      className="mt-4 text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all"
+                    >
+                      <span>Sembunyikan</span>
+                      <span>↑</span>
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
 
             {isSaving && (
               <div className="text-center py-2">
@@ -1157,7 +1456,7 @@ export default function KuisPage() {
         </div>
 
         {/* Header - sama seperti page.tsx */}
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm relative">
+        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
           <div className="flex items-center gap-2 sm:gap-3">
             <div 
               className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
@@ -1281,51 +1580,18 @@ export default function KuisPage() {
                       {String.fromCharCode(65 + index)}
                     </div>
 
-                    {/* Gambar Real dengan Container */}
-                    <div className="relative z-10 w-full" style={{
+                    {/* Emoji dan Text */}
+                    <div className="relative z-10 flex flex-col items-center gap-4 w-full" style={{
                       animationDelay: `${index * 200 + 150}ms`,
                       animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
                       opacity: optionsVisible ? 1 : 0
                     }}>
-                      <div className="relative w-full h-48 md:h-56 rounded-2xl overflow-hidden bg-gradient-to-br from-[#FFE4E9] to-[#FFF0F3] group-hover:from-[#FF4D6D]/10 group-hover:to-[#FF6B8A]/10 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl mb-4 shadow-lg">
-                        {/* Gambar Real */}
-                        <div className="relative w-full h-full">
-                          <Image
-                            src={option.image}
-                            alt={option.text}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            unoptimized
-                            onError={(e) => {
-                              // Fallback ke emoji jika gambar gagal dimuat
-                              const target = e.currentTarget;
-                              target.style.display = 'none';
-                              const fallback = target.parentElement?.querySelector('.image-fallback');
-                              if (fallback) {
-                                (fallback as HTMLElement).style.display = 'flex';
-                              }
-                            }}
-                          />
-                          {/* Fallback emoji jika gambar gagal dimuat */}
-                          <div className="image-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#FFE4E9] to-[#FFF0F3] hidden">
-                            <span className="text-6xl md:text-7xl" suppressHydrationWarning>{option.emoji}</span>
-                          </div>
-                        </div>
-                        {/* Overlay gradient untuk efek lebih menarik */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                      <div className="text-6xl md:text-7xl">
+                        <span suppressHydrationWarning>{option.emoji}</span>
                       </div>
-                    </div>
-
-                    {/* Teks Pilihan */}
-                    <div className="relative z-10 w-full" style={{
-                      animationDelay: `${index * 200 + 200}ms`,
-                      animation: optionsVisible && !isTransitioning ? 'fadeInRotate 0.6s ease-out forwards' : 'none',
-                      opacity: optionsVisible ? 1 : 0
-                    }}>
-                      <span className="text-base md:text-lg lg:text-xl leading-relaxed font-bold text-[#2D2D2D] group-hover:text-[#FF4D6D] transition-colors duration-300 block" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <p className="text-base md:text-lg font-semibold text-center px-4 leading-relaxed">
                         {option.text}
-                      </span>
+                      </p>
                     </div>
 
                     {/* Hover Arrow Indicator */}
@@ -1392,7 +1658,7 @@ export default function KuisPage() {
       </div>
 
       {/* Header - sama seperti page.tsx */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm relative">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3">
           <div 
             className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 

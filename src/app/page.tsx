@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import StructuredData from "@/components/StructuredData";
-import logoWebp from "../logo.webp";
+import logoWebp from "./logo.webp";
 
 interface QuizResult {
   nama: string;

@@ -206,155 +206,27 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Cards Section - Scattered Layout */}
+        {/* Video Section */}
         <div className="relative mb-12 sm:mb-16 md:mb-20 px-2 sm:px-4">
-          <div className="max-w-[1800px] mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr_1fr] gap-6 md:gap-8 items-start">
-              {/* Left Card - Target Jadi Dokter */}
-              <div className="relative md:mt-32 lg:mt-40 animate-slide-in-left">
-                <div className="flex flex-col items-center md:items-end relative">
-                  <div 
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-[200px] sm:max-w-[220px] md:max-w-[240px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
-                    style={{
-                      borderColor: 'rgba(255, 240, 243, 0.5)',
-                      boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
-                    }}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {/* Pink Rocket Icon */}
-                      <div className="bg-[#FCE7F3] p-2 sm:p-2.5 rounded-lg shrink-0">
-                        <svg
-                          width="20"
-                          height="20"
-                          className="sm:w-6 sm:h-6 text-[#FF4D6D]"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M4.5 16.5C4.5 16.5 6 18 8 18C9.5 18 10.5 16.5 10.5 16.5M4.5 16.5C4.5 16.5 3 15 3 13C3 11 4.5 9.5 4.5 9.5M4.5 16.5L3 18M10.5 16.5C10.5 16.5 12 18 14 18C16 18 17.5 16.5 17.5 16.5M10.5 16.5L12 18M17.5 16.5C17.5 16.5 19 15 19 13C19 11 17.5 9.5 17.5 9.5M17.5 16.5L19 18M12 2L12 9.5M12 2L9 4.5M12 2L15 4.5M12 9.5L9 7M12 9.5L15 7"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M12 2L12 9.5M12 2L9 4.5M12 2L15 4.5M12 9.5L9 7M12 9.5L15 7"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p 
-                          className="text-[9px] sm:text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wide mb-0.5"
-                          style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                          TARGET
-                        </p>
-                        <p 
-                          className="text-xs sm:text-sm font-bold text-[#1F2937] truncate"
-                          style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                          Jadi Dokter
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Center Video Block */}
-              <div ref={videoRef} className="relative flex flex-col items-center order-first md:order-0 animate-scale-in w-full">
-                {/* YouTube Video Embed dengan styling lebih baik */}
-                <div 
-                  className="w-full border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
-                  style={{
-                    boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.3), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)',
-                    borderRadius: '24px'
-                  }}
-                >
-                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                    <iframe
-                      className="absolute top-0 left-0 w-full h-full border-0"
-                      src="https://www.youtube.com/embed/WPPPFqsECz0?rel=0&modestbranding=1&showinfo=0"
-                      title="Video Edukasi"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      loading="lazy"
-                      suppressHydrationWarning
-                    ></iframe>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Card - Achievement Juara Kelas */}
-              <div className="relative md:mt-6 lg:mt-10 animate-slide-in-right">
-                <div className="flex flex-col items-center md:items-start relative">
-                  <div 
-                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-[200px] sm:max-w-[220px] md:max-w-[240px] border relative z-10 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1"
-                    style={{
-                      borderColor: 'rgba(255, 240, 243, 0.5)',
-                      boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.08), 0px 0px 0px 1px rgba(255, 77, 109, 0.05)'
-                    }}
-                  >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {/* Light Green Trophy Icon */}
-                      <div className="bg-[#DCFCE7] p-2 sm:p-2.5 rounded-lg shrink-0">
-                        <svg
-                          width="20"
-                          height="20"
-                          className="sm:w-6 sm:h-6 text-[#A7D129]"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M6 9H18V12C18 15.3137 15.3137 18 12 18C8.68629 18 6 15.3137 6 12V9Z"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            fill="currentColor"
-                          />
-                          <path
-                            d="M7 9L7 7C7 5.89543 7.89543 5 9 5H15C16.1046 5 17 5.89543 17 7V9"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M12 18V22M9 22H15"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M12 12V15"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p 
-                          className="text-[9px] sm:text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wide mb-0.5"
-                          style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                          PENCAPAIAN
-                        </p>
-                        <p 
-                          className="text-xs sm:text-sm font-bold text-[#1F2937] truncate"
-                          style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                          Juara Kelas
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+          <div className="max-w-[800px] mx-auto">
+            <div ref={videoRef} className="relative flex flex-col items-center animate-scale-in w-full">
+              <div 
+                className="w-full border-4 border-white/90 rounded-3xl overflow-hidden bg-black transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                style={{
+                  boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.3), 0px 0px 0px 1px rgba(255, 255, 255, 0.1)',
+                  borderRadius: '24px'
+                }}
+              >
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    className="absolute top-0 left-0 w-full h-full border-0"
+                    src="https://www.youtube.com/embed/JcSzhYipUc4?si=01S32olyGiwmIqRu"
+                    title="Miemi dan Pesan Rahasia untuk Anak Hebat"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                    suppressHydrationWarning
+                  ></iframe>
                 </div>
               </div>
             </div>

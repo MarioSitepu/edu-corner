@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import StructuredData from "@/components/StructuredData";
 import logoWebp from "../logo.webp";
@@ -14,6 +15,7 @@ interface QuizResult {
 }
 
 export default function KuisPage() {
+  const router = useRouter();
   const [nama, setNama] = useState("");
   const [kelas, setKelas] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
@@ -53,28 +55,37 @@ export default function KuisPage() {
     return characters[index] || characters[0];
   };
 
-  // Cek localStorage saat component mount
+  // Load progress kuis dari localStorage saat component mount (hanya jika kuis masih berjalan)
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        const saved = localStorage.getItem("quizResult");
-        if (saved) {
+        const savedProgress = localStorage.getItem("quizProgress");
+        if (savedProgress) {
           try {
-            const result = JSON.parse(saved);
-            // Validasi struktur data
-            if (result && typeof result === 'object' && result.nama && result.citaCita) {
-              setSavedResult(result);
-              setShowResult(true);
-              setNama(result.nama || "");
-              setKelas(result.kelas || "");
+            const progress = JSON.parse(savedProgress);
+            // Validasi struktur data dan pastikan kuis masih berjalan (belum selesai)
+            if (progress && typeof progress === 'object' && progress.nama && progress.kelas && 
+                progress.currentQuestion !== undefined && progress.currentQuestion < questions.length) {
+              setNama(progress.nama || "");
+              setKelas(progress.kelas || "");
+              setCurrentQuestion(progress.currentQuestion || 0);
+              setAnswers(progress.answers || []);
+              setScores(progress.scores || { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 });
+              setShowQuiz(true);
+              setShowResult(false); // Pastikan tidak menampilkan hasil
+              setOptionsVisible(false);
+              // Trigger animasi muncul untuk pertanyaan yang sedang dikerjakan
+              setTimeout(() => {
+                setOptionsVisible(true);
+              }, 200);
             } else {
-              // Data tidak valid, hapus dari localStorage
-              localStorage.removeItem("quizResult");
+              // Data tidak valid atau kuis sudah selesai, hapus dari localStorage
+              localStorage.removeItem("quizProgress");
             }
           } catch (e) {
-            console.error("Error parsing saved result:", e);
+            console.error("Error parsing saved progress:", e);
             // Hapus data corrupt dari localStorage
-            localStorage.removeItem("quizResult");
+            localStorage.removeItem("quizProgress");
           }
         }
       }
@@ -83,6 +94,26 @@ export default function KuisPage() {
       console.warn("localStorage tidak tersedia:", e);
     }
   }, []);
+
+  // Simpan progress kuis ke localStorage setiap kali ada perubahan (hanya jika kuis masih berjalan)
+  useEffect(() => {
+    if (showQuiz && nama && kelas && !showResult && currentQuestion < questions.length) {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const progress = {
+            nama: nama,
+            kelas: kelas,
+            currentQuestion: currentQuestion,
+            answers: answers,
+            scores: scores
+          };
+          localStorage.setItem("quizProgress", JSON.stringify(progress));
+        }
+      } catch (e) {
+        console.warn("Gagal menyimpan progress ke localStorage:", e);
+      }
+    }
+  }, [showQuiz, nama, kelas, currentQuestion, answers, scores, showResult]);
 
   // Trigger animasi muncul saat pertanyaan baru dimuat (harus di top level)
   // Fix race condition dengan cleanup timer menggunakan useRef
@@ -454,13 +485,13 @@ export default function KuisPage() {
       setTopCareers([]);
       setShowQuiz(true);
       setOptionsVisible(false);
-      // Hapus hasil lama dari localStorage
+      // Hapus progress lama dari localStorage
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
-          localStorage.removeItem("quizResult");
+          localStorage.removeItem("quizProgress");
         }
       } catch (e) {
-        console.warn("Gagal menghapus dari localStorage:", e);
+        console.warn("Gagal menghapus progress dari localStorage:", e);
       }
       // Trigger animasi muncul untuk pertanyaan pertama
       // Cleanup timer sebelumnya jika ada
@@ -551,9 +582,18 @@ export default function KuisPage() {
       const top3 = matches.slice(0, 3);
       setTopCareers(top3);
       
-      // Simpan hasil ke database dan localStorage (gunakan profesi teratas)
+      // Simpan hasil ke database (gunakan profesi teratas)
       const hasilCitaCita = top3[0] ? top3[0].data.name : "Belum ditentukan";
       saveResult(hasilCitaCita);
+      
+      // Hapus progress dari localStorage karena kuis sudah selesai
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.removeItem("quizProgress");
+        }
+      } catch (e) {
+        console.warn("Gagal menghapus progress dari localStorage:", e);
+      }
       
       // Cleanup timer sebelumnya jika ada
       if (transitionTimerRef.current) {
@@ -577,20 +617,8 @@ export default function KuisPage() {
       timestamp: new Date().toISOString(),
     };
 
-    // Simpan ke localStorage dengan error handling
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem("quizResult", JSON.stringify(result));
-        setSavedResult(result);
-      } else {
-        // Jika localStorage tidak tersedia, tetap set state
-        setSavedResult(result);
-      }
-    } catch (e) {
-      console.warn("Gagal menyimpan ke localStorage:", e);
-      // Tetap set state meskipun localStorage gagal
-      setSavedResult(result);
-    }
+    // Set state saja, tidak simpan ke localStorage
+    setSavedResult(result);
 
     // Simpan ke database
     try {
@@ -637,12 +665,13 @@ export default function KuisPage() {
     setKelas("");
     setIsExpanded(false);
     setExplanation("");
+    // Hapus progress dari localStorage
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem("quizResult");
+        localStorage.removeItem("quizProgress");
       }
     } catch (e) {
-      console.warn("Gagal menghapus dari localStorage:", e);
+      console.warn("Gagal menghapus progress dari localStorage:", e);
     }
   };
 
@@ -689,27 +718,6 @@ export default function KuisPage() {
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
     try {
-      // Jika explanation belum di-load, fetch dulu
-      let finalExplanation = explanation;
-      if (!finalExplanation) {
-        const hasilCitaCita = getResultCitaCita();
-        try {
-          const response = await fetch("/api/explain-career", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ citaCita: hasilCitaCita }),
-          });
-          const result = await response.json();
-          if (result.success && result.explanation) {
-            finalExplanation = result.explanation;
-          }
-        } catch (error) {
-          console.warn('Gagal fetch explanation untuk PDF:', error);
-        }
-      }
-      
       // Dynamic import untuk jsPDF (kompatibel dengan Next.js)
       const { default: jsPDF } = await import('jspdf');
       
@@ -771,18 +779,12 @@ export default function KuisPage() {
         return cleaned;
       };
       
-      const hasilCitaCita = getResultCitaCita();
       const displayNama = savedResult?.nama || nama;
       const displayKelas = savedResult?.kelas || kelas;
       
       // CLEAN SEMUA TEKS SEBELUM DIGUNAKAN
-      const cleanedCitaCita = cleanText(hasilCitaCita);
       const cleanedNama = cleanText(displayNama);
       const cleanedKelas = cleanText(displayKelas);
-      
-      // Gunakan explanation yang sudah di-fetch atau fallback - CLEAN DULU
-      const rawExplanation = finalExplanation || `Menjadi ${cleanedCitaCita} adalah profesi yang sangat menarik! Untuk mencapai cita-citamu, kamu perlu belajar dengan rajin di sekolah dan selalu semangat.`;
-      const displayExplanation = cleanText(rawExplanation);
       
       // Ambil tanggal kuis dari timestamp - CLEAN DULU
       const rawQuizDate = savedResult?.timestamp 
@@ -801,57 +803,6 @@ export default function KuisPage() {
             minute: '2-digit'
           });
       const quizDate = cleanText(rawQuizDate);
-
-      // Mapping cita-cita dengan mata pelajaran yang relevan
-      const getRelatedSubject = (citaCita: string) => {
-        const subjectMap: { [key: string]: string } = {
-          "Seniman": "Seni Budaya",
-          "Perancang": "Seni Budaya",
-          "Penulis": "Bahasa Indonesia",
-          "Jurnalis": "Bahasa Indonesia",
-          "Dokter": "IPA (Ilmu Pengetahuan Alam)",
-          "Ilmuwan": "IPA (Ilmu Pengetahuan Alam)",
-          "Guru": "Pendidikan",
-          "Peneliti": "Sains",
-          "Matematikawan": "Matematika",
-        };
-        
-        for (const [key, value] of Object.entries(subjectMap)) {
-          if (citaCita.includes(key)) {
-            return value;
-          }
-        }
-        return "Berbagai Bidang";
-      };
-
-      const relatedSubject = cleanText(getRelatedSubject(cleanedCitaCita));
-      const char = getCharacter(cleanedKelas);
-
-      // Mapping ikon untuk setiap profesi/cita-cita
-      const getCareerIcon = (citaCita: string): string => {
-        const iconMap: { [key: string]: string } = {
-          "Dokter": "👨‍⚕️",
-          "Seniman": "🎨",
-          "Guru": "👨‍🏫",
-          "Ilmuwan": "🔬",
-          "Penulis": "✍️",
-          "Perancang": "✂️",
-          "Jurnalis": "📰",
-          "Peneliti": "🔍",
-          "Matematikawan": "📐",
-        };
-        
-        // Cari ikon yang cocok (case-insensitive)
-        const normalizedCitaCita = citaCita.toLowerCase();
-        for (const [key, icon] of Object.entries(iconMap)) {
-          if (normalizedCitaCita.includes(key.toLowerCase())) {
-            return icon;
-          }
-        }
-        return "💼"; // Default icon
-      };
-
-      const careerIcon = getCareerIcon(cleanedCitaCita);
 
       // Buat PDF
       const pdf = new jsPDF({
@@ -891,151 +842,267 @@ export default function KuisPage() {
         pdf.text(`Halaman ${pageNum} dari ${totalPages}`, pageWidth / 2, footerY + 10, { align: 'center' });
       };
 
+      // Helper function untuk check dan add page jika perlu
+      const checkAndAddPage = (currentY: number, pageNum: number, minSpace: number = 20): number => {
+        if (currentY + minSpace > pageHeight - footerHeight) {
+          addFooter(pageNum, 0);
+          pdf.addPage();
+          return pageNum + 1;
+        }
+        return pageNum;
+      };
+
       // Header dengan gradient effect
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(0, 0, pageWidth, 45, 'F');
+      pdf.rect(0, 0, pageWidth, 50, 'F');
       
-      // Title (tanpa logo)
-      pdf.setFontSize(18);
+      // Title
+      pdf.setFontSize(20);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(255, 255, 255);
-      pdf.text('EduCorner: SahabatMimpi', margin, 28);
+      pdf.text('EduCorner: SahabatMimpi', margin, 32);
       
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('KKN T Margo Lestari', margin, 35);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text('KKN T Margo Lestari', margin, 40);
 
       let yPos = 65;
+      let pageNum = 1;
 
-      // Card Background dengan shadow effect
-      pdf.setFillColor(255, 255, 255);
-      pdf.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
-      pdf.setLineWidth(0.5);
-      pdf.roundedRect(margin, yPos - 5, contentWidth, 70, 3, 3, 'FD');
-
-      // Title "Hore! Kamu cocok menjadi..." - clean text (tanpa avatar dan ikon)
-      pdf.setFontSize(11);
+      // Title Section - Hasil Analisis Misi
+      pdf.setFontSize(16);
       pdf.setTextColor(233, 30, 99); // #E91E63
       pdf.setFont('helvetica', 'bold');
-      const titleText = cleanText('Hore! Kamu cocok menjadi...');
-      pdf.text(titleText, margin + 5, yPos + 6);
+      pdf.text('Hasil Analisis Misi', margin, yPos);
+      yPos += 10;
 
-      // Cita-cita besar (dengan text wrapping jika terlalu panjang) - sudah di-clean (tanpa ikon)
-      pdf.setFontSize(22);
-      pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      pdf.setFont('helvetica', 'bold');
-      const citaCitaText = cleanedCitaCita.toUpperCase();
-      const citaCitaLines = pdf.splitTextToSize(citaCitaText, contentWidth - 10);
-      pdf.text(citaCitaLines, margin + 5, yPos + 20);
+      // MBTI Code Box
+      if (mbtiCode) {
+        pdf.setFillColor(255, 240, 243); // Very light pink
+        pdf.roundedRect(margin, yPos, contentWidth, 20, 3, 3, 'F');
+        
+        pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.setLineWidth(0.5);
+        pdf.roundedRect(margin, yPos, contentWidth, 20, 3, 3, 'D');
+        
+        pdf.setFontSize(9);
+        pdf.setTextColor(102, 102, 102);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Kode Kepribadianmu:', margin + 5, yPos + 8);
+        
+        pdf.setFontSize(18);
+        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 14, { align: 'right' });
+        yPos += 25;
+      }
 
       // Info Box - Nama, Kelas, dan Tanggal Kuis
-      yPos += 52;
       pdf.setFillColor(245, 249, 240); // Light green background
-      pdf.roundedRect(margin, yPos, contentWidth, 28, 3, 3, 'F');
+      pdf.roundedRect(margin, yPos, contentWidth, 32, 3, 3, 'F');
       
       // Border untuk info box
       pdf.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       pdf.setLineWidth(0.5);
-      pdf.roundedRect(margin, yPos, contentWidth, 28, 3, 3, 'D');
+      pdf.roundedRect(margin, yPos, contentWidth, 32, 3, 3, 'D');
       
       pdf.setFontSize(10);
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`Nama:`, margin + 5, yPos + 8);
+      pdf.text(`Nama:`, margin + 5, yPos + 9);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(cleanedNama, margin + 25, yPos + 8);
+      pdf.text(cleanedNama, margin + 32, yPos + 9);
       
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`Kelas:`, margin + contentWidth / 2, yPos + 8);
+      pdf.text(`Kelas:`, margin + contentWidth / 2 + 5, yPos + 9);
       pdf.setFont('helvetica', 'normal');
-      pdf.text(cleanedKelas, margin + contentWidth / 2 + 20, yPos + 8);
+      pdf.text(cleanedKelas, margin + contentWidth / 2 + 32, yPos + 9);
       
-      // Tanggal Kuis (sudah di-clean di atas)
+      // Tanggal Kuis
       pdf.setFontSize(9);
       pdf.setTextColor(102, 102, 102);
       pdf.setFont('helvetica', 'italic');
-      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 18);
+      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 20);
+      yPos += 38;
 
-      yPos += 35;
-
-      // Penjelasan Section Header (tanpa ikon profesi)
+      // Section Title - Pekerjaan Masa Depan yang Cocok
       pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      const sectionTitle = `Mengenal ${cleanedCitaCita} Hebat`;
-      pdf.text(sectionTitle, margin, yPos);
-
-      yPos += 8;
-
-      // Semua teks sudah di-clean di awal, langsung gunakan
-
-      // Explanation text dengan paragraph handling yang lebih baik
-      pdf.setFontSize(10);
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-      pdf.setFont('helvetica', 'normal');
-      
-      // Split explanation into paragraphs (sudah di-clean di atas)
-      const paragraphs = displayExplanation.split('\n').filter(p => p.trim());
-      let currentY = yPos;
-      let pageNum = 1;
-      
-      paragraphs.forEach((paragraph, paraIndex) => {
-        if (currentY > pageHeight - footerHeight - 10) {
-          addFooter(pageNum, 0); // Temporary, will update later
-          pdf.addPage();
-          pageNum++;
-          currentY = margin + 5;
-        }
-        
-        // Split paragraph into lines dengan line height yang lebih baik
-        const lines = pdf.splitTextToSize(paragraph.trim(), contentWidth - 10);
-        lines.forEach((line: string) => {
-          if (currentY > pageHeight - footerHeight - 10) {
-            addFooter(pageNum, 0);
-            pdf.addPage();
-            pageNum++;
-            currentY = margin + 5;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Pekerjaan Masa Depan yang Cocok:', margin, yPos);
+      yPos += 12;
+
+      // Top 3 Careers Section
+      if (topCareers.length > 0) {
+        topCareers.forEach((item, index) => {
+          const career = item.data;
+          const matchPercent = Math.round((item.score / 4) * 100);
+          
+          // Check jika perlu page baru sebelum mulai card baru
+          pageNum = checkAndAddPage(yPos, pageNum, 100);
+          if (yPos + 100 > pageHeight - footerHeight) {
+            yPos = margin + 5;
           }
-          // Line sudah di-clean dari paragraph yang sudah di-clean
-          if (line.trim()) {
-            pdf.text(line.trim(), margin + 5, currentY);
-            currentY += 6; // Line height yang lebih baik
+
+          // Career Card - Outer Border
+          const cardStartY = yPos;
+
+          // Hitung tinggi header berdasarkan panjang career name
+          pdf.setFontSize(14);
+          pdf.setFont('helvetica', 'bold');
+          const careerName = cleanText(career.name);
+          // Career name width: contentWidth - badge area (28mm) - match percent area (45mm) - padding (10mm)
+          const careerNameWidth = contentWidth - 28 - 45 - 10;
+          const careerNameLines = pdf.splitTextToSize(careerName, careerNameWidth);
+          const headerHeight = Math.max(26, 8 + (careerNameLines.length * 7) + 4); // Minimum 26mm, dinamis berdasarkan jumlah baris
+
+          // Header Card dengan background
+          pdf.setFillColor(255, 228, 233); // Light pink
+          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 3, 3, 'F');
+          
+          // Border untuk header
+          pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setLineWidth(0.5);
+          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 3, 3, 'D');
+
+          // Badge untuk posisi dengan background lebih besar
+          pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.circle(margin + 14, yPos + headerHeight / 2, 9, 'F');
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${index + 1}`, margin + 14, yPos + headerHeight / 2 + 2, { align: 'center' });
+
+          // Career Name - posisi dinamis berdasarkan tinggi header, tidak overlap dengan badge dan match percent
+          pdf.setFontSize(14);
+          pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+          pdf.setFont('helvetica', 'bold');
+          const startY = yPos + 8;
+          careerNameLines.forEach((line: string, idx: number) => {
+            pdf.text(line.trim(), margin + 28, startY + (idx * 7));
+          });
+          
+          // Match Percent di kanan - posisi dinamis, tidak overlap dengan career name
+          pdf.setFontSize(12);
+          pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${matchPercent}%`, margin + contentWidth - 8, startY, { align: 'right' });
+          
+          pdf.setFontSize(8);
+          pdf.setTextColor(102, 102, 102);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('Kecocokan', margin + contentWidth - 8, startY + 6, { align: 'right' });
+
+          yPos += headerHeight + 5;
+
+          // Deskripsi Career dengan spacing lebih baik
+          pdf.setFontSize(10);
+          pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+          pdf.setFont('helvetica', 'normal');
+          const careerDesc = cleanText(career.desc);
+          const descLines = pdf.splitTextToSize(careerDesc, contentWidth - 10);
+          
+          descLines.forEach((line: string) => {
+            pageNum = checkAndAddPage(yPos, pageNum, 7);
+            if (yPos + 7 > pageHeight - footerHeight) {
+              yPos = margin + 5;
+            }
+            if (line.trim()) {
+              pdf.text(line.trim(), margin + 5, yPos);
+              yPos += 6.5;
+            }
+          });
+          yPos += 8;
+
+          // Role Model Box - hitung tinggi dinamis dengan spacing lebih baik
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'normal');
+          const roleModel = cleanText(career.rolemodel);
+          // Width untuk konten: contentWidth - margin kiri (5) - margin kanan (5) = contentWidth - 10
+          const roleModelLines = pdf.splitTextToSize(roleModel, contentWidth - 10);
+          // Tinggi = label (7mm) + spacing setelah label (3mm) + (jumlah baris * 7mm) + padding bottom (12mm)
+          const roleModelBoxHeight = Math.max(26, 7 + 3 + (roleModelLines.length * 7) + 12);
+          
+          pageNum = checkAndAddPage(yPos, pageNum, roleModelBoxHeight + 3);
+          if (yPos + roleModelBoxHeight > pageHeight - footerHeight) {
+            yPos = margin + 5;
           }
+          
+          pdf.setFillColor(255, 240, 243); // Very light pink
+          pdf.roundedRect(margin, yPos, contentWidth, roleModelBoxHeight, 3, 3, 'F');
+          
+          pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setLineWidth(0.3);
+          pdf.roundedRect(margin, yPos, contentWidth, roleModelBoxHeight, 3, 3, 'D');
+          
+          // Label "Tokoh Hebat:"
+          pdf.setFontSize(9);
+          pdf.setTextColor(102, 102, 102);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Tokoh Hebat:', margin + 5, yPos + 7);
+          
+          // Konten Role Model - mulai dari bawah label dengan spacing yang cukup
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+          const roleModelStartY = yPos + 10; // Mulai dari bawah label dengan spacing 3mm
+          roleModelLines.forEach((line: string, idx: number) => {
+            if (line.trim()) {
+              pdf.text(line.trim(), margin + 5, roleModelStartY + (idx * 7));
+            }
+          });
+          yPos += roleModelBoxHeight + 25; // Spacing ke bawah ditambah menjadi 25mm
+
+          // Subjects Box - hitung tinggi dinamis dengan spacing lebih baik
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          const subjects = Array.isArray(career.subjects) ? career.subjects.join(', ') : career.subjects;
+          const subjectsText = cleanText(subjects);
+          // Width untuk konten: contentWidth - margin kiri (5) - margin kanan (5) = contentWidth - 10
+          const subjectsLines = pdf.splitTextToSize(subjectsText, contentWidth - 10);
+          // Tinggi = label (7mm) + spacing setelah label (3mm) + (jumlah baris * 7mm) + padding bottom (12mm)
+          const subjectsBoxHeight = Math.max(26, 7 + 3 + (subjectsLines.length * 7) + 12);
+          
+          pageNum = checkAndAddPage(yPos, pageNum, subjectsBoxHeight + 3);
+          if (yPos + subjectsBoxHeight > pageHeight - footerHeight) {
+            yPos = margin + 5;
+          }
+          
+          pdf.setFillColor(225, 245, 254); // Light blue
+          pdf.roundedRect(margin, yPos, contentWidth, subjectsBoxHeight, 3, 3, 'F');
+          
+          pdf.setDrawColor(2, 119, 189); // Blue
+          pdf.setLineWidth(0.3);
+          pdf.roundedRect(margin, yPos, contentWidth, subjectsBoxHeight, 3, 3, 'D');
+          
+          // Label "Pelajaran Favorit:"
+          pdf.setFontSize(9);
+          pdf.setTextColor(102, 102, 102);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Pelajaran Favorit:', margin + 5, yPos + 7);
+          
+          // Konten Subjects - mulai dari bawah label dengan spacing yang cukup
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(1, 87, 155); // Dark blue
+          const subjectsStartY = yPos + 10; // Mulai dari bawah label dengan spacing 3mm
+          subjectsLines.forEach((line: string, idx: number) => {
+            if (line.trim()) {
+              pdf.text(line.trim(), margin + 5, subjectsStartY + (idx * 7));
+            }
+          });
+          yPos += subjectsBoxHeight + 25; // Spacing ke bawah ditambah menjadi 25mm
+
+          // Draw card border setelah semua konten selesai
+          const cardEndY = yPos;
+          const cardHeight = cardEndY - cardStartY;
+          pdf.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
+          pdf.setLineWidth(0.5);
+          pdf.roundedRect(margin, cardStartY, contentWidth, cardHeight, 3, 3, 'D');
+
+          // Spacing antar career
+          yPos += 12;
         });
-        
-        // Add spacing between paragraphs
-        if (paraIndex < paragraphs.length - 1) {
-          currentY += 4;
-        }
-      });
-
-      // Subject Info Box
-      currentY += 10;
-      if (currentY > pageHeight - footerHeight - 25) {
-        addFooter(pageNum, 0);
-        pdf.addPage();
-        pageNum++;
-        currentY = margin + 5;
       }
-
-      pdf.setFillColor(250, 240, 245); // Light pink background
-      pdf.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'F');
-      
-      // Border untuk subject box
-      pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.setLineWidth(0.5);
-      pdf.roundedRect(margin, currentY, contentWidth, 20, 3, 3, 'D');
-      
-      // Mata pelajaran (tanpa ikon buku)
-      pdf.setFontSize(9);
-      pdf.setTextColor(102, 102, 102);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Mata Pelajaran yang Relevan', margin + 5, currentY + 8);
-      
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-      pdf.text(relatedSubject, margin + 5, currentY + 15);
 
       // Add footer to all pages
       const totalPages = (pdf as any).internal.getNumberOfPages();
@@ -1044,9 +1111,17 @@ export default function KuisPage() {
         addFooter(i, totalPages);
       }
 
-      // Download PDF
-      const sanitizedName = displayNama.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-').substring(0, 50);
-      const fileName = `Hasil-Kuis-Educorner-${sanitizedName}.pdf`;
+      // Generate filename dengan tanggal dan jam
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      // Format: Hasil-Kuis-Educorner-YYYYMMDD-HHMMSS.pdf
+      const fileName = `Hasil-Kuis-Educorner-${year}${month}${day}-${hours}${minutes}${seconds}.pdf`;
       pdf.save(fileName);
     } catch (error: any) {
       console.error('Error generating PDF:', error);
@@ -1376,19 +1451,12 @@ export default function KuisPage() {
                   )}
                 </button>
                 
-                <button
-                  onClick={() => {
-                    try {
-                      if (typeof window !== 'undefined' && window.localStorage) {
-                        localStorage.removeItem("quizResult");
-                      }
-                    } catch (e) {
-                      console.warn("Gagal menghapus dari localStorage:", e);
-                    }
-                    handleCobaTesLagi();
-                  }}
-                  className="bg-gradient-to-r from-[#A7C957] to-[#6A994E] hover:from-[#8FB84E] hover:to-[#588B3B] text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
-                >
+                    <button
+                      onClick={() => {
+                        handleCobaTesLagi();
+                      }}
+                      className="bg-gradient-to-r from-[#A7C957] to-[#6A994E] hover:from-[#8FB84E] hover:to-[#588B3B] text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
+                    >
                   <span className="text-lg" suppressHydrationWarning>🔄</span>
                   <span>Coba Lagi</span>
                 </button>
@@ -1397,14 +1465,7 @@ export default function KuisPage() {
               {/* Row 2: Kembali ke Beranda */}
               <button
                 onClick={() => {
-                  try {
-                    if (typeof window !== 'undefined' && window.localStorage) {
-                      localStorage.removeItem("quizResult");
-                    }
-                  } catch (e) {
-                    console.warn("Gagal menghapus dari localStorage:", e);
-                  }
-                  window.location.href = "/";
+                  router.push("/");
                 }}
                 className="w-full bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#E91E63] hover:text-[#C2185B] border-2 border-[#FFD4E5] hover:border-[#FFB6C1] font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md flex items-center justify-center gap-2"
               >
@@ -1691,7 +1752,7 @@ export default function KuisPage() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-16 max-w-3xl relative z-10">
+      <main className="container mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-16 pb-24 max-w-3xl relative z-10">
         <div className="text-center mb-10 animate-fade-in">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#2D2D2D] mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
             Siap Temukan <span className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent">Cita-Citamu?</span>
@@ -1783,11 +1844,18 @@ export default function KuisPage() {
         </div>
 
         {/* Back Button */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 mb-20 text-center relative" style={{ position: 'relative', zIndex: 100 }}>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#FF4D6D] hover:text-[#E91E63] font-semibold text-sm transition-all px-5 py-2.5 rounded-xl border-2 border-[#FFD4E5] hover:border-[#FFB6C1] shadow-sm hover:shadow-md transform hover:scale-105"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#FF4D6D] hover:text-[#E91E63] font-semibold text-sm transition-all px-5 py-2.5 rounded-xl border-2 border-[#FFD4E5] hover:border-[#FFB6C1] shadow-sm hover:shadow-md transform hover:scale-105 cursor-pointer"
+            style={{ 
+              fontFamily: 'Inter, sans-serif',
+              textDecoration: 'none',
+              position: 'relative',
+              zIndex: 100,
+              pointerEvents: 'auto',
+              display: 'inline-flex'
+            }}
           >
             <span className="text-lg transition-transform group-hover:-translate-x-1">←</span>
             <span>Kembali ke Beranda</span>
@@ -1797,7 +1865,7 @@ export default function KuisPage() {
 
       {/* Footer - sama seperti page.tsx */}
       <footer 
-        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
+        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-0 backdrop-blur-sm bg-white/80"
         style={{
           borderColor: 'rgba(243, 244, 246, 0.5)',
           fontFamily: 'Inter, sans-serif'

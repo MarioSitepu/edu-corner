@@ -56,21 +56,86 @@ export default function KuisPage() {
   };
 
   // Load progress kuis dari localStorage saat component mount (hanya jika kuis masih berjalan)
+  // Dan cek apakah hasil sudah siap untuk auto-reset
   useEffect(() => {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
+      if (typeof window !== 'undefined' && window.localStorage && window.sessionStorage) {
+        // Cek apakah hasil sudah siap (dari sessionStorage)
+        const hasResultReady = sessionStorage.getItem("quizResultReady");
+        
+        // Cek progress kuis yang sedang berjalan
         const savedProgress = localStorage.getItem("quizProgress");
+        
+        if (hasResultReady === "true" && !savedProgress) {
+          // Hasil sudah siap dan tidak ada progress kuis yang sedang berjalan
+          // Reset semua dan mulai kuis baru
+          sessionStorage.removeItem("quizResultReady");
+          setShowResult(false);
+          setShowQuiz(false);
+          setSavedResult(null);
+          setAnswers([]);
+          setCurrentQuestion(0);
+          setScores({ E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 });
+          setMbtiCode("");
+          setTopCareers([]);
+          setNama("");
+          setKelas("");
+          setIsExpanded(false);
+          setExplanation("");
+          setOptionsVisible(false);
+          return;
+        }
+        
         if (savedProgress) {
           try {
             const progress = JSON.parse(savedProgress);
             // Validasi struktur data dan pastikan kuis masih berjalan (belum selesai)
-            if (progress && typeof progress === 'object' && progress.nama && progress.kelas && 
-                progress.currentQuestion !== undefined && progress.currentQuestion < questions.length) {
+            if (progress && typeof progress === 'object' && progress.nama && progress.kelas) {
+              const savedAnswers = progress.answers || [];
+              const savedScores = progress.scores || { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+              
+              // Cari soal yang paling awal yang belum dijawab
+              let firstUnansweredQuestion = 0;
+              for (let i = 0; i < questions.length; i++) {
+                if (savedAnswers[i] === undefined || savedAnswers[i] === null) {
+                  firstUnansweredQuestion = i;
+                  break;
+                }
+              }
+              
+              // Jika semua soal sudah dijawab, reset (hasil sudah siap)
+              if (savedAnswers.length >= questions.length) {
+                // Semua soal sudah dijawab, hapus progress dan set flag untuk reset
+                localStorage.removeItem("quizProgress");
+                try {
+                  if (typeof window !== 'undefined' && window.sessionStorage) {
+                    sessionStorage.setItem("quizResultReady", "true");
+                  }
+                } catch (e) {
+                  console.warn("Gagal menyimpan flag hasil ke sessionStorage:", e);
+                }
+                // Reset semua state
+                setShowResult(false);
+                setShowQuiz(false);
+                setSavedResult(null);
+                setAnswers([]);
+                setCurrentQuestion(0);
+                setScores({ E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 });
+                setMbtiCode("");
+                setTopCareers([]);
+                setNama("");
+                setKelas("");
+                setIsExpanded(false);
+                setExplanation("");
+                setOptionsVisible(false);
+                return;
+              }
+              
               setNama(progress.nama || "");
               setKelas(progress.kelas || "");
-              setCurrentQuestion(progress.currentQuestion || 0);
-              setAnswers(progress.answers || []);
-              setScores(progress.scores || { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 });
+              setCurrentQuestion(firstUnansweredQuestion); // Kembali ke soal yang belum dijawab paling awal
+              setAnswers(savedAnswers);
+              setScores(savedScores);
               setShowQuiz(true);
               setShowResult(false); // Pastikan tidak menampilkan hasil
               setOptionsVisible(false);
@@ -485,10 +550,13 @@ export default function KuisPage() {
       setTopCareers([]);
       setShowQuiz(true);
       setOptionsVisible(false);
-      // Hapus progress lama dari localStorage
+      // Hapus progress lama dari localStorage dan flag hasil dari sessionStorage
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
           localStorage.removeItem("quizProgress");
+        }
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          sessionStorage.removeItem("quizResultReady");
         }
       } catch (e) {
         console.warn("Gagal menghapus progress dari localStorage:", e);
@@ -582,9 +650,9 @@ export default function KuisPage() {
       const top3 = matches.slice(0, 3);
       setTopCareers(top3);
       
-      // Simpan hasil ke database (gunakan profesi teratas)
+      // Simpan hasil ke database dengan data lengkap
       const hasilCitaCita = top3[0] ? top3[0].data.name : "Belum ditentukan";
-      saveResult(hasilCitaCita);
+      saveResult(hasilCitaCita, myCode, top3);
       
       // Hapus progress dari localStorage karena kuis sudah selesai
       try {
@@ -603,12 +671,20 @@ export default function KuisPage() {
       transitionTimerRef.current = setTimeout(() => {
         setIsTransitioning(false);
         setShowResult(true);
+        // Simpan flag bahwa hasil sudah siap (untuk auto-reset saat refresh)
+        try {
+          if (typeof window !== 'undefined' && window.sessionStorage) {
+            sessionStorage.setItem("quizResultReady", "true");
+          }
+        } catch (e) {
+          console.warn("Gagal menyimpan flag hasil ke sessionStorage:", e);
+        }
         transitionTimerRef.current = null;
       }, 800);
     }
   };
 
-  const saveResult = async (hasilCitaCita: string) => {
+  const saveResult = async (hasilCitaCita: string, mbtiCodeValue: string, topCareersData: any[]) => {
     setIsSaving(true);
     const result: QuizResult = {
       nama: nama.trim(),
@@ -620,8 +696,16 @@ export default function KuisPage() {
     // Set state saja, tidak simpan ke localStorage
     setSavedResult(result);
 
-    // Simpan ke database
+    // Simpan ke database dengan data lengkap
     try {
+      // Format topCareers untuk disimpan ke database - hanya 3 posisi cita-cita dengan kecocokan
+      const topCareersFormatted = topCareersData.map((item, index) => ({
+        position: index + 1, // Posisi 1, 2, 3
+        name: item.data.name,
+        matchPercent: Math.round((item.score / 4) * 100),
+        score: item.score
+      }));
+
       await fetch("/api/data", {
         method: "POST",
         headers: {
@@ -629,8 +713,8 @@ export default function KuisPage() {
         },
         body: JSON.stringify({
           nama: result.nama,
-          citaCita: result.citaCita,
-          kelas: result.kelas,
+          mbtiCode: mbtiCodeValue,
+          topCareers: topCareersFormatted,
         }),
       });
     } catch (error) {
@@ -665,10 +749,13 @@ export default function KuisPage() {
     setKelas("");
     setIsExpanded(false);
     setExplanation("");
-    // Hapus progress dari localStorage
+    // Hapus progress dari localStorage dan flag hasil dari sessionStorage
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem("quizProgress");
+      }
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        sessionStorage.removeItem("quizResultReady");
       }
     } catch (e) {
       console.warn("Gagal menghapus progress dari localStorage:", e);
@@ -852,86 +939,83 @@ export default function KuisPage() {
         return pageNum;
       };
 
-      // Header dengan gradient effect
+      // Header dengan gradient effect - format lebih bagus
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      pdf.rect(0, 0, pageWidth, 50, 'F');
+      pdf.rect(0, 0, pageWidth, 55, 'F');
       
-      // Title
-      pdf.setFontSize(20);
+      // Title dengan spacing lebih baik
+      pdf.setFontSize(22);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(255, 255, 255);
-      pdf.text('EduCorner: SahabatMimpi', margin, 32);
+      pdf.text('EduCorner: SahabatMimpi', margin, 35);
       
-      pdf.setFontSize(11);
+      pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(255, 255, 255);
-      pdf.text('KKN T Margo Lestari', margin, 40);
+      pdf.text('KKN T Margo Lestari', margin, 44);
 
-      let yPos = 65;
+      let yPos = 70;
       let pageNum = 1;
 
-      // Title Section - Hasil Analisis Misi
-      pdf.setFontSize(16);
+      // Title Section - Hasil Analisis Misi dengan format lebih bagus
+      pdf.setFontSize(18);
       pdf.setTextColor(233, 30, 99); // #E91E63
       pdf.setFont('helvetica', 'bold');
       pdf.text('Hasil Analisis Misi', margin, yPos);
-      yPos += 10;
+      yPos += 12;
 
-      // MBTI Code Box
+      // MBTI Code Box - format lebih bagus
       if (mbtiCode) {
         pdf.setFillColor(255, 240, 243); // Very light pink
-        pdf.roundedRect(margin, yPos, contentWidth, 20, 3, 3, 'F');
+        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'F');
         
         pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        pdf.setLineWidth(0.5);
-        pdf.roundedRect(margin, yPos, contentWidth, 20, 3, 3, 'D');
+        pdf.setLineWidth(0.6);
+        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'D');
         
-        pdf.setFontSize(9);
+        pdf.setFontSize(10);
         pdf.setTextColor(102, 102, 102);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('Kode Kepribadianmu:', margin + 5, yPos + 8);
+        pdf.text('Kode Kepribadianmu:', margin + 5, yPos + 9);
         
-        pdf.setFontSize(18);
+        pdf.setFontSize(20);
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setFont('helvetica', 'bold');
-        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 14, { align: 'right' });
-        yPos += 25;
+        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 16, { align: 'right' });
+        yPos += 28;
       }
 
-      // Info Box - Nama, Kelas, dan Tanggal Kuis
+      // Info Box - Nama dan Tanggal Kuis (format lebih bagus)
       pdf.setFillColor(245, 249, 240); // Light green background
-      pdf.roundedRect(margin, yPos, contentWidth, 32, 3, 3, 'F');
+      pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'F');
       
       // Border untuk info box
       pdf.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       pdf.setLineWidth(0.5);
-      pdf.roundedRect(margin, yPos, contentWidth, 32, 3, 3, 'D');
+      pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'D');
       
-      pdf.setFontSize(10);
+      // Nama dengan format lebih bagus
+      pdf.setFontSize(11);
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
       pdf.setFont('helvetica', 'bold');
       pdf.text(`Nama:`, margin + 5, yPos + 9);
       pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(11);
       pdf.text(cleanedNama, margin + 32, yPos + 9);
       
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`Kelas:`, margin + contentWidth / 2 + 5, yPos + 9);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(cleanedKelas, margin + contentWidth / 2 + 32, yPos + 9);
-      
-      // Tanggal Kuis
+      // Tanggal Kuis dengan format lebih bagus
       pdf.setFontSize(9);
       pdf.setTextColor(102, 102, 102);
-      pdf.setFont('helvetica', 'italic');
-      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 20);
-      yPos += 38;
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 17);
+      yPos += 30;
 
-      // Section Title - Pekerjaan Masa Depan yang Cocok
-      pdf.setFontSize(14);
-      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      // Section Title - Pekerjaan Masa Depan yang Cocok - format lebih bagus
+      pdf.setFontSize(15);
+      pdf.setTextColor(233, 30, 99); // #E91E63
       pdf.setFont('helvetica', 'bold');
       pdf.text('Pekerjaan Masa Depan yang Cocok:', margin, yPos);
-      yPos += 12;
+      yPos += 15;
 
       // Top 3 Careers Section
       if (topCareers.length > 0) {
@@ -957,47 +1041,47 @@ export default function KuisPage() {
           const careerNameLines = pdf.splitTextToSize(careerName, careerNameWidth);
           const headerHeight = Math.max(26, 8 + (careerNameLines.length * 7) + 4); // Minimum 26mm, dinamis berdasarkan jumlah baris
 
-          // Header Card dengan background
+          // Header Card dengan background - format lebih bagus
           pdf.setFillColor(255, 228, 233); // Light pink
-          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 3, 3, 'F');
+          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 4, 4, 'F');
           
-          // Border untuk header
+          // Border untuk header - lebih tebal untuk lebih jelas
           pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.setLineWidth(0.5);
-          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 3, 3, 'D');
+          pdf.setLineWidth(0.7);
+          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 4, 4, 'D');
 
           // Badge untuk posisi dengan background lebih besar
           pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-          pdf.circle(margin + 14, yPos + headerHeight / 2, 9, 'F');
+          pdf.circle(margin + 14, yPos + headerHeight / 2, 10, 'F');
           pdf.setTextColor(255, 255, 255);
-          pdf.setFontSize(11);
+          pdf.setFontSize(12);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(`${index + 1}`, margin + 14, yPos + headerHeight / 2 + 2, { align: 'center' });
+          pdf.text(`${index + 1}`, margin + 14, yPos + headerHeight / 2 + 2.5, { align: 'center' });
 
           // Career Name - posisi dinamis berdasarkan tinggi header, tidak overlap dengan badge dan match percent
-          pdf.setFontSize(14);
+          pdf.setFontSize(15);
           pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
           pdf.setFont('helvetica', 'bold');
-          const startY = yPos + 8;
+          const startY = yPos + 9;
           careerNameLines.forEach((line: string, idx: number) => {
-            pdf.text(line.trim(), margin + 28, startY + (idx * 7));
+            pdf.text(line.trim(), margin + 30, startY + (idx * 7.5));
           });
           
           // Match Percent di kanan - posisi dinamis, tidak overlap dengan career name
-          pdf.setFontSize(12);
+          pdf.setFontSize(13);
           pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setFont('helvetica', 'bold');
           pdf.text(`${matchPercent}%`, margin + contentWidth - 8, startY, { align: 'right' });
           
-          pdf.setFontSize(8);
+          pdf.setFontSize(9);
           pdf.setTextColor(102, 102, 102);
           pdf.setFont('helvetica', 'normal');
-          pdf.text('Kecocokan', margin + contentWidth - 8, startY + 6, { align: 'right' });
+          pdf.text('Kecocokan', margin + contentWidth - 8, startY + 7, { align: 'right' });
 
-          yPos += headerHeight + 5;
+          yPos += headerHeight + 8;
 
-          // Deskripsi Career dengan spacing lebih baik
-          pdf.setFontSize(10);
+          // Deskripsi Career dengan spacing lebih baik - format lebih bagus
+          pdf.setFontSize(10.5);
           pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
           pdf.setFont('helvetica', 'normal');
           const careerDesc = cleanText(career.desc);
@@ -1010,10 +1094,10 @@ export default function KuisPage() {
             }
             if (line.trim()) {
               pdf.text(line.trim(), margin + 5, yPos);
-              yPos += 6.5;
+              yPos += 7;
             }
           });
-          yPos += 8;
+          yPos += 10;
 
           // Role Model Box - hitung tinggi dinamis dengan spacing lebih baik
           pdf.setFontSize(9);
@@ -1209,7 +1293,7 @@ export default function KuisPage() {
       <>
         <StructuredData data={breadcrumbStructuredData} />
         <StructuredData data={quizStructuredData} />
-        <div className="min-h-screen bg-gradient-to-br from-[#FFE8EC] via-[#FFF5F7] to-[#FFE8EC] flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-[#FFE8EC] via-[#FFF5F7] to-[#FFE8EC] flex flex-col relative overflow-x-hidden">
         {/* Decorative Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-10 left-10 w-64 h-64 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
@@ -1254,7 +1338,7 @@ export default function KuisPage() {
         </header>
 
         {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="flex-1 flex items-center justify-center px-4 py-8 pb-24">
           <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-in relative z-10">
           {/* Header dengan Avatar */}
           <div className="bg-gradient-to-br from-[#FFE8EC] to-[#FFF0F3] px-8 py-10 text-center relative">
@@ -1479,7 +1563,7 @@ export default function KuisPage() {
 
         {/* Footer */}
         <footer 
-          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
+          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
           style={{
             borderColor: 'rgba(243, 244, 246, 0.5)',
             fontFamily: 'Inter, sans-serif'
@@ -1502,7 +1586,7 @@ export default function KuisPage() {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-x-hidden">
         {/* Decorative Background Elements - sama seperti page.tsx */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
@@ -1686,7 +1770,7 @@ export default function KuisPage() {
 
         {/* Footer - sama seperti page.tsx */}
         <footer 
-          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-10 backdrop-blur-sm bg-white/80"
+          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
           style={{
             borderColor: 'rgba(243, 244, 246, 0.5)',
             fontFamily: 'Inter, sans-serif'
@@ -1865,7 +1949,7 @@ export default function KuisPage() {
 
       {/* Footer - sama seperti page.tsx */}
       <footer 
-        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-0 backdrop-blur-sm bg-white/80"
+        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
         style={{
           borderColor: 'rgba(243, 244, 246, 0.5)',
           fontFamily: 'Inter, sans-serif'

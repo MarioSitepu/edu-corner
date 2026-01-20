@@ -3,13 +3,17 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { generatePDFFromData } from "@/lib/pdf-generator";
 
 interface HistoryItem {
   id: number;
   nama: string;
-  cita_cita: string;
-  kelas?: string;
+  mbti_code?: string;
+  posisi_1_nama?: string;
+  posisi_1_persentase?: number;
+  posisi_2_nama?: string;
+  posisi_2_persentase?: number;
+  posisi_3_nama?: string;
+  posisi_3_persentase?: number;
   created_at: string;
 }
 
@@ -22,7 +26,7 @@ interface CareerExplanation {
 }
 
 type TabType = 'edu_corner' | 'career_explanations';
-type SortField = 'id' | 'nama' | 'kelas' | 'cita_cita' | 'created_at' | 'updated_at' | 'explanation';
+type SortField = 'id' | 'nama' | 'mbti_code' | 'created_at' | 'updated_at' | 'explanation';
 type SortOrder = 'asc' | 'desc';
 
 export default function CekHasilPage() {
@@ -77,37 +81,532 @@ export default function CekHasilPage() {
     }
   };
 
+  // Database 12 Profesi (sama seperti di kuis/page.tsx)
+  const activities = [
+    {
+      name: "Ahli Robotik & Komputer",
+      desc: "Kamu punya otak yang suka berpikir dan memecahkan masalah! Kamu senang mencari tahu \"kenapa\" dan \"bagaimana\". Anak seperti kamu bisa membuat mesin jadi pintar, membuat komputer bisa membantu manusia, bahkan menciptakan teknologi masa depan. Kalau kamu rajin belajar dan terus mencoba, suatu hari kamu bisa bikin robot, game, atau aplikasi yang dipakai banyak orang!\n• Pembuat robot\n• Pembuat game\n• Programmer komputer\n• Teknisi komputer\n• Ahli IT",
+      rolemodel: "Marc Raibert, Dr. Eng. Eniya Listiani Dewi, Alan Turing",
+      traits: ["I", "N", "T", "P"],
+      subjects: ["Matematika", "Komputer"],
+      icon: "🤖"
+    },
+    {
+      name: "Penemu & Ilmuwan",
+      desc: "Kamu adalah anak yang penuh rasa ingin tahu! Kamu suka bertanya, mencoba, dan mencari jawaban dari hal-hal di sekitarmu. Anak seperti kamu bisa menemukan hal baru yang membuat hidup manusia lebih baik. Siapa tahu, suatu hari nanti kamu menemukan obat, alat, atau pengetahuan baru yang membuat dunia bangga padamu!\n• Ilmuwan sains\n• Peneliti\n• Penemu alat\n• Ahli IPA\n• Dosen atau guru sains",
+      rolemodel: "Albert Einstein, Marie Curie, Dr. Jonas Salk",
+      traits: ["I", "N", "T", "J"],
+      subjects: ["IPA", "Matematika"],
+      icon: "🔬"
+    },
+    {
+      name: "Arsitek & Pembangun",
+      desc: "Kamu punya kemampuan membuat sesuatu jadi nyata! Kamu bisa membayangkan bentuk, menghitung dengan teliti, dan membuat bangunan berdiri kuat dan indah. Anak seperti kamu bisa membangun rumah, jembatan, atau gedung yang dipakai banyak orang. Karyamu bisa dilihat, disentuh, dan dirasakan oleh semua orang!\n• Arsitek\n• Insinyur bangunan\n• Tukang ahli\n• Perencana bangunan\n• Desainer konstruksi",
+      rolemodel: "Zaha Hadid, Ridwan Kamil, Gustave Eiffel",
+      traits: ["I", "S", "T", "P"],
+      subjects: ["Matematika", "Seni Budaya"],
+      icon: "🏗️"
+    },
+    {
+      name: "Dokter & Tenaga Medis",
+      desc: "Kamu punya hati yang baik dan suka menolong orang lain. Kamu peduli saat melihat orang sakit dan ingin membuat mereka kembali sehat. Anak seperti kamu bisa menjadi pahlawan yang membantu banyak orang setiap hari. Dengan belajar sungguh-sungguh, suatu hari kamu bisa merawat, menyembuhkan, dan memberi harapan bagi banyak keluarga!\n• Dokter\n• Perawat\n• Bidan\n• Petugas kesehatan\n• Relawan medis",
+      rolemodel: "Dr. Terawan, Dr. Ben Carson, Dr. Elizabeth Blackwell",
+      traits: ["E", "S", "F", "J"],
+      subjects: ["IPA", "PJOK", "Biologi", "Kesehatan"],
+      icon: "👨‍⚕️"
+    },
+    {
+      name: "Psikolog & Konselor",
+      desc: "Kamu adalah anak yang tenang, sabar, dan pintar mendengarkan. Kamu bisa membuat orang lain merasa dimengerti dan tidak sendirian. Anak seperti kamu sangat dibutuhkan untuk membantu teman-teman yang sedang sedih atau bingung. Suatu hari nanti, kamu bisa menjadi orang yang memberi semangat dan membantu banyak orang menemukan kebahagiaan mereka.\n• Psikolog\n• Konselor sekolah\n• Guru BK\n• Pendamping anak\n• Pekerja sosial",
+      rolemodel: "Seto Mulyadi (Kak Seto), Viktor Frankl, Carl Jung",
+      traits: ["I", "N", "F", "J"],
+      subjects: ["IPS", "Bahasa Indonesia", "PPKn"],
+      icon: "🧠"
+    },
+    {
+      name: "Penulis & Pembuat Cerita",
+      desc: "Kamu punya imajinasi yang luas dan suka bercerita. Ide-ide di kepalamu bisa menjadi kisah seru yang membuat orang tertawa, terharu, atau berani bermimpi. Anak seperti kamu bisa membuat cerita yang dibaca banyak orang dan dikenang lama. Dengan rajin membaca dan menulis, kamu bisa menciptakan dunia buatanmu sendiri lewat kata-kata!\n• Penulis buku cerita\n• Penulis komik\n• Penulis cerita anak\n• Penulis film\n• Jurnalis",
+      rolemodel: "JK Rowling, Andrea Hirata, George Lucas, Mario Vargas Llosa",
+      traits: ["I", "N", "F", "P"],
+      subjects: ["Bahasa Indonesia", "Seni Budaya", "Sastra"],
+      icon: "✍️"
+    },
+    {
+      name: "Seniman & Desainer",
+      desc: "Kamu bisa melihat keindahan dari hal-hal sederhana. Kamu suka menggambar, mewarnai, dan mengekspresikan perasaan lewat karya. Anak seperti kamu bisa menciptakan gambar dan desain yang membuat orang kagum. Karyamu bisa menghiasi buku, baju, poster, atau bahkan bangunan!\n• Pelukis\n• Desainer gambar\n• Ilustrator\n• Pembuat poster\n• Perajin seni",
+      rolemodel: "Raden Saleh, Affandi, Nyoman Nuarta",
+      traits: ["I", "S", "F", "P"],
+      subjects: ["Seni Budaya"],
+      icon: "🎨"
+    },
+    {
+      name: "Aktor & Penghibur",
+      desc: "Kamu berani tampil dan suka menghibur orang lain. Kamu bisa membuat orang tertawa, tersenyum, atau terharu lewat peran yang kamu mainkan. Anak seperti kamu bisa tampil di panggung, film, atau pertunjukan. Dengan latihan dan percaya diri, kamu bisa menjadi penghibur yang disukai banyak orang!\n• Aktor film\n• Pemeran teater\n• Pengisi acara\n• Komedian\n• Presenter",
+      rolemodel: "Reza Rahadian, Raffi Ahmad, Christine Hakim",
+      traits: ["E", "S", "F", "P"],
+      subjects: ["Teater", "Bahasa"],
+      icon: "🎭"
+    },
+    {
+      name: "Pemimpin (CEO) & Manajer",
+      desc: "Kamu punya keberanian untuk memimpin dan mengambil keputusan. Kamu suka mengatur, mengajak teman bekerja sama, dan membuat rencana agar semuanya berjalan baik. Anak seperti kamu bisa menjadi pemimpin yang adil dan bertanggung jawab. Suatu hari nanti, kamu bisa memimpin sebuah tim besar dan membuat banyak orang bekerja bersama untuk tujuan yang baik!\n• Pemimpin tim\n• Manajer\n• Ketua organisasi\n• Kepala proyek\n• Direktur perusahaan",
+      rolemodel: "Bill Gates, Elon Musk, Nadiem Makarim",
+      traits: ["E", "N", "T", "J"],
+      subjects: ["Organisasi", "IPS"],
+      icon: "👔"
+    },
+    {
+      name: "Pengusaha & Pedagang",
+      desc: "Kamu berani mencoba hal baru dan tidak mudah menyerah. Kamu pandai melihat kesempatan dan suka mencari cara agar sesuatu bisa berjalan lebih baik. Anak seperti kamu bisa membangun usaha sendiri dan menciptakan lapangan kerja untuk orang lain. Dengan belajar berhitung, merencanakan, dan berusaha, kamu bisa mewujudkan ide-idemu menjadi sesuatu yang nyata!\n• Pemilik usaha\n• Pedagang\n• Wirausaha\n• Pembuat produk\n• Pengelola bisnis",
+      rolemodel: "Jack Ma, Warren Buffett, Bob Sadino",
+      traits: ["E", "S", "T", "P"],
+      subjects: ["Matematika", "IPS"],
+      icon: "💼"
+    },
+    {
+      name: "Polisi, TNI & Penegak Hukum",
+      desc: "Kamu punya keberanian dan rasa tanggung jawab yang besar. Kamu suka aturan, keadilan, dan ingin melindungi orang lain. Anak seperti kamu bisa menjadi penjaga keamanan dan pembela kebenaran. Dengan disiplin dan latihan, kamu bisa menjaga ketertiban dan membuat lingkungan jadi aman dan damai.\n• Polisi\n• Tentara (TNI)\n• Penjaga keamanan\n• Petugas hukum\n• Aparat negara",
+      rolemodel: "Eliot Ness, Alexander the Great, Jenderal Hoegeng Iman Santoso",
+      traits: ["I", "S", "T", "J"],
+      subjects: ["PJOK", "PPKn"],
+      icon: "👮"
+    },
+    {
+      name: "Diplomat & Juru Bicara",
+      desc: "Kamu pandai berbicara dan bisa menyampaikan pendapat dengan baik. Kamu juga mampu mendengarkan dan menyatukan banyak orang yang berbeda. Anak seperti kamu bisa menjadi penyampai pesan yang membawa kedamaian dan pengertian. Suaramu bisa membuat orang lain saling memahami dan bekerja sama.\n• Diplomat\n• Juru bicara\n• Pembawa acara\n• Duta\n• Negosiator",
+      rolemodel: "Najwa Shihab, Angelina Jolie",
+      traits: ["E", "N", "F", "J"],
+      subjects: ["Bahasa Indonesia", "Bahasa Inggris", "PPKn", "IPS"],
+      icon: "🎤"
+    },
+  ];
+
   const handleDownloadPDF = async (item: HistoryItem) => {
     try {
       setDownloadingId(item.id);
       
-      // Fetch explanation dari API
-      let explanation = '';
-      try {
-        const explainResponse = await fetch("/api/explain-career", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ citaCita: item.cita_cita }),
-        });
-        
-        if (explainResponse.ok) {
-          const explainResult = await explainResponse.json();
-          explanation = explainResult.explanation || '';
+      // Ambil data lengkap career dari activities berdasarkan nama posisi
+      const getCareerData = (careerName: string) => {
+        return activities.find(c => c.name === careerName) || null;
+      };
+
+      // Buat array topCareers dengan data lengkap
+      const topCareers: any[] = [];
+      if (item.posisi_1_nama) {
+        const career1 = getCareerData(item.posisi_1_nama);
+        if (career1) {
+          topCareers.push({
+            data: career1,
+            score: Math.round((item.posisi_1_persentase || 0) / 25) // Convert persentase ke score (0-4)
+          });
         }
-      } catch (err) {
-        console.warn('Failed to fetch explanation:', err);
+      }
+      if (item.posisi_2_nama) {
+        const career2 = getCareerData(item.posisi_2_nama);
+        if (career2) {
+          topCareers.push({
+            data: career2,
+            score: Math.round((item.posisi_2_persentase || 0) / 25)
+          });
+        }
+      }
+      if (item.posisi_3_nama) {
+        const career3 = getCareerData(item.posisi_3_nama);
+        if (career3) {
+          topCareers.push({
+            data: career3,
+            score: Math.round((item.posisi_3_persentase || 0) / 25)
+          });
+        }
       }
 
-      // Generate PDF menggunakan utility function
-      await generatePDFFromData({
-        nama: item.nama,
-        kelas: item.kelas || '',
-        citaCita: item.cita_cita,
-        explanation: explanation,
-        timestamp: item.created_at,
+      // Generate PDF menggunakan logika yang sama seperti di kuis/page.tsx
+      const { default: jsPDF } = await import('jspdf');
+      
+      // Helper function untuk clean text (sama seperti di kuis/page.tsx)
+      const decodeHtmlEntities = (text: string): string => {
+        if (typeof window === 'undefined') return text;
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.innerHTML = text;
+          return textarea.value;
+        } catch (e) {
+          return text
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&nbsp;/g, ' ');
+        }
+      };
+      
+      const cleanText = (text: string): string => {
+        if (!text) return '';
+        let cleaned = decodeHtmlEntities(String(text));
+        cleaned = cleaned.replace(/<[^>]*>/g, '');
+        cleaned = cleaned.replace(/Ø=[^\s]*/g, '');
+        cleaned = cleaned.replace(/[ØÞÜþ•]/g, '');
+        cleaned = cleaned.replace(/&[^a-zA-Z0-9#;]/g, '');
+        cleaned = cleaned.replace(/[^\x20-\x7E\n\r]/g, ' ');
+        cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+        cleaned = cleaned.replace(/0&lt;0/g, '');
+        cleaned = cleaned.replace(/0=/g, '');
+        cleaned = cleaned.replace(/#\s*0/g, '');
+        cleaned = cleaned.replace(/0&lt;/g, '');
+        cleaned = cleaned.replace(/&lt;0/g, '');
+        cleaned = cleaned.replace(/[^a-zA-Z0-9\s.,!?;:()\-'":]/g, ' ');
+        cleaned = cleaned.replace(/\s+/g, ' ');
+        cleaned = cleaned.split('\n').map(line => line.trim()).join('\n');
+        return cleaned.trim();
+      };
+      
+      const cleanedNama = cleanText(item.nama);
+      const mbtiCode = item.mbti_code || '';
+      
+      const rawQuizDate = item.created_at 
+        ? new Date(item.created_at).toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : new Date().toLocaleDateString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+      const quizDate = cleanText(rawQuizDate);
+
+      // Buat PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
       });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
+      const footerHeight = 20;
+
+      // Warna
+      const primaryColor = [255, 77, 109]; // #FF4D6D
+      const secondaryColor = [167, 209, 41]; // #A7C957
+      const textColor = [45, 45, 45]; // #2D2D2D
+      const lightGray = [230, 230, 230];
+
+      // Helper function untuk add footer di setiap halaman
+      const addFooter = (pageNum: number, totalPages: number) => {
+        const footerY = pageHeight - 10;
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('© 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi', pageWidth / 2, footerY, { align: 'center' });
+        
+        const date = new Date().toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        pdf.text(`Dibuat pada: ${date}`, pageWidth / 2, footerY + 5, { align: 'center' });
+        
+        // Page number
+        pdf.text(`Halaman ${pageNum} dari ${totalPages}`, pageWidth / 2, footerY + 10, { align: 'center' });
+      };
+
+      // Helper function untuk check dan add page jika perlu
+      const checkAndAddPage = (currentY: number, pageNum: number, minSpace: number = 20): number => {
+        if (currentY + minSpace > pageHeight - footerHeight) {
+          addFooter(pageNum, 0);
+          pdf.addPage();
+          return pageNum + 1;
+        }
+        return pageNum;
+      };
+
+      // Header dengan gradient effect - format lebih bagus
+      pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      pdf.rect(0, 0, pageWidth, 55, 'F');
+      
+      // Title dengan spacing lebih baik
+      pdf.setFontSize(22);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(255, 255, 255);
+      pdf.text('EduCorner: SahabatMimpi', margin, 35);
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(255, 255, 255);
+      pdf.text('KKN T Margo Lestari', margin, 44);
+
+      let yPos = 70;
+      let pageNum = 1;
+
+      // Title Section - Hasil Analisis Misi dengan format lebih bagus
+      pdf.setFontSize(18);
+      pdf.setTextColor(233, 30, 99); // #E91E63
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Hasil Analisis Misi', margin, yPos);
+      yPos += 12;
+
+      // MBTI Code Box - format lebih bagus
+      if (mbtiCode) {
+        pdf.setFillColor(255, 240, 243); // Very light pink
+        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'F');
+        
+        pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.setLineWidth(0.6);
+        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'D');
+        
+        pdf.setFontSize(10);
+        pdf.setTextColor(102, 102, 102);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Kode Kepribadianmu:', margin + 5, yPos + 9);
+        
+        pdf.setFontSize(20);
+        pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 16, { align: 'right' });
+        yPos += 28;
+      }
+
+      // Info Box - Nama dan Tanggal Kuis (format lebih bagus)
+      pdf.setFillColor(245, 249, 240); // Light green background
+      pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'F');
+      
+      // Border untuk info box
+      pdf.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'D');
+      
+      // Nama dengan format lebih bagus
+      pdf.setFontSize(11);
+      pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Nama:`, margin + 5, yPos + 9);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(11);
+      pdf.text(cleanedNama, margin + 32, yPos + 9);
+      
+      // Tanggal Kuis dengan format lebih bagus
+      pdf.setFontSize(9);
+      pdf.setTextColor(102, 102, 102);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 17);
+      yPos += 30;
+
+      // Section Title - Pekerjaan Masa Depan yang Cocok - format lebih bagus
+      pdf.setFontSize(15);
+      pdf.setTextColor(233, 30, 99); // #E91E63
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Pekerjaan Masa Depan yang Cocok:', margin, yPos);
+      yPos += 15;
+
+      // Top 3 Careers Section
+      if (topCareers.length > 0) {
+        topCareers.forEach((careerItem, index) => {
+          const career = careerItem.data;
+          // Ambil persentase sesuai dengan posisi
+          let matchPercent = 0;
+          if (index === 0 && item.posisi_1_persentase) {
+            matchPercent = item.posisi_1_persentase;
+          } else if (index === 1 && item.posisi_2_persentase) {
+            matchPercent = item.posisi_2_persentase;
+          } else if (index === 2 && item.posisi_3_persentase) {
+            matchPercent = item.posisi_3_persentase;
+          } else {
+            matchPercent = Math.round((careerItem.score / 4) * 100);
+          }
+          
+          // Check jika perlu page baru sebelum mulai card baru
+          pageNum = checkAndAddPage(yPos, pageNum, 100);
+          if (yPos + 100 > pageHeight - footerHeight) {
+            yPos = margin + 5;
+          }
+
+          // Career Card - Outer Border
+          const cardStartY = yPos;
+
+          // Hitung tinggi header berdasarkan panjang career name
+          pdf.setFontSize(14);
+          pdf.setFont('helvetica', 'bold');
+          const careerName = cleanText(career.name);
+          // Career name width: contentWidth - badge area (28mm) - match percent area (45mm) - padding (10mm)
+          const careerNameWidth = contentWidth - 28 - 45 - 10;
+          const careerNameLines = pdf.splitTextToSize(careerName, careerNameWidth);
+          const headerHeight = Math.max(26, 8 + (careerNameLines.length * 7) + 4); // Minimum 26mm, dinamis berdasarkan jumlah baris
+
+          // Header Card dengan background - format lebih bagus
+          pdf.setFillColor(255, 228, 233); // Light pink
+          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 4, 4, 'F');
+          
+          // Border untuk header - lebih tebal untuk lebih jelas
+          pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setLineWidth(0.7);
+          pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 4, 4, 'D');
+
+          // Badge untuk posisi dengan background lebih besar
+          pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.circle(margin + 14, yPos + headerHeight / 2, 10, 'F');
+          pdf.setTextColor(255, 255, 255);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${index + 1}`, margin + 14, yPos + headerHeight / 2 + 2.5, { align: 'center' });
+
+          // Career Name - posisi dinamis berdasarkan tinggi header, tidak overlap dengan badge dan match percent
+          pdf.setFontSize(15);
+          pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+          pdf.setFont('helvetica', 'bold');
+          const startY = yPos + 9;
+          careerNameLines.forEach((line: string, idx: number) => {
+            pdf.text(line.trim(), margin + 30, startY + (idx * 7.5));
+          });
+          
+          // Match Percent di kanan - posisi dinamis, tidak overlap dengan career name
+          pdf.setFontSize(13);
+          pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${matchPercent}%`, margin + contentWidth - 8, startY, { align: 'right' });
+          
+          pdf.setFontSize(9);
+          pdf.setTextColor(102, 102, 102);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text('Kecocokan', margin + contentWidth - 8, startY + 7, { align: 'right' });
+
+          yPos += headerHeight + 8;
+
+          // Deskripsi Career dengan spacing lebih baik - format lebih bagus
+          pdf.setFontSize(10.5);
+          pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+          pdf.setFont('helvetica', 'normal');
+          const careerDesc = cleanText(career.desc);
+          const descLines = pdf.splitTextToSize(careerDesc, contentWidth - 10);
+          
+          descLines.forEach((line: string) => {
+            pageNum = checkAndAddPage(yPos, pageNum, 7);
+            if (yPos + 7 > pageHeight - footerHeight) {
+              yPos = margin + 5;
+            }
+            if (line.trim()) {
+              pdf.text(line.trim(), margin + 5, yPos);
+              yPos += 7;
+            }
+          });
+          yPos += 10;
+
+          // Role Model Box - hitung tinggi dinamis dengan spacing lebih baik
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'normal');
+          const roleModel = cleanText(career.rolemodel);
+          // Width untuk konten: contentWidth - margin kiri (5) - margin kanan (5) = contentWidth - 10
+          const roleModelLines = pdf.splitTextToSize(roleModel, contentWidth - 10);
+          // Tinggi = label (7mm) + spacing setelah label (3mm) + (jumlah baris * 7mm) + padding bottom (12mm)
+          const roleModelBoxHeight = Math.max(26, 7 + 3 + (roleModelLines.length * 7) + 12);
+          
+          pageNum = checkAndAddPage(yPos, pageNum, roleModelBoxHeight + 3);
+          if (yPos + roleModelBoxHeight > pageHeight - footerHeight) {
+            yPos = margin + 5;
+          }
+          
+          pdf.setFillColor(255, 240, 243); // Very light pink
+          pdf.roundedRect(margin, yPos, contentWidth, roleModelBoxHeight, 3, 3, 'F');
+          
+          pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+          pdf.setLineWidth(0.3);
+          pdf.roundedRect(margin, yPos, contentWidth, roleModelBoxHeight, 3, 3, 'D');
+          
+          // Label "Tokoh Hebat:"
+          pdf.setFontSize(9);
+          pdf.setTextColor(102, 102, 102);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Tokoh Hebat:', margin + 5, yPos + 7);
+          
+          // Konten Role Model - mulai dari bawah label dengan spacing yang cukup
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
+          const roleModelStartY = yPos + 10; // Mulai dari bawah label dengan spacing 3mm
+          roleModelLines.forEach((line: string, idx: number) => {
+            if (line.trim()) {
+              pdf.text(line.trim(), margin + 5, roleModelStartY + (idx * 7));
+            }
+          });
+          yPos += roleModelBoxHeight + 25; // Spacing ke bawah ditambah menjadi 25mm
+
+          // Subjects Box - hitung tinggi dinamis dengan spacing lebih baik
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          const subjects = Array.isArray(career.subjects) ? career.subjects.join(', ') : career.subjects;
+          const subjectsText = cleanText(subjects);
+          // Width untuk konten: contentWidth - margin kiri (5) - margin kanan (5) = contentWidth - 10
+          const subjectsLines = pdf.splitTextToSize(subjectsText, contentWidth - 10);
+          // Tinggi = label (7mm) + spacing setelah label (3mm) + (jumlah baris * 7mm) + padding bottom (12mm)
+          const subjectsBoxHeight = Math.max(26, 7 + 3 + (subjectsLines.length * 7) + 12);
+          
+          pageNum = checkAndAddPage(yPos, pageNum, subjectsBoxHeight + 3);
+          if (yPos + subjectsBoxHeight > pageHeight - footerHeight) {
+            yPos = margin + 5;
+          }
+          
+          pdf.setFillColor(225, 245, 254); // Light blue
+          pdf.roundedRect(margin, yPos, contentWidth, subjectsBoxHeight, 3, 3, 'F');
+          
+          pdf.setDrawColor(2, 119, 189); // Blue
+          pdf.setLineWidth(0.3);
+          pdf.roundedRect(margin, yPos, contentWidth, subjectsBoxHeight, 3, 3, 'D');
+          
+          // Label "Pelajaran Favorit:"
+          pdf.setFontSize(9);
+          pdf.setTextColor(102, 102, 102);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Pelajaran Favorit:', margin + 5, yPos + 7);
+          
+          // Konten Subjects - mulai dari bawah label dengan spacing yang cukup
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(1, 87, 155); // Dark blue
+          const subjectsStartY = yPos + 10; // Mulai dari bawah label dengan spacing 3mm
+          subjectsLines.forEach((line: string, idx: number) => {
+            if (line.trim()) {
+              pdf.text(line.trim(), margin + 5, subjectsStartY + (idx * 7));
+            }
+          });
+          yPos += subjectsBoxHeight + 25; // Spacing ke bawah ditambah menjadi 25mm
+
+          // Draw card border setelah semua konten selesai
+          const cardEndY = yPos;
+          const cardHeight = cardEndY - cardStartY;
+          pdf.setDrawColor(lightGray[0], lightGray[1], lightGray[2]);
+          pdf.setLineWidth(0.5);
+          pdf.roundedRect(margin, cardStartY, contentWidth, cardHeight, 3, 3, 'D');
+
+          // Spacing antar career
+          yPos += 12;
+        });
+      }
+
+      // Add footer to all pages
+      const totalPages = (pdf as any).internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        addFooter(i, totalPages);
+      }
+
+      // Generate filename dengan tanggal dan jam
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      // Format: Hasil-Kuis-Educorner-YYYYMMDD-HHMMSS.pdf
+      const fileName = `Hasil-Kuis-Educorner-${year}${month}${day}-${hours}${minutes}${seconds}.pdf`;
+      pdf.save(fileName);
     } catch (error: any) {
       console.error('Error generating PDF:', error);
       alert('Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
@@ -193,8 +692,10 @@ export default function CekHasilPage() {
     const searchLower = searchTerm.toLowerCase();
     return (
       item.nama.toLowerCase().includes(searchLower) ||
-      item.cita_cita.toLowerCase().includes(searchLower) ||
-      (item.kelas && item.kelas.toLowerCase().includes(searchLower))
+      (item.mbti_code && item.mbti_code.toLowerCase().includes(searchLower)) ||
+      (item.posisi_1_nama && item.posisi_1_nama.toLowerCase().includes(searchLower)) ||
+      (item.posisi_2_nama && item.posisi_2_nama.toLowerCase().includes(searchLower)) ||
+      (item.posisi_3_nama && item.posisi_3_nama.toLowerCase().includes(searchLower))
     );
   });
 
@@ -234,13 +735,9 @@ export default function CekHasilPage() {
           aValue = a.nama.toLowerCase();
           bValue = b.nama.toLowerCase();
           break;
-        case 'kelas':
-          aValue = (a.kelas || '').toLowerCase();
-          bValue = (b.kelas || '').toLowerCase();
-          break;
-        case 'cita_cita':
-          aValue = a.cita_cita.toLowerCase();
-          bValue = b.cita_cita.toLowerCase();
+        case 'mbti_code':
+          aValue = (a.mbti_code || '').toLowerCase();
+          bValue = (b.mbti_code || '').toLowerCase();
           break;
         case 'created_at':
           aValue = new Date(a.created_at).getTime();
@@ -529,7 +1026,11 @@ export default function CekHasilPage() {
               <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>CITA-CITA UNIK</p>
               <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {activeTab === 'edu_corner' 
-                  ? new Set(history.map((item) => item.cita_cita)).size
+                  ? new Set([
+                      ...history.map((item) => item.posisi_1_nama).filter(Boolean),
+                      ...history.map((item) => item.posisi_2_nama).filter(Boolean),
+                      ...history.map((item) => item.posisi_3_nama).filter(Boolean)
+                    ]).size
                   : history.length + careerExplanations.length
                 }
               </p>
@@ -687,24 +1188,19 @@ export default function CekHasilPage() {
                   NAMA{renderSortIcon('nama')}
                 </button>
                 <button
-                  onClick={() => handleSort('kelas')}
+                  onClick={() => handleSort('mbti_code')}
                   className="col-span-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
-                  KELAS{renderSortIcon('kelas')}
+                  MBTI{renderSortIcon('mbti_code')}
                 </button>
-                <button
-                  onClick={() => handleSort('cita_cita')}
-                  className="col-span-3 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
-                >
-                  CITA-CITA{renderSortIcon('cita_cita')}
-                </button>
+                <div className="col-span-7 text-center">3 POSISI CITA-CITA</div>
                 <button
                   onClick={() => handleSort('created_at')}
-                  className="col-span-2 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
+                  className="col-span-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   TANGGAL{renderSortIcon('created_at')}
                 </button>
-                <div className="col-span-3 text-center">AKSI</div>
+                <div className="col-span-1 text-center">AKSI</div>
               </div>
             </div>
 
@@ -724,23 +1220,50 @@ export default function CekHasilPage() {
                       {item.nama}
                     </div>
                     <div className="col-span-1 text-sm font-semibold text-[#4A4A4A] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {item.kelas || "-"}
+                      {item.mbti_code || "-"}
                     </div>
-                    <div className="col-span-3 text-sm text-center">
-                      <span className="inline-block bg-[#FCE4EC] text-[#C2185B] px-3 py-1 rounded-full font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
-                        {item.cita_cita}
-                      </span>
+                    <div className="col-span-7 text-xs text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <div className="flex flex-col gap-1.5">
+                        {item.posisi_1_nama && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[#AD1457] min-w-[20px]">1.</span>
+                            <span className="text-[#2D2D2D] flex-1">{item.posisi_1_nama}</span>
+                            <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center">
+                              {item.posisi_1_persentase || 0}%
+                            </span>
+                          </div>
+                        )}
+                        {item.posisi_2_nama && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[#AD1457] min-w-[20px]">2.</span>
+                            <span className="text-[#2D2D2D] flex-1">{item.posisi_2_nama}</span>
+                            <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center">
+                              {item.posisi_2_persentase || 0}%
+                            </span>
+                          </div>
+                        )}
+                        {item.posisi_3_nama && (
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-[#AD1457] min-w-[20px]">3.</span>
+                            <span className="text-[#2D2D2D] flex-1">{item.posisi_3_nama}</span>
+                            <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center">
+                              {item.posisi_3_persentase || 0}%
+                            </span>
+                          </div>
+                        )}
+                        {!item.posisi_1_nama && !item.posisi_2_nama && !item.posisi_3_nama && (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="col-span-2 text-xs text-[#666666] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <div className="col-span-1 text-xs text-[#666666] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {new Date(item.created_at).toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                        year: 'numeric'
                       })}
                     </div>
-                    <div className="col-span-3 flex justify-center gap-2">
+                    <div className="col-span-1 flex justify-center gap-2">
                       <button
                         onClick={() => handleDownloadPDF(item)}
                         disabled={downloadingId === item.id}

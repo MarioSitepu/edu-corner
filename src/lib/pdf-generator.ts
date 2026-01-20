@@ -1,7 +1,6 @@
 // Utility function untuk generate PDF (bisa digunakan di berbagai tempat)
 export async function generatePDFFromData(data: {
   nama: string;
-  kelas: string;
   citaCita: string;
   explanation: string;
   timestamp?: string;
@@ -50,7 +49,6 @@ export async function generatePDFFromData(data: {
 
   const cleanedCitaCita = cleanText(data.citaCita);
   const cleanedNama = cleanText(data.nama);
-  const cleanedKelas = cleanText(data.kelas);
   const displayExplanation = cleanText(data.explanation || `Menjadi ${cleanedCitaCita} adalah profesi yang sangat menarik!`);
   
   const quizDate = data.timestamp 
@@ -163,30 +161,26 @@ export async function generatePDFFromData(data: {
   // Info Box
   yPos += 52;
   pdf.setFillColor(245, 249, 240);
-  pdf.roundedRect(margin, yPos, contentWidth, 28, 3, 3, 'F');
+  pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'F');
   
   pdf.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
   pdf.setLineWidth(0.5);
-  pdf.roundedRect(margin, yPos, contentWidth, 28, 3, 3, 'D');
+  pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'D');
   
-  pdf.setFontSize(10);
+  pdf.setFontSize(11);
   pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(`Nama:`, margin + 5, yPos + 8);
+  pdf.text(`Nama:`, margin + 5, yPos + 9);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(cleanedNama, margin + 25, yPos + 8);
-  
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`Kelas:`, margin + contentWidth / 2, yPos + 8);
-  pdf.setFont('helvetica', 'normal');
-  pdf.text(cleanedKelas, margin + contentWidth / 2 + 20, yPos + 8);
+  pdf.setFontSize(11);
+  pdf.text(cleanedNama, margin + 32, yPos + 9);
   
   pdf.setFontSize(9);
   pdf.setTextColor(102, 102, 102);
-  pdf.setFont('helvetica', 'italic');
-  pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 18);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(`Tanggal Kuis: ${quizDate}`, margin + 5, yPos + 17);
 
-  yPos += 35;
+  yPos += 30;
 
   // Section Header
   pdf.setFontSize(14);

@@ -26,7 +26,7 @@ interface CareerExplanation {
 }
 
 type TabType = 'edu_corner' | 'career_explanations';
-type SortField = 'id' | 'nama' | 'mbti_code' | 'created_at' | 'updated_at' | 'explanation';
+type SortField = 'id' | 'nama' | 'mbti_code' | 'created_at' | 'updated_at' | 'explanation' | 'cita_cita';
 type SortOrder = 'asc' | 'desc';
 
 export default function CekHasilPage() {

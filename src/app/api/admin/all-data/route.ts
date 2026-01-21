@@ -24,13 +24,6 @@ interface EduCornerItem {
   created_at: string;
 }
 
-interface CareerExplanationItem {
-  id: number;
-  cita_cita: string;
-  explanation: string;
-  created_at: string;
-  updated_at: string;
-}
 
 // Helper untuk verify admin token
 async function verifyAdmin(request: NextRequest) {
@@ -90,29 +83,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Ambil semua data dari tabel career_explanations
-    let careerExplanationsData: CareerExplanationItem[] = [];
-    try {
-      careerExplanationsData = await sql`
-        SELECT id, cita_cita, explanation, created_at, updated_at 
-        FROM career_explanations 
-        ORDER BY updated_at DESC
-      ` as CareerExplanationItem[];
-    } catch (error: any) {
-      console.warn('Error fetching career_explanations data:', error);
-      // Jika tabel tidak ada, tetap lanjutkan
-    }
-
     return NextResponse.json(
       {
         success: true,
         data: {
           edu_corner: eduCornerData || [],
-          career_explanations: careerExplanationsData || [],
         },
         stats: {
           total_edu_corner: eduCornerData.length,
-          total_career_explanations: careerExplanationsData.length,
         },
       },
       { 

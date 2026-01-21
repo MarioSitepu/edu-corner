@@ -9,7 +9,7 @@ import logoWebp from "../logo.webp";
 
 interface QuizResult {
   nama: string;
-  kelas: string;
+  karakter: string;
   citaCita: string;
   timestamp: string;
 }
@@ -17,7 +17,7 @@ interface QuizResult {
 export default function KuisPage() {
   const router = useRouter();
   const [nama, setNama] = useState("");
-  const [kelas, setKelas] = useState("");
+  const [karakter, setKarakter] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -50,8 +50,8 @@ export default function KuisPage() {
     { emoji: "🌟", label: "Kreatif", color: "from-purple-400 to-purple-500", bgColor: "from-purple-100 to-purple-200", ringColor: "ring-purple-400" }
   ];
 
-  const getCharacter = (kelasValue: string) => {
-    const index = parseInt(kelasValue) - 1;
+  const getCharacter = (karakterValue: string) => {
+    const index = characters.findIndex(char => char.label === karakterValue);
     return characters[index] || characters[0];
   };
 
@@ -79,7 +79,7 @@ export default function KuisPage() {
           setMbtiCode("");
           setTopCareers([]);
           setNama("");
-          setKelas("");
+          setKarakter("");
           setIsExpanded(false);
           setExplanation("");
           setOptionsVisible(false);
@@ -90,7 +90,7 @@ export default function KuisPage() {
           try {
             const progress = JSON.parse(savedProgress);
             // Validasi struktur data dan pastikan kuis masih berjalan (belum selesai)
-            if (progress && typeof progress === 'object' && progress.nama && progress.kelas) {
+            if (progress && typeof progress === 'object' && progress.nama && progress.karakter) {
               const savedAnswers = progress.answers || [];
               const savedScores = progress.scores || { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
               
@@ -124,7 +124,7 @@ export default function KuisPage() {
                 setMbtiCode("");
                 setTopCareers([]);
                 setNama("");
-                setKelas("");
+                setKarakter("");
                 setIsExpanded(false);
                 setExplanation("");
                 setOptionsVisible(false);
@@ -132,7 +132,7 @@ export default function KuisPage() {
               }
               
               setNama(progress.nama || "");
-              setKelas(progress.kelas || "");
+              setKarakter(progress.karakter || "");
               setCurrentQuestion(firstUnansweredQuestion); // Kembali ke soal yang belum dijawab paling awal
               setAnswers(savedAnswers);
               setScores(savedScores);
@@ -162,12 +162,12 @@ export default function KuisPage() {
 
   // Simpan progress kuis ke localStorage setiap kali ada perubahan (hanya jika kuis masih berjalan)
   useEffect(() => {
-    if (showQuiz && nama && kelas && !showResult && currentQuestion < questions.length) {
+    if (showQuiz && nama && karakter && !showResult && currentQuestion < questions.length) {
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
           const progress = {
             nama: nama,
-            kelas: kelas,
+            karakter: karakter,
             currentQuestion: currentQuestion,
             answers: answers,
             scores: scores
@@ -178,7 +178,7 @@ export default function KuisPage() {
         console.warn("Gagal menyimpan progress ke localStorage:", e);
       }
     }
-  }, [showQuiz, nama, kelas, currentQuestion, answers, scores, showResult]);
+  }, [showQuiz, nama, karakter, currentQuestion, answers, scores, showResult]);
 
   // Trigger animasi muncul saat pertanyaan baru dimuat (harus di top level)
   // Fix race condition dengan cleanup timer menggunakan useRef
@@ -539,7 +539,7 @@ export default function KuisPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (nama.trim() && kelas) {
+    if (nama.trim() && karakter) {
       // Reset state untuk kuis baru
       setShowResult(false);
       setSavedResult(null);
@@ -686,12 +686,22 @@ export default function KuisPage() {
 
   const saveResult = async (hasilCitaCita: string, mbtiCodeValue: string, topCareersData: any[]) => {
     setIsSaving(true);
+    
+    // Validasi karakter sebelum menyimpan
+    if (!karakter || karakter.trim() === '') {
+      console.error('Karakter tidak terisi!', { karakter });
+      setIsSaving(false);
+      return;
+    }
+    
     const result: QuizResult = {
       nama: nama.trim(),
-      kelas: kelas,
+      karakter: karakter,
       citaCita: hasilCitaCita,
       timestamp: new Date().toISOString(),
     };
+    
+    console.log('Menyimpan hasil kuis:', result);
 
     // Set state saja, tidak simpan ke localStorage
     setSavedResult(result);
@@ -706,19 +716,62 @@ export default function KuisPage() {
         score: item.score
       }));
 
-      await fetch("/api/data", {
+      // Log data yang akan dikirim
+      const dataToSend = {
+        nama: result.nama,
+        karakter: result.karakter,
+        mbtiCode: mbtiCodeValue,
+        topCareers: topCareersFormatted,
+      };
+      
+      console.log('Mengirim data ke database:', dataToSend);
+      
+      const response = await fetch("/api/data", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          nama: result.nama,
-          mbtiCode: mbtiCodeValue,
-          topCareers: topCareersFormatted,
-        }),
+        body: JSON.stringify(dataToSend),
       });
-    } catch (error) {
-      console.error("Error saving to database:", error);
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const responseData = await response.json();
+          errorMessage = responseData.error || responseData.message || errorMessage;
+          console.error("Error saving to database:", {
+            status: response.status,
+            statusText: response.statusText,
+            error: responseData.error,
+            message: responseData.message,
+            fullResponse: responseData
+          });
+        } catch (parseError) {
+          const textResponse = await response.text();
+          console.error("Error saving to database (non-JSON response):", {
+            status: response.status,
+            statusText: response.statusText,
+            body: textResponse
+          });
+          errorMessage = textResponse || errorMessage;
+        }
+        console.error("Response status:", response.status);
+        // Tetap lanjutkan meskipun gagal save ke database
+      } else {
+        const responseData = await response.json();
+        console.log("Data berhasil disimpan ke database:", responseData);
+      }
+    } catch (error: any) {
+      // Tangani berbagai jenis error dengan lebih baik
+      const errorDetails = {
+        message: error?.message || 'Unknown error',
+        name: error?.name || 'Error',
+        stack: error?.stack,
+        cause: error?.cause,
+        toString: error?.toString()
+      };
+      console.error("Error saving to database:", errorDetails);
+      console.error("Full error object:", error);
       // Tetap lanjutkan meskipun gagal save ke database
     } finally {
       setIsSaving(false);
@@ -746,7 +799,7 @@ export default function KuisPage() {
     setMbtiCode("");
     setTopCareers([]);
     setNama("");
-    setKelas("");
+    setKarakter("");
     setIsExpanded(false);
     setExplanation("");
     // Hapus progress dari localStorage dan flag hasil dari sessionStorage
@@ -867,11 +920,11 @@ export default function KuisPage() {
       };
       
       const displayNama = savedResult?.nama || nama;
-      const displayKelas = savedResult?.kelas || kelas;
+      const displayKarakter = savedResult?.karakter || karakter;
       
       // CLEAN SEMUA TEKS SEBELUM DIGUNAKAN
       const cleanedNama = cleanText(displayNama);
-      const cleanedKelas = cleanText(displayKelas);
+      const cleanedKarakter = cleanText(displayKarakter);
       
       // Ambil tanggal kuis dari timestamp - CLEAN DULU
       const rawQuizDate = savedResult?.timestamp 
@@ -1225,7 +1278,7 @@ export default function KuisPage() {
   if (showResult) {
     const hasilCitaCita = getResultCitaCita();
     const displayNama = savedResult?.nama || nama;
-    const displayKelas = savedResult?.kelas || kelas;
+    const displayKarakter = savedResult?.karakter || karakter;
 
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://educorner.my.id';
@@ -1349,7 +1402,7 @@ export default function KuisPage() {
             {/* Avatar dengan border dekoratif */}
             <div className="relative inline-block mb-4">
               {(() => {
-                const char = getCharacter(displayKelas);
+                const char = getCharacter(displayKarakter);
                 return (
                   <>
                     <div className="absolute inset-0 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full blur-md opacity-30 animate-pulse"></div>
@@ -1860,20 +1913,20 @@ export default function KuisPage() {
                   <button
                     key={index}
                     type="button"
-                    onClick={() => setKelas(((index % 6) + 1).toString())}
+                    onClick={() => setKarakter(char.label)}
                     className={`flex flex-col items-center transition-all duration-300 ${
-                      kelas === ((index % 6) + 1).toString() 
+                      karakter === char.label 
                         ? "scale-110" 
                         : "hover:scale-105 opacity-70 hover:opacity-100"
                     }`}
                   >
                     <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br ${char.bgColor} flex items-center justify-center text-3xl md:text-4xl shadow-md transition-all ${
-                      kelas === ((index % 6) + 1).toString() ? `ring-4 ${char.ringColor} shadow-lg` : ""
+                      karakter === char.label ? `ring-4 ${char.ringColor} shadow-lg` : ""
                     }`}>
                       <span suppressHydrationWarning>{char.emoji}</span>
                     </div>
                     <span className={`text-xs md:text-sm font-semibold mt-2 ${
-                      kelas === ((index % 6) + 1).toString() ? "text-[#FF4D6D]" : "text-[#666666]"
+                      karakter === char.label ? "text-[#FF4D6D]" : "text-[#666666]"
                     }`} style={{ fontFamily: 'Inter, sans-serif' }}>
                       {char.label}
                     </span>
@@ -1917,7 +1970,7 @@ export default function KuisPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!nama.trim() || !kelas}
+              disabled={!nama.trim() || !karakter}
               className="w-full bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:shadow-xl disabled:from-gray-300 disabled:to-gray-300 text-white font-bold py-5 px-8 rounded-2xl transition-all shadow-md disabled:cursor-not-allowed disabled:shadow-none text-base md:text-lg transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >

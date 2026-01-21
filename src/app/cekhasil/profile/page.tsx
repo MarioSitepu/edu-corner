@@ -192,11 +192,10 @@ export default function AdminProfilePage() {
                 <svg
                   width="40"
                   height="40"
-                  className="sm:w-12 sm:h-12"
+                  className="sm:w-12 sm:h-12 text-[#FF4D6D]"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-[#FF4D6D]"
                 >
                   <path
                     d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
@@ -294,11 +293,10 @@ export default function AdminProfilePage() {
                     <svg
                       width="20"
                       height="20"
-                      className="sm:w-6 sm:h-6"
+                      className="sm:w-6 sm:h-6 text-blue-600 flex-shrink-0 mt-0.5"
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      className="text-blue-600 flex-shrink-0 mt-0.5"
                     >
                       <path
                         d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"

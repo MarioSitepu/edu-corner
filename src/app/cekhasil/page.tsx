@@ -610,7 +610,15 @@ export default function CekHasilPage() {
     try {
       setLoading(true);
       setError("");
-      const response = await fetch("/api/admin/all-data");
+      // Tambahkan cache-busting dengan timestamp untuk memastikan data selalu fresh
+      const response = await fetch(`/api/admin/all-data?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       
       const result = await response.json();
 
@@ -666,8 +674,8 @@ export default function CekHasilPage() {
       const result = await response.json();
 
       if (result.success) {
-        // Hapus dari state
-        setHistory(history.filter((item) => item.id !== id));
+        // Refresh data setelah delete untuk memastikan sinkronisasi dengan database
+        await fetchAllData();
         alert("Data berhasil dihapus!");
       } else {
         alert(`Gagal menghapus data: ${result.error}`);
@@ -879,6 +887,31 @@ export default function CekHasilPage() {
             </div>
             
             <div className="flex items-center gap-3">
+              <button
+                onClick={fetchAllData}
+                disabled={loading}
+                className="inline-flex items-center gap-2 bg-white/40 hover:bg-white/60 backdrop-blur-sm text-[#AD1457] font-semibold px-5 py-3 rounded-xl transition-all duration-300 border border-white/50 hover:border-white/70 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                title="Refresh Data"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={loading ? "animate-spin" : ""}
+                >
+                  <path
+                    d="M1 4V10H7M23 20V14H17M17 14L21 18M17 14L21 10M7 10L3 14M7 10L3 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="hidden sm:inline">{loading ? 'Memuat...' : 'Refresh'}</span>
+              </button>
               <Link
                 href="/cekhasil/profile"
                 className="inline-flex items-center gap-2 bg-white/40 hover:bg-white/60 backdrop-blur-sm text-[#AD1457] font-semibold px-5 py-3 rounded-xl transition-all duration-300 border border-white/50 hover:border-white/70 hover:scale-105 shadow-lg"

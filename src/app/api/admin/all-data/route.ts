@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import sql from '@/lib/db';
 
+// Force dynamic rendering untuk menghindari caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 );
@@ -111,7 +115,15 @@ export async function GET(request: NextRequest) {
           total_career_explanations: careerExplanationsData.length,
         },
       },
-      { status: 200 }
+      { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store'
+        }
+      }
     );
   } catch (error: any) {
     console.error('Error fetching all data:', error);

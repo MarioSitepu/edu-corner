@@ -1796,7 +1796,7 @@ export default function KuisPage() {
                       animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
                       opacity: optionsVisible ? 1 : 0
                     }}>
-                      <div className="text-4xl sm:text-5xl md:text-6xl">
+                      <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-none">
                         <span suppressHydrationWarning>{option.emoji}</span>
                       </div>
                       <p className="text-sm sm:text-base md:text-lg font-semibold text-center px-2 sm:px-4 leading-relaxed">

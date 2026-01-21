@@ -90,27 +90,28 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] py-12 px-4 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F5] via-[#FFF8F9] to-[#FFF5F5] py-6 sm:py-12 px-4 animate-fade-in">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-          <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#2D2D2D] mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#2D2D2D] mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
               Profil Admin
             </h1>
-            <p className="text-lg text-[#4A4A4A]">
+            <p className="text-base sm:text-lg text-[#4A4A4A]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Informasi akun admin Anda
             </p>
           </div>
           
-          <div className="flex items-center gap-4 justify-center md:justify-end">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
             <Link
               href="/cekhasil"
-              className="inline-flex items-center gap-2 text-[#4A4A4A] hover:text-[#2D2D2D] font-medium transition-colors px-4 py-2 rounded-lg hover:bg-white/50"
+              className="inline-flex items-center justify-center gap-2 text-[#4A4A4A] hover:text-[#2D2D2D] font-medium transition-colors px-4 py-2.5 rounded-lg hover:bg-white/50 text-sm sm:text-base"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               <svg
-                width="20"
-                height="20"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -127,11 +128,12 @@ export default function AdminProfilePage() {
             </Link>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2.5 rounded-lg transition-colors text-sm sm:text-base"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               <svg
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -151,16 +153,17 @@ export default function AdminProfilePage() {
 
         {/* Content */}
         {loading ? (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF69B4]"></div>
-            <p className="mt-4 text-[#4A4A4A]">Memuat profil...</p>
+          <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-12 text-center">
+            <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-[#FF69B4]"></div>
+            <p className="mt-4 text-sm sm:text-base text-[#4A4A4A]" style={{ fontFamily: 'Inter, sans-serif' }}>Memuat profil...</p>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 text-center animate-fade-in">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                width="32"
-                height="32"
+                width="28"
+                height="28"
+                className="sm:w-8 sm:h-8"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -172,11 +175,12 @@ export default function AdminProfilePage() {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-[#2D2D2D] mb-2">Terjadi Kesalahan</h2>
-            <p className="text-red-500 mb-6 text-sm">{error}</p>
+            <h2 className="text-lg sm:text-xl font-bold text-[#2D2D2D] mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Terjadi Kesalahan</h2>
+            <p className="text-red-500 mb-6 text-xs sm:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>{error}</p>
             <button
               onClick={fetchProfile}
-              className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105"
+              className="bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-all transform hover:scale-105 text-sm sm:text-base"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               Coba Lagi
             </button>
@@ -184,11 +188,12 @@ export default function AdminProfilePage() {
         ) : profile ? (
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             {/* Profile Header */}
-            <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] px-8 py-12 text-center">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] px-6 sm:px-8 py-8 sm:py-12 text-center">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <svg
-                  width="48"
-                  height="48"
+                  width="40"
+                  height="40"
+                  className="sm:w-12 sm:h-12"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -210,23 +215,23 @@ export default function AdminProfilePage() {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Admin</h2>
-              <p className="text-white/90">EduCorner: SahabatMimpi</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Admin</h2>
+              <p className="text-sm sm:text-base text-white/90" style={{ fontFamily: 'Inter, sans-serif' }}>EduCorner: SahabatMimpi</p>
             </div>
 
             {/* Profile Details */}
-            <div className="p-8">
-              <div className="space-y-6">
+            <div className="p-4 sm:p-6 md:p-8">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Username */}
-                <div className="border-b border-gray-200 pb-6">
-                  <label className="block text-sm font-semibold text-[#666666] mb-2 uppercase tracking-wide">
+                <div className="border-b border-gray-200 pb-4 sm:pb-6">
+                  <label className="block text-xs sm:text-sm font-semibold text-[#666666] mb-2 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>
                     Username
                   </label>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="flex-1 bg-[#F9FAFB] rounded-xl px-4 py-3 border-2 border-gray-200">
-                      <p className="text-lg font-semibold text-[#2D2D2D]">{profile.username}</p>
+                      <p className="text-base sm:text-lg font-semibold text-[#2D2D2D] break-words" style={{ fontFamily: 'Inter, sans-serif' }}>{profile.username}</p>
                     </div>
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="w-full sm:w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
                       <svg
                         width="20"
                         height="20"
@@ -255,15 +260,15 @@ export default function AdminProfilePage() {
                 </div>
 
                 {/* Email */}
-                <div className="border-b border-gray-200 pb-6">
-                  <label className="block text-sm font-semibold text-[#666666] mb-2 uppercase tracking-wide">
+                <div className="border-b border-gray-200 pb-4 sm:pb-6">
+                  <label className="block text-xs sm:text-sm font-semibold text-[#666666] mb-2 uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>
                     Email
                   </label>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="flex-1 bg-[#F9FAFB] rounded-xl px-4 py-3 border-2 border-gray-200">
-                      <p className="text-lg font-semibold text-[#2D2D2D]">{profile.email}</p>
+                      <p className="text-base sm:text-lg font-semibold text-[#2D2D2D] break-words" style={{ fontFamily: 'Inter, sans-serif' }}>{profile.email}</p>
                     </div>
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <div className="w-full sm:w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
                       <svg
                         width="20"
                         height="20"
@@ -285,11 +290,12 @@ export default function AdminProfilePage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6">
                   <div className="flex items-start gap-3">
                     <svg
-                      width="24"
-                      height="24"
+                      width="20"
+                      height="20"
+                      className="sm:w-6 sm:h-6"
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -301,8 +307,8 @@ export default function AdminProfilePage() {
                       />
                     </svg>
                     <div>
-                      <h3 className="font-semibold text-blue-900 mb-1">Informasi</h3>
-                      <p className="text-sm text-blue-700">
+                      <h3 className="font-semibold text-blue-900 mb-1 text-sm sm:text-base" style={{ fontFamily: 'Inter, sans-serif' }}>Informasi</h3>
+                      <p className="text-xs sm:text-sm text-blue-700 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
                         Username dan email ini digunakan untuk login dan reset password. 
                         Untuk mengubah email, silakan hubungi administrator sistem.
                       </p>

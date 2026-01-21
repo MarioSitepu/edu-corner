@@ -9,8 +9,14 @@ const JWT_SECRET = new TextEncoder().encode(
 interface EduCornerItem {
   id: number;
   nama: string;
-  cita_cita: string;
-  kelas?: string;
+  karakter?: string;
+  mbti_code?: string;
+  posisi_1_nama?: string;
+  posisi_1_persentase?: number;
+  posisi_2_nama?: string;
+  posisi_2_persentase?: number;
+  posisi_3_nama?: string;
+  posisi_3_persentase?: number;
   created_at: string;
 }
 
@@ -52,13 +58,32 @@ export async function GET(request: NextRequest) {
     let eduCornerData: EduCornerItem[] = [];
     try {
       eduCornerData = await sql`
-        SELECT id, nama, cita_cita, kelas, created_at 
+        SELECT id, nama, karakter, mbti_code, posisi_1_nama, posisi_1_persentase, posisi_2_nama, posisi_2_persentase, posisi_3_nama, posisi_3_persentase, created_at 
         FROM edu_corner 
         ORDER BY created_at DESC
       ` as EduCornerItem[];
+      console.log(`Fetched ${eduCornerData.length} records from edu_corner`);
     } catch (error: any) {
-      console.warn('Error fetching edu_corner data:', error);
-      // Jika tabel tidak ada, tetap lanjutkan
+      console.error('Error fetching edu_corner data:', error);
+      console.error('Error details:', {
+        message: error?.message,
+        code: error?.code,
+        detail: error?.detail
+      });
+      // Jika tabel tidak ada atau kolom belum ada, coba dengan kolom yang ada
+      try {
+        // Coba query dengan kolom baru saja
+        eduCornerData = await sql`
+          SELECT id, nama, karakter, mbti_code, posisi_1_nama, posisi_1_persentase, posisi_2_nama, posisi_2_persentase, posisi_3_nama, posisi_3_persentase, created_at 
+          FROM edu_corner 
+          ORDER BY created_at DESC
+        ` as EduCornerItem[];
+        console.log(`Retry successful: Fetched ${eduCornerData.length} records from edu_corner`);
+      } catch (retryError: any) {
+        console.error('Error retrying fetch edu_corner data:', retryError);
+        // Jika masih error, tetap lanjutkan dengan array kosong
+        eduCornerData = [];
+      }
     }
 
     // Ambil semua data dari tabel career_explanations

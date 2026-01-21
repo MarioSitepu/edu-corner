@@ -7,6 +7,7 @@ import Link from "next/link";
 interface HistoryItem {
   id: number;
   nama: string;
+  karakter?: string;
   mbti_code?: string;
   posisi_1_nama?: string;
   posisi_1_persentase?: number;
@@ -17,23 +18,13 @@ interface HistoryItem {
   created_at: string;
 }
 
-interface CareerExplanation {
-  id: number;
-  cita_cita: string;
-  explanation: string;
-  created_at: string;
-  updated_at: string;
-}
 
-type TabType = 'edu_corner' | 'career_explanations';
-type SortField = 'id' | 'nama' | 'mbti_code' | 'created_at' | 'updated_at' | 'explanation' | 'cita_cita';
+type SortField = 'id' | 'nama' | 'mbti_code' | 'created_at';
 type SortOrder = 'asc' | 'desc';
 
 export default function CekHasilPage() {
   const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [careerExplanations, setCareerExplanations] = useState<CareerExplanation[]>([]);
-  const [activeTab, setActiveTab] = useState<TabType>('edu_corner');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -48,12 +39,12 @@ export default function CekHasilPage() {
     checkAuth();
   }, []);
 
-  // Reset search term and sorting when tab changes
+  // Reset search term and sorting
   useEffect(() => {
     setSearchTerm("");
-    setSortField(activeTab === 'edu_corner' ? 'created_at' : 'updated_at');
+    setSortField('created_at');
     setSortOrder('desc');
-  }, [activeTab]);
+  }, []);
 
   const checkAuth = async () => {
     try {
@@ -623,13 +614,26 @@ export default function CekHasilPage() {
       
       const result = await response.json();
 
+      console.log('Fetch all data response:', {
+        ok: response.ok,
+        status: response.status,
+        success: result.success,
+        edu_corner_count: result.data?.edu_corner?.length || 0,
+        career_explanations_count: result.data?.career_explanations?.length || 0
+      });
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP error! status: ${response.status}`);
       }
 
       if (result.success) {
-        setHistory(result.data.edu_corner || []);
-        setCareerExplanations(result.data.career_explanations || []);
+        const eduCornerData = result.data.edu_corner || [];
+        
+        console.log('Setting data:', {
+          edu_corner: eduCornerData.length
+        });
+        
+        setHistory(eduCornerData);
         setError("");
       } else {
         setError(result.error || "Gagal mengambil data");
@@ -692,6 +696,7 @@ export default function CekHasilPage() {
     const searchLower = searchTerm.toLowerCase();
     return (
       item.nama.toLowerCase().includes(searchLower) ||
+      (item.karakter && item.karakter.toLowerCase().includes(searchLower)) ||
       (item.mbti_code && item.mbti_code.toLowerCase().includes(searchLower)) ||
       (item.posisi_1_nama && item.posisi_1_nama.toLowerCase().includes(searchLower)) ||
       (item.posisi_2_nama && item.posisi_2_nama.toLowerCase().includes(searchLower)) ||
@@ -699,13 +704,6 @@ export default function CekHasilPage() {
     );
   });
 
-  const filteredCareerExplanations = careerExplanations.filter((item) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      item.cita_cita.toLowerCase().includes(searchLower) ||
-      item.explanation.toLowerCase().includes(searchLower)
-    );
-  });
 
   // Handle sorting
   const handleSort = (field: SortField) => {
@@ -754,46 +752,7 @@ export default function CekHasilPage() {
     return sorted;
   };
 
-  const getSortedCareerExplanations = () => {
-    const sorted = [...filteredCareerExplanations];
-    sorted.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (sortField) {
-        case 'id':
-          aValue = a.id;
-          bValue = b.id;
-          break;
-        case 'cita_cita':
-          aValue = a.cita_cita.toLowerCase();
-          bValue = b.cita_cita.toLowerCase();
-          break;
-        case 'explanation':
-          aValue = a.explanation.toLowerCase();
-          bValue = b.explanation.toLowerCase();
-          break;
-        case 'created_at':
-          aValue = new Date(a.created_at).getTime();
-          bValue = new Date(b.created_at).getTime();
-          break;
-        case 'updated_at':
-          aValue = new Date(a.updated_at).getTime();
-          bValue = new Date(b.updated_at).getTime();
-          break;
-        default:
-          return 0;
-      }
-
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-    return sorted;
-  };
-
   const sortedHistory = getSortedHistory();
-  const sortedCareerExplanations = getSortedCareerExplanations();
 
   // Helper untuk render sort icon
   const renderSortIcon = (field: SortField) => {
@@ -989,7 +948,7 @@ export default function CekHasilPage() {
               </div>
               <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>TOTAL SISWA</p>
               <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                {activeTab === 'edu_corner' ? history.length : careerExplanations.length}
+                {history.length}
               </p>
             </div>
           </div>
@@ -1007,7 +966,7 @@ export default function CekHasilPage() {
               </div>
               <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>HASIL FILTER</p>
               <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                {activeTab === 'edu_corner' ? sortedHistory.length : sortedCareerExplanations.length}
+                {sortedHistory.length}
               </p>
             </div>
           </div>
@@ -1025,14 +984,11 @@ export default function CekHasilPage() {
               </div>
               <p className="text-xs sm:text-sm text-[#AD1457] font-medium mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>CITA-CITA UNIK</p>
               <p className="text-2xl sm:text-3xl font-bold text-[#C2185B]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                {activeTab === 'edu_corner' 
-                  ? new Set([
-                      ...history.map((item) => item.posisi_1_nama).filter(Boolean),
-                      ...history.map((item) => item.posisi_2_nama).filter(Boolean),
-                      ...history.map((item) => item.posisi_3_nama).filter(Boolean)
-                    ]).size
-                  : history.length + careerExplanations.length
-                }
+                {new Set([
+                  ...history.map((item) => item.posisi_1_nama).filter(Boolean),
+                  ...history.map((item) => item.posisi_2_nama).filter(Boolean),
+                  ...history.map((item) => item.posisi_3_nama).filter(Boolean)
+                ]).size}
               </p>
             </div>
           </div>
@@ -1048,7 +1004,7 @@ export default function CekHasilPage() {
               </svg>
               <input
                 type="text"
-                placeholder="Cari berdasarkan nama, cita-cita..."
+                placeholder="Cari berdasarkan nama, karakter, MBTI, atau posisi cita-cita..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-xl text-[#2D2D2D] placeholder-gray-400 focus:ring-2 focus:ring-[#FF4D6D] outline-none transition-all"
@@ -1067,31 +1023,6 @@ export default function CekHasilPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('edu_corner')}
-              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'edu_corner'
-                  ? 'bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] text-[#AD1457] shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Data Siswa ({history.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('career_explanations')}
-              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all ${
-                activeTab === 'career_explanations'
-                  ? 'bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] text-[#AD1457] shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Pekerjaan ({careerExplanations.length})
-            </button>
-          </div>
         </div>
 
         {/* Content */}
@@ -1134,9 +1065,9 @@ export default function CekHasilPage() {
               </Link>
             </div>
           </div>
-        ) : (activeTab === 'edu_corner' && filteredHistory.length === 0) || (activeTab === 'career_explanations' && filteredCareerExplanations.length === 0) ? (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <div className="w-24 h-24 bg-[#FFB6C1] rounded-full flex items-center justify-center mx-auto mb-6">
+        ) : filteredHistory.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-12 text-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#FFB6C1] rounded-full flex items-center justify-center mx-auto mb-6">
               <svg
                 width="48"
                 height="48"
@@ -1151,30 +1082,28 @@ export default function CekHasilPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[#2D2D2D] mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#2D2D2D] mb-4">
               {searchTerm ? "Tidak Ada Hasil Pencarian" : "Belum Ada Data"}
             </h2>
-            <p className="text-[#4A4A4A] mb-6">
+            <p className="text-sm sm:text-base text-[#4A4A4A] mb-6">
               {searchTerm
                 ? "Coba gunakan kata kunci lain untuk mencari"
-                : activeTab === 'edu_corner'
-                ? "Belum ada hasil tes cita-cita yang tersimpan"
-                : "Belum ada penjelasan pekerjaan yang tersimpan"}
+                : "Belum ada hasil tes cita-cita yang tersimpan"}
             </p>
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="inline-block bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-8 py-3 rounded-lg transition-all"
+                className="inline-block bg-[#FF69B4] hover:bg-[#FF5BA3] text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 rounded-lg transition-all text-sm sm:text-base"
               >
                 Hapus Pencarian
               </button>
             )}
           </div>
-        ) : activeTab === 'edu_corner' ? (
+        ) : (
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             {/* Table Header */}
-            <div className="bg-gradient-to-r from-[#F48FB1] to-[#FCE4EC] px-6 py-4">
-              <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="bg-gradient-to-r from-[#F48FB1] to-[#FCE4EC] px-4 sm:px-6 py-4">
+              <div className="grid grid-cols-12 gap-2 sm:gap-4 text-white font-bold text-xs sm:text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
                 <button
                   onClick={() => handleSort('id')}
                   className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
@@ -1187,16 +1116,17 @@ export default function CekHasilPage() {
                 >
                   NAMA{renderSortIcon('nama')}
                 </button>
+                <div className="col-span-1 text-center hidden sm:block">KARAKTER</div>
                 <button
                   onClick={() => handleSort('mbti_code')}
                   className="col-span-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
                 >
                   MBTI{renderSortIcon('mbti_code')}
                 </button>
-                <div className="col-span-7 text-center">3 POSISI CITA-CITA</div>
+                <div className="col-span-5 sm:col-span-4 text-center">3 POSISI CITA-CITA</div>
                 <button
                   onClick={() => handleSort('created_at')}
-                  className="col-span-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer"
+                  className="col-span-2 sm:col-span-1 flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer text-xs"
                 >
                   TANGGAL{renderSortIcon('created_at')}
                 </button>
@@ -1204,109 +1134,264 @@ export default function CekHasilPage() {
               </div>
             </div>
 
-            {/* Table Body */}
-            <div className="divide-y divide-gray-100">
-              {sortedHistory.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="px-6 py-4 hover:bg-[#FFF5F7] transition-colors animate-fade-in"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <div className="grid grid-cols-12 gap-4 items-center">
-                    <div className="col-span-1 text-sm font-semibold text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {item.id}
-                    </div>
-                    <div className="col-span-2 text-sm font-bold text-[#2D2D2D]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {item.nama}
-                    </div>
-                    <div className="col-span-1 text-sm font-semibold text-[#4A4A4A] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {item.mbti_code || "-"}
-                    </div>
-                    <div className="col-span-7 text-xs text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      <div className="flex flex-col gap-1.5">
-                        {item.posisi_1_nama && (
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-[#AD1457] min-w-[20px]">1.</span>
-                            <span className="text-[#2D2D2D] flex-1">{item.posisi_1_nama}</span>
-                            <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center">
-                              {item.posisi_1_persentase || 0}%
-                            </span>
-                          </div>
-                        )}
-                        {item.posisi_2_nama && (
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-[#AD1457] min-w-[20px]">2.</span>
-                            <span className="text-[#2D2D2D] flex-1">{item.posisi_2_nama}</span>
-                            <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center">
-                              {item.posisi_2_persentase || 0}%
-                            </span>
-                          </div>
-                        )}
-                        {item.posisi_3_nama && (
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-[#AD1457] min-w-[20px]">3.</span>
-                            <span className="text-[#2D2D2D] flex-1">{item.posisi_3_nama}</span>
-                            <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center">
-                              {item.posisi_3_persentase || 0}%
-                            </span>
-                          </div>
-                        )}
-                        {!item.posisi_1_nama && !item.posisi_2_nama && !item.posisi_3_nama && (
-                          <span className="text-gray-400">-</span>
-                        )}
+            {/* Table Body - Desktop Table View */}
+            <div className="hidden md:block divide-y divide-gray-100">
+              {sortedHistory.map((item, index) => {
+                // Get character emoji based on karakter value
+                const getCharacterEmoji = (karakter?: string) => {
+                  const charMap: { [key: string]: string } = {
+                    'Berani': '😊',
+                    'Ceria': '👑',
+                    'Pintar': '🦁',
+                    'Aktif': '😸',
+                    'Kreatif': '🌟'
+                  };
+                  return charMap[karakter || ''] || '👤';
+                };
+
+                return (
+                  <div
+                    key={item.id}
+                    className="px-6 py-4 hover:bg-[#FFF5F7] transition-colors animate-fade-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-1 text-sm font-semibold text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {item.id}
                       </div>
-                    </div>
-                    <div className="col-span-1 text-xs text-[#666666] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {new Date(item.created_at).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </div>
-                    <div className="col-span-1 flex justify-center gap-2">
-                      <button
-                        onClick={() => handleDownloadPDF(item)}
-                        disabled={downloadingId === item.id}
-                        className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] hover:shadow-lg text-[#AD1457] font-medium px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        {downloadingId === item.id ? (
-                          <>
+                      <div className="col-span-2 text-sm font-bold text-[#2D2D2D] truncate" style={{ fontFamily: 'Inter, sans-serif' }} title={item.nama}>
+                        {item.nama}
+                      </div>
+                      <div className="col-span-1 text-center">
+                        <span className="text-xl" title={item.karakter || 'Tidak ada'}>{getCharacterEmoji(item.karakter)}</span>
+                      </div>
+                      <div className="col-span-1 text-sm font-semibold text-[#4A4A4A] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {item.mbti_code || "-"}
+                      </div>
+                      <div className="col-span-4 text-xs text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        <div className="flex flex-col gap-1.5">
+                          {item.posisi_1_nama && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-[#AD1457] min-w-[16px] text-xs">1.</span>
+                              <span className="text-[#2D2D2D] flex-1 truncate text-sm">{item.posisi_1_nama}</span>
+                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center shrink-0">
+                                {item.posisi_1_persentase || 0}%
+                              </span>
+                            </div>
+                          )}
+                          {item.posisi_2_nama && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-[#AD1457] min-w-[16px] text-xs">2.</span>
+                              <span className="text-[#2D2D2D] flex-1 truncate text-sm">{item.posisi_2_nama}</span>
+                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center shrink-0">
+                                {item.posisi_2_persentase || 0}%
+                              </span>
+                            </div>
+                          )}
+                          {item.posisi_3_nama && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-[#AD1457] min-w-[16px] text-xs">3.</span>
+                              <span className="text-[#2D2D2D] flex-1 truncate text-sm">{item.posisi_3_nama}</span>
+                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center shrink-0">
+                                {item.posisi_3_persentase || 0}%
+                              </span>
+                            </div>
+                          )}
+                          {!item.posisi_1_nama && !item.posisi_2_nama && !item.posisi_3_nama && (
+                            <span className="text-gray-400 text-xs">-</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="col-span-1 text-xs text-[#666666] text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {new Date(item.created_at).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </div>
+                      <div className="col-span-2 flex justify-center gap-2">
+                        <button
+                          onClick={() => handleDownloadPDF(item)}
+                          disabled={downloadingId === item.id}
+                          className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] hover:shadow-lg text-[#AD1457] font-medium px-3 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs"
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          {downloadingId === item.id ? (
                             <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                          </>
-                        ) : (
-                          <>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          ) : (
+                            <>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <span>PDF</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          disabled={deletingId === item.id}
+                          className="text-[#F06292] hover:bg-[#FCE4EC] disabled:opacity-50 disabled:cursor-not-allowed transition-all p-2 rounded-lg"
+                          title="Hapus data"
+                        >
+                          {deletingId === item.id ? (
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span>PDF</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        disabled={deletingId === item.id}
-                        className="text-[#F06292] hover:bg-[#FCE4EC] disabled:opacity-50 disabled:cursor-not-allowed transition-all p-2 rounded-lg"
-                        title="Hapus data"
-                      >
-                        {deletingId === item.id ? (
-                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                        ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                      </button>
+                          ) : (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4 px-4 py-4">
+              {sortedHistory.map((item, index) => {
+                const getCharacterEmoji = (karakter?: string) => {
+                  const charMap: { [key: string]: string } = {
+                    'Berani': '😊',
+                    'Ceria': '👑',
+                    'Pintar': '🦁',
+                    'Aktif': '😸',
+                    'Kreatif': '🌟'
+                  };
+                  return charMap[karakter || ''] || '👤';
+                };
+
+                return (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-xl shadow-md p-4 border border-gray-100 hover:shadow-lg transition-shadow animate-fade-in"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-100">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#F8BBD0] to-[#FCE4EC] rounded-lg flex items-center justify-center">
+                          <span className="text-xl">{getCharacterEmoji(item.karakter)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-[#2D2D2D] text-base truncate" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            {item.nama}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-[#666666]">ID: {item.id}</span>
+                            {item.mbti_code && (
+                              <>
+                                <span className="text-[#999]">•</span>
+                                <span className="text-xs font-semibold text-[#4A4A4A]">{item.mbti_code}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Posisi Cita-Cita */}
+                    <div className="space-y-2 mb-3">
+                      <p className="text-xs font-semibold text-[#666666] uppercase tracking-wide mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        3 Posisi Cita-Cita
+                      </p>
+                      {item.posisi_1_nama && (
+                        <div className="flex items-center justify-between bg-[#FFF5F7] rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="font-bold text-[#AD1457] text-xs">1.</span>
+                            <span className="text-sm text-[#2D2D2D] truncate flex-1">{item.posisi_1_nama}</span>
+                          </div>
+                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[45px] text-center shrink-0 ml-2">
+                            {item.posisi_1_persentase || 0}%
+                          </span>
+                        </div>
+                      )}
+                      {item.posisi_2_nama && (
+                        <div className="flex items-center justify-between bg-[#FFF5F7] rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="font-bold text-[#AD1457] text-xs">2.</span>
+                            <span className="text-sm text-[#2D2D2D] truncate flex-1">{item.posisi_2_nama}</span>
+                          </div>
+                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[45px] text-center shrink-0 ml-2">
+                            {item.posisi_2_persentase || 0}%
+                          </span>
+                        </div>
+                      )}
+                      {item.posisi_3_nama && (
+                        <div className="flex items-center justify-between bg-[#FFF5F7] rounded-lg px-3 py-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="font-bold text-[#AD1457] text-xs">3.</span>
+                            <span className="text-sm text-[#2D2D2D] truncate flex-1">{item.posisi_3_nama}</span>
+                          </div>
+                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[45px] text-center shrink-0 ml-2">
+                            {item.posisi_3_persentase || 0}%
+                          </span>
+                        </div>
+                      )}
+                      {!item.posisi_1_nama && !item.posisi_2_nama && !item.posisi_3_nama && (
+                        <p className="text-gray-400 text-xs text-center py-2">-</p>
+                      )}
+                    </div>
+
+                    {/* Footer dengan Tanggal dan Actions */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <span className="text-xs text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {new Date(item.created_at).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleDownloadPDF(item)}
+                          disabled={downloadingId === item.id}
+                          className="inline-flex items-center gap-1 bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] hover:shadow-md text-[#AD1457] font-medium px-3 py-1.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs"
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          {downloadingId === item.id ? (
+                            <svg className="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <span>PDF</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          disabled={deletingId === item.id}
+                          className="text-[#F06292] hover:bg-[#FCE4EC] disabled:opacity-50 disabled:cursor-not-allowed transition-all p-2 rounded-lg"
+                          title="Hapus data"
+                        >
+                          {deletingId === item.id ? (
+                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Pagination Info */}
@@ -1315,170 +1400,6 @@ export default function CekHasilPage() {
                 Menampilkan 1-{sortedHistory.length} dari {sortedHistory.length} data
               </p>
             </div>
-          </div>
-        ) : (
-          /* Career Explanations Tab */
-          <div className="space-y-6">
-            {/* Stats Cards untuk Pekerjaan */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Total Penjelasan</p>
-                <p className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>{careerExplanations.length}</p>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Hasil Filter</p>
-                <p className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>{sortedCareerExplanations.length}</p>
-              </div>
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>Total Database</p>
-                <p className="text-3xl font-bold text-gray-800" style={{ fontFamily: 'Inter, sans-serif' }}>{history.length}</p>
-              </div>
-            </div>
-
-            {/* Empty State atau Data */}
-            {sortedCareerExplanations.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-sm p-16 text-center border border-gray-100">
-                <div className="w-24 h-24 bg-[#FFB6C1]/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg
-                    width="48"
-                    height="48"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="text-[#FF6B8A]"
-                  >
-                    <path
-                      d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="currentColor"
-                      opacity="0.3"
-                    />
-                    <path
-                      d="M14 2V8H20"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Belum Ada Data
-                </h2>
-                <p className="text-gray-500 mb-8" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Belum ada penjelasan pekerjaan yang tersimpan
-                </p>
-                <button
-                  onClick={fetchAllData}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-[#F8BBD0] to-[#FCE4EC] hover:shadow-lg text-[#AD1457] font-semibold px-8 py-3 rounded-lg transition-all"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 4V10H7M23 20V14H17M20.49 9C19.9828 7.56678 19.1209 6.28536 17.9845 5.27542C16.8482 4.26548 15.4745 3.55976 13.9917 3.22426C12.5089 2.88875 10.9652 2.93434 9.50481 3.35677C8.04437 3.77921 6.71475 4.56471 5.64 5.64L1 10M23 14L18.36 18.36C17.2853 19.4353 15.9556 20.2208 14.4952 20.6432C13.0348 21.0657 11.4911 21.1112 10.0083 20.7757C8.52547 20.4402 7.1518 19.7345 6.01547 18.7246C4.87913 17.7146 4.01717 16.4332 3.51 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Refresh Data
-                </button>
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                {/* Table Header */}
-                <div className="bg-gradient-to-r from-[#F48FB1] to-[#FCE4EC] px-6 py-4">
-                  <div className="grid grid-cols-12 gap-4 text-white font-bold text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    <button
-                      onClick={() => handleSort('id')}
-                      className="col-span-1 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                    >
-                      ID{renderSortIcon('id')}
-                    </button>
-                    <button
-                      onClick={() => handleSort('cita_cita')}
-                      className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                    >
-                      Cita-Cita{renderSortIcon('cita_cita')}
-                    </button>
-                    <button
-                      onClick={() => handleSort('explanation')}
-                      className="col-span-6 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                    >
-                      Penjelasan{renderSortIcon('explanation')}
-                    </button>
-                    <button
-                      onClick={() => handleSort('updated_at')}
-                      className="col-span-2 flex items-center hover:opacity-80 transition-opacity cursor-pointer text-left"
-                    >
-                      Diperbarui{renderSortIcon('updated_at')}
-                    </button>
-                    <div className="col-span-1 text-center">Aksi</div>
-                  </div>
-                </div>
-
-                {/* Table Body */}
-                <div className="divide-y divide-gray-100">
-                  {sortedCareerExplanations.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className="px-6 py-4 hover:bg-gray-50 transition-colors"
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <div className="grid grid-cols-12 gap-4 items-start">
-                        <div className="col-span-1 text-sm font-medium text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                          {item.id}
-                        </div>
-                        <div className="col-span-2">
-                          <span className="inline-block bg-[#FCE4EC] text-[#C2185B] px-3 py-1 rounded-full text-xs font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            {item.cita_cita}
-                          </span>
-                        </div>
-                        <div className="col-span-6 text-sm text-[#4A4A4A] line-clamp-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                          {item.explanation}
-                        </div>
-                        <div className="col-span-2 text-xs text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                          {formatDate(item.updated_at)}
-                        </div>
-                        <div className="col-span-1 flex justify-center">
-                          <button
-                            onClick={() => {
-                              if (confirm(`Apakah Anda yakin ingin menghapus penjelasan untuk "${item.cita_cita}"?`)) {
-                                // TODO: Implement delete for career explanations
-                                alert('Fitur hapus penjelasan pekerjaan akan segera tersedia');
-                              }
-                            }}
-                            className="text-[#F06292] hover:bg-[#FCE4EC] transition-all p-2 rounded-lg"
-                            title="Hapus penjelasan"
-                          >
-                            <svg
-                              width="18"
-                              height="18"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M3 6H5H21M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination Info */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
-                  <p className="text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    Menampilkan 1-{sortedCareerExplanations.length} dari {sortedCareerExplanations.length} data
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         )}
 

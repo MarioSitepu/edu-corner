@@ -1403,20 +1403,32 @@ export default function KuisPage() {
             <div className="relative inline-block mb-4">
               {(() => {
                 const char = getCharacter(displayKarakter);
+                // Map warna gradient berdasarkan karakter
+                const gradientColors: { [key: string]: string } = {
+                  'Berani': 'from-blue-400 to-blue-600',
+                  'Ceria': 'from-pink-400 to-pink-600',
+                  'Pintar': 'from-orange-400 to-orange-600',
+                  'Aktif': 'from-green-400 to-green-600',
+                  'Kreatif': 'from-purple-400 to-purple-600'
+                };
+                const badgeColors: { [key: string]: string } = {
+                  'Berani': 'from-blue-300 to-blue-500',
+                  'Ceria': 'from-pink-300 to-pink-500',
+                  'Pintar': 'from-orange-300 to-orange-500',
+                  'Aktif': 'from-green-300 to-green-500',
+                  'Kreatif': 'from-purple-300 to-purple-500'
+                };
+                const gradientColor = gradientColors[displayKarakter] || 'from-[#A7C957] to-[#6A994E]';
+                const badgeColor = badgeColors[displayKarakter] || 'from-yellow-400 to-orange-400';
+                
                 return (
                   <>
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full blur-md opacity-30 animate-pulse"></div>
-                    <div className="relative w-32 h-32 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-xl">
-                      <Image
-                        src={logoWebp}
-                        alt="Logo EduCorner"
-                        width={64}
-                        height={64}
-                        className="w-16 h-16"
-                      />
-                      {/* Badge indicator */}
-                      <div className="absolute -top-1 -right-1 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                        <span className="text-xl" suppressHydrationWarning>🎯</span>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${gradientColor} rounded-full blur-md opacity-30 animate-pulse`}></div>
+                    <div className={`relative w-32 h-32 bg-gradient-to-br ${gradientColor} rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-xl`}>
+                      <span className="text-6xl" suppressHydrationWarning>{char.emoji}</span>
+                      {/* Badge indicator dengan emoji karakter */}
+                      <div className={`absolute -top-1 -right-1 w-10 h-10 bg-gradient-to-br ${badgeColor} rounded-full flex items-center justify-center border-2 border-white animate-bounce`}>
+                        <span className="text-xl" suppressHydrationWarning>{char.emoji}</span>
                       </div>
                     </div>
                   </>
@@ -1428,7 +1440,7 @@ export default function KuisPage() {
             <div className="space-y-3 animate-fade-in">
               <p className="text-[#E91E63] text-lg font-bold italic flex items-center justify-center gap-2">
                 <span suppressHydrationWarning>🎉</span>
-                <span>Hasil Analisis Misi</span>
+                <span>{displayNama}, Ini Hasil Kuis Kamu!</span>
               </p>
               
               {/* MBTI Code */}
@@ -1639,7 +1651,7 @@ export default function KuisPage() {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-x-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-x-hidden overflow-y-auto">
         {/* Decorative Background Elements - sama seperti page.tsx */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
@@ -1687,24 +1699,24 @@ export default function KuisPage() {
         </header>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 max-w-4xl relative z-10">
+        <main className="container mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6 max-w-4xl relative z-10 pb-20">
           {/* Progress Bar dengan Counter */}
-          <div className="mb-8 animate-fade-in">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+          <div className="mb-4 sm:mb-6 animate-fade-in">
+            <div className="flex justify-between items-center mb-2 sm:mb-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg">
                   Pertanyaan {currentQuestion + 1} dari {questions.length}
                 </div>
-                <span className="text-sm font-semibold text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>Progres Kuis</span>
+                <span className="text-xs sm:text-sm font-semibold text-[#666666] hidden sm:inline" style={{ fontFamily: 'Inter, sans-serif' }}>Progres Kuis</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>{Math.round(progress)}%</span>
-                <div className="w-3 h-3 bg-[#FF4D6D] rounded-full animate-pulse"></div>
+                <span className="text-base sm:text-lg font-bold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>{Math.round(progress)}%</span>
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-[#FF4D6D] rounded-full animate-pulse"></div>
               </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+            <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden shadow-inner">
               <div
-                className="bg-gradient-to-r from-[#FF4D6D] via-[#FF6B8A] to-[#FF8FA3] h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
+                className="bg-gradient-to-r from-[#FF4D6D] via-[#FF6B8A] to-[#FF8FA3] h-2 sm:h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                 style={{ width: `${progress}%` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
@@ -1727,33 +1739,33 @@ export default function KuisPage() {
           {/* Question Card */}
           <div 
             key={currentQuestion}
-            className={`bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12 mb-8 relative overflow-hidden ${
+            className={`bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 relative overflow-hidden ${
               isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
             } transition-all duration-500 ease-out`}
           >
             {/* Decorative Background Pattern */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#FFE4E9]/30 to-transparent rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#FFF0F3]/30 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-br from-[#FFE4E9]/30 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-tr from-[#FFF0F3]/30 to-transparent rounded-full blur-3xl"></div>
             
             <div className="relative z-10">
-              <div className="flex items-center justify-center mb-6">
-                <div className="bg-gradient-to-r from-[#FF4D6D]/10 to-[#FF6B8A]/10 px-6 py-2 rounded-full border border-[#FF4D6D]/20">
-                  <span className="text-sm font-semibold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="flex items-center justify-center mb-3 sm:mb-4">
+                <div className="bg-gradient-to-r from-[#FF4D6D]/10 to-[#FF6B8A]/10 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full border border-[#FF4D6D]/20">
+                  <span className="text-xs sm:text-sm font-semibold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>
                     Pilih salah satu yang paling sesuai denganmu
                   </span>
                 </div>
               </div>
               
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#2D2D2D] mb-12 text-center leading-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-4 sm:mb-6 md:mb-8 text-center leading-tight px-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {question.question}
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
                 {question.options.map((option: any, index: number) => (
                   <button
                     key={`${currentQuestion}-${index}`}
                     onClick={() => handleAnswer(index)}
-                    className={`relative w-full bg-gradient-to-br from-white to-[#FFF8F9] hover:from-[#FFF0F3] hover:to-[#FFE4E9] border-2 border-gray-200 hover:border-[#FF4D6D] text-[#2D2D2D] font-medium px-6 py-8 rounded-3xl text-center transition-all duration-300 transform hover:scale-[1.03] hover:-translate-y-1 active:scale-[0.98] shadow-md hover:shadow-2xl group flex flex-col items-center justify-center gap-5 min-h-[380px] md:min-h-[420px] overflow-hidden ${
+                    className={`relative w-full bg-gradient-to-br from-white to-[#FFF8F9] hover:from-[#FFF0F3] hover:to-[#FFE4E9] border-2 border-gray-200 hover:border-[#FF4D6D] text-[#2D2D2D] font-medium px-4 sm:px-6 py-4 sm:py-6 md:py-8 rounded-2xl sm:rounded-3xl text-center transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] shadow-md hover:shadow-xl group flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-5 min-h-[240px] sm:min-h-[280px] md:min-h-[320px] overflow-hidden ${
                       !optionsVisible ? 'opacity-0' : ''
                     }`}
                     style={{
@@ -1779,15 +1791,15 @@ export default function KuisPage() {
                     </div>
 
                     {/* Emoji dan Text */}
-                    <div className="relative z-10 flex flex-col items-center gap-4 w-full" style={{
+                    <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 w-full" style={{
                       animationDelay: `${index * 200 + 150}ms`,
                       animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
                       opacity: optionsVisible ? 1 : 0
                     }}>
-                      <div className="text-6xl md:text-7xl">
+                      <div className="text-4xl sm:text-5xl md:text-6xl">
                         <span suppressHydrationWarning>{option.emoji}</span>
                       </div>
-                      <p className="text-base md:text-lg font-semibold text-center px-4 leading-relaxed">
+                      <p className="text-sm sm:text-base md:text-lg font-semibold text-center px-2 sm:px-4 leading-relaxed">
                         {option.text}
                       </p>
                     </div>
@@ -1805,18 +1817,18 @@ export default function KuisPage() {
           </div>
 
           {/* Bottom Info dengan Animasi */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8 animate-fade-in">
-            <div className="flex items-center gap-3 bg-gradient-to-r from-[#FFF0F3] to-[#FFE4E9] px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#FF4D6D] to-[#FF6B8A] shadow-lg animate-bounce-slow">
-                <span className="text-xl" suppressHydrationWarning>💪</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 animate-fade-in">
+            <div className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#FFF0F3] to-[#FFE4E9] px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#FF4D6D] to-[#FF6B8A] shadow-lg animate-bounce-slow">
+                <span className="text-lg sm:text-xl" suppressHydrationWarning>💪</span>
               </div>
-              <span className="text-sm font-bold text-[#FF4D6D] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Kamu Pasti Bisa</span>
+              <span className="text-xs sm:text-sm font-bold text-[#FF4D6D] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Kamu Pasti Bisa</span>
             </div>
-            <div className="flex items-center gap-3 bg-gradient-to-r from-[#F0FDF4] to-[#DCFCE7] px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#A7C957] to-[#6A994E] shadow-lg animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
-                <span className="text-xl" suppressHydrationWarning>🌟</span>
+            <div className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#F0FDF4] to-[#DCFCE7] px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#A7C957] to-[#6A994E] shadow-lg animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
+                <span className="text-lg sm:text-xl" suppressHydrationWarning>🌟</span>
               </div>
-              <span className="text-sm font-bold text-[#6A994E] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Raih Mimpimu</span>
+              <span className="text-xs sm:text-sm font-bold text-[#6A994E] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Raih Mimpimu</span>
             </div>
           </div>
         </main>

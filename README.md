@@ -1,11 +1,14 @@
 # EduCorner: SahabatMimpi
 
-Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis kepribadian berbasis MBTI dan rekomendasi profesi yang sesuai.
+> Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita mereka melalui kuis kepribadian berbasis MBTI dan rekomendasi profesi yang sesuai.
 
-![EduCorner](https://img.shields.io/badge/EduCorner-SahabatMimpi-pink?style=for-the-badge)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/MarioSitepu/edu-corner)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=for-the-badge)](https://edu-corner-seven.vercel.app)
+[![EduCorner](https://img.shields.io/badge/EduCorner-SahabatMimpi-pink?style=for-the-badge)](https://github.com/MarioSitepu/edu-corner)
 ![Next.js](https://img.shields.io/badge/Next.js-16.1-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-blue?style=for-the-badge&logo=postgresql)
+![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 ## 📋 Daftar Isi
 
@@ -19,19 +22,24 @@ Platform interaktif untuk membantu siswa menemukan dan mengembangkan cita-cita m
 - [Struktur Proyek](#struktur-proyek)
 - [API Endpoints](#api-endpoints)
 - [Deployment](#deployment)
+- [Testing](#testing)
 - [Kontribusi](#kontribusi)
+- [Troubleshooting](#troubleshooting)
+- [Tim](#development-team)
 - [Lisensi](#lisensi)
 
 ## 🎯 Tentang Proyek
 
 EduCorner: SahabatMimpi adalah platform edukasi interaktif yang dirancang untuk membantu siswa SD, SMP, dan SMA di Indonesia menemukan potensi diri dan mengembangkan cita-cita mereka. Platform ini menggunakan sistem kuis kepribadian berbasis MBTI (Myers-Briggs Type Indicator) yang disesuaikan untuk anak-anak dan remaja.
 
-### Tujuan Proyek
+### 🌟 Tujuan Proyek
 
-- Membantu siswa mengenali kepribadian dan minat mereka
-- Memberikan rekomendasi profesi yang sesuai dengan kepribadian
-- Menyediakan dashboard untuk melihat hasil kuis
-- Memberikan informasi lengkap tentang berbagai profesi
+- 🎯 Membantu siswa mengenali kepribadian dan minat mereka
+- 💼 Memberikan rekomendasi profesi yang sesuai dengan kepribadian
+- 📊 Menyediakan dashboard untuk melihat hasil kuis
+- 📚 Memberikan informasi lengkap tentang berbagai profesi
+- 🤖 Menggunakan AI untuk penjelasan profesi yang lebih detail
+- 📄 Export hasil kuis dalam format PDF yang profesional
 
 ## ✨ Fitur Utama
 
@@ -74,6 +82,11 @@ EduCorner: SahabatMimpi adalah platform edukasi interaktif yang dirancang untuk 
 - Tampilan yang optimal di semua perangkat
 - UI/UX yang menarik dan user-friendly
 
+### 8. **Sound Effects**
+- Sound effects untuk interaksi pengguna
+- Opsi untuk mengaktifkan/menonaktifkan suara
+- Pengalaman yang lebih interaktif dan engaging
+
 ## 🛠 Teknologi yang Digunakan
 
 ### Frontend
@@ -110,8 +123,8 @@ EduCorner: SahabatMimpi adalah platform edukasi interaktif yang dirancang untuk 
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
-cd webeducorner
+git clone https://github.com/MarioSitepu/edu-corner.git
+cd edu-corner
 ```
 
 ### 2. Install Dependencies
@@ -124,7 +137,7 @@ yarn install
 
 ### 3. Setup Environment Variables
 
-Buat file `.env.local` di root folder `webeducorner`:
+Buat file `.env.local` di root folder `Edu-Corner`:
 
 ```env
 # Database
@@ -212,8 +225,6 @@ Untuk fitur forgot password, Anda perlu:
 3. Set `RESEND_API_KEY` di `.env.local`
 4. Set `EMAIL_FROM` (gunakan `onboarding@resend.dev` untuk testing)
 5. Set `ADMIN_EMAIL` (email yang akan menerima OTP)
-
-Lihat `EMAIL_CONFIGURATION.md` untuk detail lengkap.
 
 ### JWT Secret
 
@@ -435,16 +446,6 @@ Untuk menggunakan custom email domain:
 - [ ] Search dan sort berfungsi
 - [ ] Responsive di mobile dan desktop
 
-## 📝 Dokumentasi Tambahan
-
-- [DATABASE_SETUP.md](./DATABASE_SETUP.md) - Panduan setup database
-- [ADMIN_DATABASE_TROUBLESHOOTING.md](./ADMIN_DATABASE_TROUBLESHOOTING.md) - Admin tidak menampilkan database yang sesuai
-- [EMAIL_CONFIGURATION.md](./EMAIL_CONFIGURATION.md) - Konfigurasi email
-- [EMAIL_TROUBLESHOOTING.md](./EMAIL_TROUBLESHOOTING.md) - Troubleshooting email
-- [FORGOT_PASSWORD_SETUP.md](./FORGOT_PASSWORD_SETUP.md) - Setup forgot password
-- [SEO_GUIDE.md](./SEO_GUIDE.md) - Panduan SEO
-- [CAREER_EXPLANATIONS_DB.md](./CAREER_EXPLANATIONS_DB.md) - Database penjelasan profesi
-
 ## 🤝 Kontribusi
 
 Kontribusi sangat diterima! Untuk kontribusi:
@@ -480,7 +481,6 @@ Kontribusi sangat diterima! Untuk kontribusi:
 **Solution:**
 - Cek `RESEND_API_KEY` sudah benar
 - Pastikan `EMAIL_FROM` menggunakan domain Resend (`onboarding@resend.dev` untuk testing)
-- Lihat `EMAIL_TROUBLESHOOTING.md` untuk detail
 
 ### PDF Generation Error
 
@@ -491,49 +491,80 @@ Kontribusi sangat diterima! Untuk kontribusi:
 - Cek console untuk error detail
 - Pastikan semua data sudah lengkap sebelum generate PDF
 
+## 👥 Development Team
+
+Proyek ini dikembangkan oleh tim **KKN T31 Margo Lestari**:
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/MarioSitepu">
+        <b>Mario Fransiskus Sitepu</b><br/>
+        <sub>Project Manager & Backend Developer</sub>
+      </a>
+    </td>
+    <td align="center">
+      <b>Elfa Noviana Sari</b><br/>
+      <sub>Frontend Developer</sub>
+    </td>
+    <td align="center">
+      <b>George Haansraj</b><br/>
+      <sub>Web Logic & Content Creator</sub>
+    </td>
+  </tr>
+</table>
+
+### Peran & Kontribusi
+
+**Mario Fransiskus Sitepu** - Project Manager & Backend Developer
+- 📋 Mengelola proyek dan koordinasi tim
+- 🔧 Mengembangkan backend API dan serverless architecture
+- 🗄️ Database design dan optimasi
+- 🔐 Sistem autentikasi dan keamanan
+
+**Elfa Noviana Sari** - Frontend Developer
+- 🎨 UI/UX design dan implementasi
+- ⚛️ React components dan user interface
+- 📱 Responsive design dan mobile optimization
+- 🎭 Animasi dan interaksi pengguna
+
+**George Haansraj** - Web Logic & Content Creator
+- 🧠 Business logic dan algoritma kuis MBTI
+- 📝 Content creation dan konten edukatif
+- 🎯 Algoritma matching profesi dengan kepribadian
+- 📚 Penelitian dan pengembangan konten profesi
+
+## 🙏 Acknowledgments
+
+Terima kasih kepada:
+
+- **Next.js** team untuk framework yang luar biasa
+- **Neon** untuk database serverless yang handal
+- **Resend** untuk email service yang mudah digunakan
+- **Groq** untuk AI service yang powerful
+- **Vercel** untuk platform deployment yang seamless
+- Semua kontributor dan pengguna platform ini
+
+## 📞 Support & Contact
+
+Jika ada pertanyaan, saran, atau masalah:
+
+- 📧 **Buka Issue** di [GitHub Issues](https://github.com/MarioSitepu/edu-corner/issues)
+- 🌐 **Live Demo**: [edu-corner-seven.vercel.app](https://edu-corner-seven.vercel.app)
+- 📖 **Repository**: [github.com/MarioSitepu/edu-corner](https://github.com/MarioSitepu/edu-corner)
+
 ## 📄 Lisensi
 
 Proyek ini dilisensikan di bawah [MIT License](./LICENSE).
 
 Copyright (c) 2026 KKN T31 Margo Lestari
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-## 👥 Tim
-
-- **KKN T31 Margo Lestari** - Development Team
-
-## 🙏 Acknowledgments
-
-- Next.js team untuk framework yang luar biasa
-- Neon untuk database serverless
-- Resend untuk email service
-- Groq untuk AI service
-- Semua kontributor dan pengguna platform ini
-
-## 📞 Support
-
-Jika ada pertanyaan atau masalah, silakan:
-- Buka issue di GitHub
-- Hubungi tim development
-- Lihat dokumentasi di folder `docs/`
-
 ---
 
+<div align="center">
+
 **Made with ❤️ by KKN T31 Margo Lestari**
+
+[⬆ Back to Top](#educorner-sahabatmimpi)
+
+</div>

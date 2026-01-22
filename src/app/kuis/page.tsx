@@ -1310,11 +1310,12 @@ export default function KuisPage() {
             pdf.text(line.trim(), margin + 30, startY + (idx * 7.5));
           });
 
-          // Match Percent di kanan - posisi dinamis, tidak overlap dengan career name
+          // Indikator kecocokan (Sangat Cocok / Cocok / X% Cocok) - sama seperti hasil cita-cita
+          const matchLabel = getMatchLabel(matchPercent);
           pdf.setFontSize(13);
           pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(`${matchPercent}%`, margin + contentWidth - 8, startY, { align: 'right' });
+          pdf.text(matchLabel.text, margin + contentWidth - 8, startY, { align: 'right' });
 
           pdf.setFontSize(9);
           pdf.setTextColor(102, 102, 102);

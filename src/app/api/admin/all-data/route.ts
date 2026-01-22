@@ -67,18 +67,27 @@ export async function GET(request: NextRequest) {
         code: error?.code,
         detail: error?.detail
       });
-      // Jika tabel tidak ada atau kolom belum ada, coba dengan kolom yang ada
+      // Fallback: jika kolom baru belum ada (schema lama), coba SELECT minimal (id, nama, created_at)
       try {
-        // Coba query dengan kolom baru saja
-        eduCornerData = await sql`
-          SELECT id, nama, karakter, mbti_code, posisi_1_nama, posisi_1_persentase, posisi_2_nama, posisi_2_persentase, posisi_3_nama, posisi_3_persentase, created_at 
-          FROM edu_corner 
-          ORDER BY created_at DESC
-        ` as EduCornerItem[];
-        console.log(`Retry successful: Fetched ${eduCornerData.length} records from edu_corner`);
-      } catch (retryError: any) {
-        console.error('Error retrying fetch edu_corner data:', retryError);
-        // Jika masih error, tetap lanjutkan dengan array kosong
+        const minimal = await sql`
+          SELECT id, nama, created_at FROM edu_corner ORDER BY created_at DESC
+        ` as { id: number; nama: string; created_at: string }[];
+        eduCornerData = minimal.map((r) => ({
+          id: r.id,
+          nama: r.nama,
+          created_at: r.created_at,
+          karakter: undefined,
+          mbti_code: undefined,
+          posisi_1_nama: undefined,
+          posisi_1_persentase: undefined,
+          posisi_2_nama: undefined,
+          posisi_2_persentase: undefined,
+          posisi_3_nama: undefined,
+          posisi_3_persentase: undefined,
+        }));
+        console.log(`Fallback: Fetched ${eduCornerData.length} records (minimal columns). Jalankan migrasi: scripts/migrate-to-new-structure.sql`);
+      } catch (fallbackError: any) {
+        console.error('Fallback fetch failed:', fallbackError);
         eduCornerData = [];
       }
     }

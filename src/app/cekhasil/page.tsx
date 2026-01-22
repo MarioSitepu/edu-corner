@@ -172,6 +172,36 @@ export default function CekHasilPage() {
     },
   ];
 
+  // Deskripsi MBTI per tipe (sama seperti di kuis/page.tsx)
+  const getMBTIDescription = (mbtiCode: string): string => {
+    const descriptions: { [key: string]: string } = {
+      "ISTJ": "Kamu suka keteraturan dan aturan, sehingga kamu bisa diandalkan untuk menyelesaikan tugas dengan rapi dan tuntas.",
+      "ISFJ": "Kamu anak yang perhatian dan suka membantu, membuat orang di sekitarmu merasa aman dan dihargai.",
+      "INFJ": "Kamu suka berpikir mendalam dan peduli pada perasaan orang lain, sehingga kamu pandai membawa kebaikan bagi sekitar.",
+      "INTJ": "Kamu suka merencanakan sesuatu dengan tenang, dan itu membuatmu pintar menemukan solusi yang cerdas.",
+      "ISTP": "Kamu suka mencoba langsung dan belajar dari pengalaman, sehingga kamu cepat tanggap menghadapi hal baru.",
+      "ISFP": "Kamu lembut dan menyukai keindahan, sehingga kamu bisa membuat suasana menjadi lebih hangat dan menyenangkan.",
+      "INFP": "Kamu punya imajinasi besar dan hati yang baik, membuatmu mampu memahami orang lain dengan cara yang unik.",
+      "INTP": "Kamu suka berpikir dan bertanya, sehingga kamu hebat menemukan ide-ide baru dari sudut pandang berbeda.",
+      "ESTP": "Kamu aktif dan berani mencoba hal baru, sehingga kamu cepat bertindak dan membawa semangat di sekitarmu.",
+      "ESFP": "Kamu ceria dan suka bersama orang lain, sehingga kamu mudah membuat suasana menjadi lebih bahagia.",
+      "ENFP": "Kamu penuh semangat dan ide, sehingga kamu bisa menginspirasi teman-teman dengan energi positifmu.",
+      "ENTP": "Kamu suka berdiskusi dan berkreasi, membuatmu pandai menemukan banyak ide seru dalam waktu singkat.",
+      "ESTJ": "Kamu suka mengatur dan memimpin, sehingga kamu hebat mengajak teman bekerja sama dengan tertib.",
+      "ESFJ": "Kamu ramah dan peduli pada orang lain, sehingga kamu kuat dalam menjaga kebersamaan dan persahabatan.",
+      "ENFJ": "Kamu suka menyemangati orang lain, sehingga kamu bisa membantu teman menjadi lebih percaya diri.",
+      "ENTJ": "Kamu percaya diri dan suka membuat rencana, sehingga kamu hebat mengambil keputusan dan mengajak orang maju bersama."
+    };
+    return descriptions[mbtiCode] || "Kamu adalah anak yang unik! Kombinasi sifatmu menunjukkan potensi hebat.";
+  };
+
+  // Indikator kecocokan (sama seperti di kuis/page.tsx hasil cita-cita)
+  const getMatchLabel = (percent: number): { emoji: string; text: string } => {
+    if (percent === 100) return { emoji: "🌟", text: "Sangat Cocok" };
+    if (percent >= 75) return { emoji: "😊", text: "Cocok" };
+    return { emoji: "👍", text: `${percent}% Cocok` };
+  };
+
   const handleDownloadPDF = async (item: HistoryItem) => {
     try {
       setDownloadingId(item.id);
@@ -345,25 +375,40 @@ export default function CekHasilPage() {
       pdf.text('Hasil Analisis Misi', margin, yPos);
       yPos += 12;
 
-      // MBTI Code Box - format lebih bagus
+      // MBTI Code Box - sama seperti hasil kuis (dengan deskripsi MBTI)
       if (mbtiCode) {
+        const mbtiDescription = getMBTIDescription(mbtiCode);
+        const descriptionLines = pdf.splitTextToSize(mbtiDescription, contentWidth - 10);
+        const boxHeight = Math.max(22, 8 + 12 + (descriptionLines.length * 5) + 8); // Label + Code + Description + padding
+
         pdf.setFillColor(255, 240, 243); // Very light pink
-        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'F');
-        
+        pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, 'F');
+
         pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setLineWidth(0.6);
-        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'D');
-        
+        pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, 'D');
+
         pdf.setFontSize(10);
         pdf.setTextColor(102, 102, 102);
         pdf.setFont('helvetica', 'normal');
         pdf.text('Kode Kepribadianmu:', margin + 5, yPos + 9);
-        
+
         pdf.setFontSize(20);
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setFont('helvetica', 'bold');
-        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 16, { align: 'right' });
-        yPos += 28;
+        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 9, { align: 'right' });
+
+        // Deskripsi MBTI
+        pdf.setFontSize(9);
+        pdf.setTextColor(102, 102, 102);
+        pdf.setFont('helvetica', 'normal');
+        let descY = yPos + 20;
+        descriptionLines.forEach((line: string) => {
+          pdf.text(line.trim(), margin + 5, descY);
+          descY += 5;
+        });
+
+        yPos += boxHeight + 5;
       }
 
       // Info Box - Nama dan Tanggal Kuis (format lebih bagus)
@@ -462,8 +507,10 @@ export default function CekHasilPage() {
           pdf.setFontSize(13);
           pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(`${matchPercent}%`, margin + contentWidth - 8, startY, { align: 'right' });
-          
+          // Indikator kecocokan (Sangat Cocok / Cocok / X% Cocok) - sama seperti hasil cita-cita
+          const matchLabelPdf = getMatchLabel(matchPercent);
+          pdf.text(matchLabelPdf.text, margin + contentWidth - 8, startY, { align: 'right' });
+
           pdf.setFontSize(9);
           pdf.setTextColor(102, 102, 102);
           pdf.setFont('helvetica', 'normal');
@@ -1181,6 +1228,9 @@ export default function CekHasilPage() {
                   };
                   return charMap[karakter || ''] || '👤';
                 };
+                const m1 = getMatchLabel(item.posisi_1_persentase || 0);
+                const m2 = getMatchLabel(item.posisi_2_persentase || 0);
+                const m3 = getMatchLabel(item.posisi_3_persentase || 0);
 
                 return (
                   <div
@@ -1207,8 +1257,8 @@ export default function CekHasilPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-semibold text-[#AD1457] min-w-[16px] text-xs">1.</span>
                               <span className="text-[#2D2D2D] flex-1 truncate text-sm">{item.posisi_1_nama}</span>
-                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center shrink-0">
-                                {item.posisi_1_persentase || 0}%
+                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[92px] text-center shrink-0 inline-flex items-center justify-center gap-1">
+                                <span suppressHydrationWarning>{m1.emoji}</span> {m1.text}
                               </span>
                             </div>
                           )}
@@ -1216,8 +1266,8 @@ export default function CekHasilPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-semibold text-[#AD1457] min-w-[16px] text-xs">2.</span>
                               <span className="text-[#2D2D2D] flex-1 truncate text-sm">{item.posisi_2_nama}</span>
-                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center shrink-0">
-                                {item.posisi_2_persentase || 0}%
+                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[92px] text-center shrink-0 inline-flex items-center justify-center gap-1">
+                                <span suppressHydrationWarning>{m2.emoji}</span> {m2.text}
                               </span>
                             </div>
                           )}
@@ -1225,8 +1275,8 @@ export default function CekHasilPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-semibold text-[#AD1457] min-w-[16px] text-xs">3.</span>
                               <span className="text-[#2D2D2D] flex-1 truncate text-sm">{item.posisi_3_nama}</span>
-                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[40px] text-center shrink-0">
-                                {item.posisi_3_persentase || 0}%
+                              <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[92px] text-center shrink-0 inline-flex items-center justify-center gap-1">
+                                <span suppressHydrationWarning>{m3.emoji}</span> {m3.text}
                               </span>
                             </div>
                           )}
@@ -1300,6 +1350,9 @@ export default function CekHasilPage() {
                   };
                   return charMap[karakter || ''] || '👤';
                 };
+                const m1 = getMatchLabel(item.posisi_1_persentase || 0);
+                const m2 = getMatchLabel(item.posisi_2_persentase || 0);
+                const m3 = getMatchLabel(item.posisi_3_persentase || 0);
 
                 return (
                   <div
@@ -1341,8 +1394,8 @@ export default function CekHasilPage() {
                             <span className="font-bold text-[#AD1457] text-xs">1.</span>
                             <span className="text-sm text-[#2D2D2D] truncate flex-1">{item.posisi_1_nama}</span>
                           </div>
-                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[45px] text-center shrink-0 ml-2">
-                            {item.posisi_1_persentase || 0}%
+                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[92px] text-center shrink-0 ml-2 inline-flex items-center justify-center gap-1">
+                            <span suppressHydrationWarning>{m1.emoji}</span> {m1.text}
                           </span>
                         </div>
                       )}
@@ -1352,8 +1405,8 @@ export default function CekHasilPage() {
                             <span className="font-bold text-[#AD1457] text-xs">2.</span>
                             <span className="text-sm text-[#2D2D2D] truncate flex-1">{item.posisi_2_nama}</span>
                           </div>
-                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[45px] text-center shrink-0 ml-2">
-                            {item.posisi_2_persentase || 0}%
+                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[92px] text-center shrink-0 ml-2 inline-flex items-center justify-center gap-1">
+                            <span suppressHydrationWarning>{m2.emoji}</span> {m2.text}
                           </span>
                         </div>
                       )}
@@ -1363,8 +1416,8 @@ export default function CekHasilPage() {
                             <span className="font-bold text-[#AD1457] text-xs">3.</span>
                             <span className="text-sm text-[#2D2D2D] truncate flex-1">{item.posisi_3_nama}</span>
                           </div>
-                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[45px] text-center shrink-0 ml-2">
-                            {item.posisi_3_persentase || 0}%
+                          <span className="bg-[#FFE8EC] text-[#C2185B] px-2 py-0.5 rounded-full font-semibold text-xs min-w-[92px] text-center shrink-0 ml-2 inline-flex items-center justify-center gap-1">
+                            <span suppressHydrationWarning>{m3.emoji}</span> {m3.text}
                           </span>
                         </div>
                       )}

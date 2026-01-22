@@ -36,10 +36,12 @@ export default function KuisPage() {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [pdfError, setPdfError] = useState<string>("");
+  const [carouselStates, setCarouselStates] = useState<{ [key: number]: { canScrollLeft: boolean; canScrollRight: boolean } }>({});
   
   // Refs untuk cleanup timer (fix race condition)
   const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const carouselRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   // Data karakter
   const characters = [
@@ -54,6 +56,76 @@ export default function KuisPage() {
   const getCharacter = (karakterValue: string) => {
     const index = characters.findIndex(char => char.label === karakterValue);
     return characters[index] || characters[0];
+  };
+
+  // Fungsi untuk mengkonversi persentase kecocokan menjadi emoji dan teks
+  const getMatchLabel = (percent: number): { emoji: string; text: string } => {
+    if (percent === 100) {
+      return { emoji: "🌟", text: "Sangat Cocok" };
+    } else if (percent >= 75) {
+      return { emoji: "😊", text: "Cocok" };
+    } else {
+      // Untuk persentase di bawah 75%, tetap tampilkan persentase
+      return { emoji: "👍", text: `${percent}% Cocok` };
+    }
+  };
+
+  // Fungsi untuk mendapatkan deskripsi MBTI berdasarkan kode
+  const getMBTIDescription = (mbtiCode: string): string => {
+    const descriptions: { [key: string]: string } = {
+      "ISTJ": "Kamu suka keteraturan dan aturan, sehingga kamu bisa diandalkan untuk menyelesaikan tugas dengan rapi dan tuntas.",
+      "ISFJ": "Kamu anak yang perhatian dan suka membantu, membuat orang di sekitarmu merasa aman dan dihargai.",
+      "INFJ": "Kamu suka berpikir mendalam dan peduli pada perasaan orang lain, sehingga kamu pandai membawa kebaikan bagi sekitar.",
+      "INTJ": "Kamu suka merencanakan sesuatu dengan tenang, dan itu membuatmu pintar menemukan solusi yang cerdas.",
+      "ISTP": "Kamu suka mencoba langsung dan belajar dari pengalaman, sehingga kamu cepat tanggap menghadapi hal baru.",
+      "ISFP": "Kamu lembut dan menyukai keindahan, sehingga kamu bisa membuat suasana menjadi lebih hangat dan menyenangkan.",
+      "INFP": "Kamu punya imajinasi besar dan hati yang baik, membuatmu mampu memahami orang lain dengan cara yang unik.",
+      "INTP": "Kamu suka berpikir dan bertanya, sehingga kamu hebat menemukan ide-ide baru dari sudut pandang berbeda.",
+      "ESTP": "Kamu aktif dan berani mencoba hal baru, sehingga kamu cepat bertindak dan membawa semangat di sekitarmu.",
+      "ESFP": "Kamu ceria dan suka bersama orang lain, sehingga kamu mudah membuat suasana menjadi lebih bahagia.",
+      "ENFP": "Kamu penuh semangat dan ide, sehingga kamu bisa menginspirasi teman-teman dengan energi positifmu.",
+      "ENTP": "Kamu suka berdiskusi dan berkreasi, membuatmu pandai menemukan banyak ide seru dalam waktu singkat.",
+      "ESTJ": "Kamu suka mengatur dan memimpin, sehingga kamu hebat mengajak teman bekerja sama dengan tertib.",
+      "ESFJ": "Kamu ramah dan peduli pada orang lain, sehingga kamu kuat dalam menjaga kebersamaan dan persahabatan.",
+      "ENFJ": "Kamu suka menyemangati orang lain, sehingga kamu bisa membantu teman menjadi lebih percaya diri.",
+      "ENTJ": "Kamu percaya diri dan suka membuat rencana, sehingga kamu hebat mengambil keputusan dan mengajak orang maju bersama."
+    };
+    
+    return descriptions[mbtiCode] || "Kamu adalah anak yang unik! Kombinasi sifatmu menunjukkan potensi hebat.";
+  };
+
+  // Fungsi untuk scroll carousel
+  const scrollCarousel = (carouselIndex: number, direction: 'left' | 'right') => {
+    const carousel = carouselRefs.current[carouselIndex];
+    if (!carousel) return;
+
+    const scrollAmount = 220; // Width card (200px) + gap (20px)
+    const currentScroll = carousel.scrollLeft;
+    const newScroll = direction === 'left' 
+      ? currentScroll - scrollAmount 
+      : currentScroll + scrollAmount;
+
+    carousel.scrollTo({
+      left: newScroll,
+      behavior: 'smooth'
+    });
+  };
+
+  // Fungsi untuk check scroll position dan update button visibility
+  const checkCarouselScroll = (carouselIndex: number) => {
+    const carousel = carouselRefs.current[carouselIndex];
+    if (!carousel) return;
+
+    const canScrollLeft = carousel.scrollLeft > 0;
+    const canScrollRight = carousel.scrollLeft < (carousel.scrollWidth - carousel.clientWidth - 10);
+
+    setCarouselStates(prev => ({
+      ...prev,
+      [carouselIndex]: {
+        canScrollLeft,
+        canScrollRight
+      }
+    }));
   };
 
   // Load progress kuis dari localStorage saat component mount (hanya jika kuis masih berjalan)
@@ -205,6 +277,32 @@ export default function KuisPage() {
       };
     }
   }, [currentQuestion, showQuiz]);
+
+  // Check carousel scroll position saat hasil ditampilkan dan saat window resize
+  useEffect(() => {
+    if (showResult && topCareers.length > 0) {
+      // Check semua carousel setelah render
+      const timer = setTimeout(() => {
+        topCareers.forEach((_, index) => {
+          checkCarouselScroll(index);
+        });
+      }, 300);
+
+      // Check saat window resize
+      const handleResize = () => {
+        topCareers.forEach((_, index) => {
+          checkCarouselScroll(index);
+        });
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [showResult, topCareers]);
 
   // Database 32 Soal MBTI (dari Python)
   const questions = [
@@ -1020,12 +1118,16 @@ export default function KuisPage() {
 
       // MBTI Code Box - format lebih bagus
       if (mbtiCode) {
+        const mbtiDescription = getMBTIDescription(mbtiCode);
+        const descriptionLines = pdf.splitTextToSize(mbtiDescription, contentWidth - 10);
+        const boxHeight = Math.max(22, 8 + 12 + (descriptionLines.length * 5) + 8); // Label + Code + Description + padding
+        
         pdf.setFillColor(255, 240, 243); // Very light pink
-        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'F');
+        pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, 'F');
         
         pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setLineWidth(0.6);
-        pdf.roundedRect(margin, yPos, contentWidth, 22, 3, 3, 'D');
+        pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, 'D');
         
         pdf.setFontSize(10);
         pdf.setTextColor(102, 102, 102);
@@ -1035,8 +1137,19 @@ export default function KuisPage() {
         pdf.setFontSize(20);
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setFont('helvetica', 'bold');
-        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 16, { align: 'right' });
-        yPos += 28;
+        pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 9, { align: 'right' });
+        
+        // Deskripsi MBTI
+        pdf.setFontSize(9);
+        pdf.setTextColor(102, 102, 102);
+        pdf.setFont('helvetica', 'normal');
+        let descY = yPos + 20;
+        descriptionLines.forEach((line: string) => {
+          pdf.text(line.trim(), margin + 5, descY);
+          descY += 5;
+        });
+        
+        yPos += boxHeight + 5;
       }
 
       // Info Box - Nama dan Tanggal Kuis (format lebih bagus)
@@ -1449,7 +1562,7 @@ export default function KuisPage() {
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-4 border-2 border-[#FF4D6D]">
                   <p className="text-sm text-[#666666] mb-1">Kode Kepribadianmu:</p>
                   <p className="text-3xl font-bold text-[#FF4D6D]">{mbtiCode}</p>
-                  <p className="text-xs text-[#999999] mt-2">Kamu adalah anak yang unik! Kombinasi sifatmu menunjukkan potensi hebat.</p>
+                  <p className="text-xs sm:text-sm text-[#666666] mt-2 leading-relaxed">{getMBTIDescription(mbtiCode)}</p>
                 </div>
               )}
               
@@ -1460,26 +1573,30 @@ export default function KuisPage() {
           </div>
 
           {/* Content Section */}
-          <div className="px-8 py-8 space-y-6">
+          <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
             {/* Top 3 Profesi */}
             {topCareers.length > 0 ? (
               topCareers.map((item, index) => {
                 const career = item.data;
                 const matchPercent = Math.round((item.score / 4) * 100);
+                const matchLabel = getMatchLabel(matchPercent);
                 
                 return (
-                  <div key={index} className="bg-gradient-to-br from-white to-[#FFF8F9] rounded-2xl p-6 border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all">
+                  <div key={index} className="bg-gradient-to-br from-white to-[#FFF8F9] rounded-2xl p-4 sm:p-6 border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all">
                     {/* Header Card */}
-                    <div className="bg-gradient-to-r from-[#FFE4E9] to-[#FFD4E5] rounded-xl p-4 mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-4xl" suppressHydrationWarning>{career.icon}</span>
-                        <div>
-                          <h3 className="text-xl font-bold text-[#2D2D2D]">{career.name}</h3>
-                          <p className="text-sm text-[#666666]">Posisi #{index + 1}</p>
+                    <div className="bg-gradient-to-r from-[#FFE4E9] to-[#FFD4E5] rounded-xl p-3 sm:p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                        <span className="text-3xl sm:text-4xl shrink-0" suppressHydrationWarning>{career.icon}</span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] break-words">{career.name}</h3>
+                          <p className="text-xs sm:text-sm text-[#666666]">Posisi #{index + 1}</p>
                         </div>
                       </div>
-                      <div className="bg-white rounded-full px-4 py-2 border-2 border-[#FF4D6D]">
-                        <p className="text-sm font-bold text-[#FF4D6D]">Kecocokan: {matchPercent}%</p>
+                      <div className="bg-white rounded-full px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-[#FF4D6D] shrink-0 w-full sm:w-auto">
+                        <p className="text-xs sm:text-sm font-bold text-[#FF4D6D] flex items-center justify-center sm:justify-start gap-1.5 whitespace-nowrap">
+                          <span className="text-base sm:text-lg" suppressHydrationWarning>{matchLabel.emoji}</span>
+                          <span>{matchLabel.text}</span>
+                        </p>
                       </div>
                     </div>
                     
@@ -1494,8 +1611,46 @@ export default function KuisPage() {
                     <div className="bg-gradient-to-r from-[#FFF0F3] to-[#FFE8EC] rounded-xl p-4 mb-3">
                       <p className="text-sm font-semibold text-[#666666] mb-3">🦸 Tokoh Hebat:</p>
                       <div className="relative">
+                        {/* Navigation Buttons - Desktop Only */}
+                        {carouselStates[index]?.canScrollLeft && (
+                          <button
+                            onClick={() => scrollCarousel(index, 'left')}
+                            className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white rounded-full p-2.5 shadow-xl border-2 border-pink-300 hover:border-pink-400 transition-all hover:scale-110 active:scale-95"
+                            aria-label="Scroll left"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M15 18L9 12L15 6" stroke="#FF4D6D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        )}
+                        {carouselStates[index]?.canScrollRight && (
+                          <button
+                            onClick={() => scrollCarousel(index, 'right')}
+                            className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white rounded-full p-2.5 shadow-xl border-2 border-pink-300 hover:border-pink-400 transition-all hover:scale-110 active:scale-95"
+                            aria-label="Scroll right"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9 18L15 12L9 6" stroke="#FF4D6D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </button>
+                        )}
+                        
                         {/* Carousel Container */}
-                        <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <div 
+                          ref={(el) => {
+                            carouselRefs.current[index] = el;
+                            if (el) {
+                              // Initial check
+                              setTimeout(() => checkCarouselScroll(index), 100);
+                            }
+                          }}
+                          onScroll={() => checkCarouselScroll(index)}
+                          className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 pb-2 md:px-0" 
+                          style={{ 
+                            scrollbarWidth: 'none', 
+                            msOverflowStyle: 'none'
+                          }}
+                        >
                           {career.rolemodel.split(", ").map((tokoh: string, idx: number) => {
                             // Generate slug for image path
                             const slug = tokoh.toLowerCase()

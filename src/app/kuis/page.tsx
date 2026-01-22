@@ -47,7 +47,8 @@ export default function KuisPage() {
     { emoji: "👑", label: "Ceria", color: "from-pink-400 to-pink-500", bgColor: "from-pink-100 to-pink-200", ringColor: "ring-pink-400" },
     { emoji: "🦁", label: "Pintar", color: "from-orange-400 to-orange-500", bgColor: "from-orange-100 to-orange-200", ringColor: "ring-orange-400" },
     { emoji: "😸", label: "Aktif", color: "from-green-400 to-green-500", bgColor: "from-green-100 to-green-200", ringColor: "ring-green-400" },
-    { emoji: "🌟", label: "Kreatif", color: "from-purple-400 to-purple-500", bgColor: "from-purple-100 to-purple-200", ringColor: "ring-purple-400" }
+    { emoji: "🌟", label: "Kreatif", color: "from-purple-400 to-purple-500", bgColor: "from-purple-100 to-purple-200", ringColor: "ring-purple-400" },
+    { emoji: "💖", label: "Penyayang", color: "from-teal-400 to-teal-500", bgColor: "from-teal-100 to-teal-200", ringColor: "ring-teal-400" }
   ];
 
   const getCharacter = (karakterValue: string) => {
@@ -211,228 +212,228 @@ export default function KuisPage() {
     {
       question: "Saat jam istirahat di sekolah, kamu biasanya...",
       options: [
-        { text: "Main rame-rame sama banyak teman", emoji: "🏃", traits: { E: 1 } },
-        { text: "Main sama satu atau dua teman dekat saja", emoji: "👫", traits: { I: 1 } }
+        { text: "Main rame-rame sama banyak teman", emoji: "🏃", image: "/quiz/soal1A.jpeg", traits: { E: 1 } },
+        { text: "Main sama satu atau dua teman dekat saja", emoji: "👫", image: "/quiz/soal1B.jpeg", traits: { I: 1 } }
       ],
     },
     {
       question: "Kalau hari ulang tahunmu, kamu lebih suka...",
       options: [
-        { text: "Ngundang banyak teman buat kumpul", emoji: "🎉", traits: { E: 1 } },
-        { text: "Rayain sederhana sama keluarga", emoji: "🎂", traits: { I: 1 } }
+        { text: "Ngundang banyak teman buat kumpul", emoji: "🎉" , image: "/quiz/soal2A.jpeg", traits: { E: 1 } },
+        { text: "Rayain sederhana sama keluarga", emoji: "🎂", image: "/quiz/soal2B.jpeg", traits: { I: 1 } }
       ],
     },
     {
       question: "Setelah pulang sekolah, kamu biasanya...",
       options: [
-        { text: "Main dulu sama teman di sekitar rumah", emoji: "⚽", traits: { E: 1 } },
-        { text: "Langsung istirahat atau main sendiri di rumah", emoji: "🏠", traits: { I: 1 } }
+        { text: "Main dulu sama teman di sekitar rumah", emoji: "⚽", image: "/quiz/soal3A.jpeg", traits: { E: 1 } },
+        { text: "Langsung istirahat atau main sendiri di rumah", image: "/quiz/soal3B.jpeg", emoji: "🏠", traits: { I: 1 } }
       ],
     },
     {
       question: "Kalau ada tugas kelompok dari guru, kamu lebih suka...",
       options: [
-        { text: "Diskusi bareng-bareng sama teman", emoji: "👥", traits: { E: 1 } },
-        { text: "Ngerjain pelan-pelan sendiri", emoji: "✏️", traits: { I: 1 } }
+        { text: "Diskusi bareng-bareng sama teman", emoji: "👥", image: "/quiz/soal4A.jpeg", traits: { E: 1 } },
+        { text: "Ngerjain pelan-pelan sendiri", emoji: "✏️", image: "/quiz/soal4B.jpeg", traits: { I: 1 } }
       ],
     },
     {
       question: "Kalau ada acara di sekolah (lomba, pentas, atau upacara besar)...",
       options: [
-        { text: "Aku senang ikut kumpul dan ngobrol", emoji: "🗣️", traits: { E: 1 } },
-        { text: "Aku lebih nyaman bareng teman dekat saja", emoji: "🙂", traits: { I: 1 } }
+        { text: "Aku senang ikut kumpul dan ngobrol", emoji: "🗣️", image: "/quiz/soal5A.jpeg", traits: { E: 1 } },
+        { text: "Aku lebih nyaman bareng teman dekat saja", emoji: "🙂", image: "/quiz/soal5B.jpeg", traits: { I: 1 } }
       ],
     },
     {
       question: "Saat main bareng teman, kamu biasanya...",
       options: [
-        { text: "Banyak cerita dan bercanda", emoji: "😆", traits: { E: 1 } },
-        { text: "Lebih sering dengerin dan sedikit bicara", emoji: "🤫", traits: { I: 1 } }
+        { text: "Banyak cerita dan bercanda", emoji: "😆",  image: "/quiz/soal6A.jpeg", traits: { E: 1 } },
+        { text: "Lebih sering dengerin dan sedikit bicara",  image: "/quiz/soal6B.jpeg", emoji: "🤫", traits: { I: 1 } }
       ],
     },
     {
       question: "Kalau ada lomba 17-an di desa, kamu...",
       options: [
-        { text: "Ikut ramai-ramai dan kenalan sama banyak teman", emoji: "🎈", traits: { E: 1 } },
-        { text: "Ikut lomba bareng teman yang sudah dekat", emoji: "🪁", traits: { I: 1 } }
+        { text: "Ikut ramai-ramai dan kenalan sama banyak teman", emoji: "🎈",  image: "/quiz/soal7A.jpeg", traits: { E: 1 } },
+        { text: "Ikut lomba bareng teman yang sudah dekat", emoji: "🪁",  image: "/quiz/soal7B.jpeg", traits: { I: 1 } }
       ],
     },
     {
       question: "Setelah main lama dengan banyak teman, kamu merasa...",
       options: [
-        { text: "Senang dan makin semangat", emoji: "⚡", traits: { E: 1 } },
-        { text: "Capek dan ingin sendirian dulu", emoji: "😌", traits: { I: 1 } }
+        { text: "Senang dan makin semangat", emoji: "⚡",  image: "/quiz/soal8A.jpeg", traits: { E: 1 } },
+        { text: "Capek dan ingin sendirian dulu", emoji: "😌",  image: "/quiz/soal8B.jpeg", traits: { I: 1 } }
       ],
     },
     // === S vs N (8 soal) ===
     {
       question: "Kalau guru jelasin pelajaran, kamu lebih cepat paham kalau...",
       options: [
-        { text: "Ada contoh yang bisa dilihat langsung", emoji: "👀", traits: { S: 1 } },
-        { text: "Diceritain dulu maksud dari pelajarannya", emoji: "🌈", traits: { N: 1 } }
+        { text: "Ada contoh yang bisa dilihat langsung", emoji: "👀",  image: "/quiz/soal9A.jpeg", traits: { S: 1 } },
+        { text: "Diceritain dulu maksud dari pelajarannya", emoji: "🌈",  image: "/quiz/soal9B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau dengar cerita, kamu lebih suka cerita tentang...",
       options: [
-        { text: "Kehidupan nyata sehari-hari", emoji: "🏠", traits: { S: 1 } },
-        { text: "Cerita khayalan atau dongeng", emoji: "🐉", traits: { N: 1 } }
+        { text: "Kehidupan nyata sehari-hari", emoji: "🏠",  image: "/quiz/soal10A.jpeg", traits: { S: 1 } },
+        { text: "Cerita khayalan atau dongeng", emoji: "🐉",  image: "/quiz/soal10B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau main balok atau lego, kamu biasanya...",
       options: [
-        { text: "Menyusun pelan-pelan sesuai contoh", emoji: "📋", traits: { S: 1 } },
-        { text: "Bikin bentuk sesuai ide sendiri", emoji: "✨", traits: { N: 1 } }
+        { text: "Menyusun pelan-pelan sesuai contoh", emoji: "📋",  image: "/quiz/soal11A.jpeg", traits: { S: 1 } },
+        { text: "Bikin bentuk sesuai ide sendiri", emoji: "✨",  image: "/quiz/soal11B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Pelajaran yang paling kamu nikmati biasanya...",
       options: [
-        { text: "Yang ada praktiknya", emoji: "🔧", traits: { S: 1 } },
-        { text: "Yang bisa pakai imajinasi", emoji: "💭", traits: { N: 1 } }
+        { text: "Yang ada praktiknya", emoji: "🔧",  image: "/quiz/soal12A.jpeg", traits: { S: 1 } },
+        { text: "Yang bisa pakai imajinasi", emoji: "💭",  image: "/quiz/soal12B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau diminta menggambar, kamu lebih sering menggambar...",
       options: [
-        { text: "Hal-hal yang sering kamu lihat", emoji: "🌾", traits: { S: 1 } },
-        { text: "Hal-hal dari bayangan di kepala", emoji: "🌟", traits: { N: 1 } }
+        { text: "Hal-hal yang sering kamu lihat", emoji: "🌾",  image: "/quiz/soal13A.jpeg", traits: { S: 1 } },
+        { text: "Hal-hal dari bayangan di kepala", emoji: "🌟",  image: "/quiz/soal13B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Saat mendengar cerita yang panjang, kamu biasanya...",
       options: [
-        { text: "Suka mengingat semua nama-nama tokoh di ceritanya", emoji: "📝", traits: { S: 1 } },
-        { text: "Ingat dan paham keseluruhan ceritanya saja", emoji: "💡", traits: { N: 1 } }
+        { text: "Suka mengingat semua nama-nama tokoh di ceritanya", emoji: "📝",  image: "/quiz/soal14A.jpeg", traits: { S: 1 } },
+        { text: "Ingat dan paham keseluruhan ceritanya saja", emoji: "💡",  image: "/quiz/soal14B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau belajar atau bermain, kamu lebih suka...",
       options: [
-        { text: "Fokus dan mendalami satu hal", emoji: "🎯", traits: { S: 1 } },
-        { text: "Mencoba banyak hal baru", emoji: "🎈", traits: { N: 1 } }
+        { text: "Fokus dan mendalami satu hal", emoji: "🎯",  image: "/quiz/soal15A.jpeg", traits: { S: 1 } },
+        { text: "Mencoba banyak hal baru", emoji: "🎈",  image: "/quiz/soal15B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau main puzzle biasanya kamu...",
       options: [
-        { text: "Langsung pasang kepingan yang cocok satu-satu", emoji: "🧩", traits: { S: 1 } },
-        { text: "Membayangkan dulu gambar apa yang akan terbentuk", emoji: "🖼️", traits: { N: 1 } }
+        { text: "Langsung pasang kepingan yang cocok satu-satu", emoji: "🧩",  image: "/quiz/soal16A.jpeg", traits: { S: 1 } },
+        { text: "Membayangkan dulu gambar apa yang akan terbentuk", emoji: "🖼️",  image: "/quiz/soal16B.jpeg", traits: { N: 1 } }
       ],
     },
     // === T vs F (8 soal) ===
     {
       question: "Kalau ada teman yang sedang sedih atau menangis, kamu biasanya...",
       options: [
-        { text: "Tanya kenapanya dan coba bantu cari jalan keluar", emoji: "🤔", traits: { T: 1 } },
-        { text: "Menemani dan menghiburnya dulu", emoji: "🤗", traits: { F: 1 } }
+        { text: "Tanya kenapanya dan coba bantu cari jalan keluar", emoji: "🤔",  image: "/quiz/soal17A.jpeg", traits: { T: 1 } },
+        { text: "Menemani dan menghiburnya dulu", emoji: "🤗",  image: "/quiz/soal17B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Saat mengerjakan soal atau tugas, kamu merasa senang kalau...",
       options: [
-        { text: "Jawabannya jelas dan masuk akal", emoji: "✅", traits: { T: 1 } },
-        { text: "Semua teman bisa bekerja dengan nyaman", emoji: "😊", traits: { F: 1 } }
+        { text: "Jawabannya jelas dan masuk akal", emoji: "✅",  image: "/quiz/soal18A.jpeg", traits: { T: 1 } },
+        { text: "Semua teman bisa bekerja dengan nyaman", emoji: "😊",  image: "/quiz/soal18B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau main permainan bareng teman, kamu lebih senang kalau...",
       options: [
-        { text: "Permainannya rapi dan aturannya jelas", emoji: "📏", traits: { T: 1 } },
-        { text: "Semua teman bisa ikut dan senang", emoji: "🎮", traits: { F: 1 } }
+        { text: "Permainannya rapi dan aturannya jelas", emoji: "📏",  image: "/quiz/soal19A.jpeg", traits: { T: 1 } },
+        { text: "Semua teman bisa ikut dan senang", emoji: "🎮", image: "/quiz/soal19B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau ada teman melakukan kesalahan, kamu biasanya...",
       options: [
-        { text: "Menjelaskan apa yang seharusnya dilakukan", emoji: "📘", traits: { T: 1 } },
-        { text: "Menegur dengan kata-kata yang lembut", emoji: "💝", traits: { F: 1 } }
+        { text: "Menjelaskan apa yang seharusnya dilakukan", emoji: "📘", image: "/quiz/soal20A.jpeg", traits: { T: 1 } },
+        { text: "Menegur dengan kata-kata yang lembut", emoji: "💝",  image: "/quiz/soal20B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Saat harus memilih sesuatu bersama-sama, kamu lebih sering...",
       options: [
-        { text: "Memikirkan mana yang paling masuk akal", emoji: "⚖️", traits: { T: 1 } },
-        { text: "Memikirkan agar tidak ada yang tersinggung", emoji: "❤️", traits: { F: 1 } }
+        { text: "Memikirkan mana yang paling masuk akal", emoji: "⚖️",  image: "/quiz/soal21A.jpeg", traits: { T: 1 } },
+        { text: "Memikirkan agar tidak ada yang tersinggung", emoji: "❤️",  image: "/quiz/soal21B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau menonton cerita atau film yang sedih, kamu biasanya...",
       options: [
-        { text: "Berpikir kenapa cerita itu bisa terjadi", emoji: "🧠", traits: { T: 1 } },
-        { text: "Ikut merasakan sedihnya", emoji: "😢", traits: { F: 1 } }
+        { text: "Berpikir kenapa cerita itu bisa terjadi", emoji: "🧠",  image: "/quiz/soal22A.jpeg", traits: { T: 1 } },
+        { text: "Ikut merasakan sedihnya", emoji: "😢",  image: "/quiz/soal22B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Hal yang membuat kamu merasa bangga adalah...",
       options: [
-        { text: "Bisa menyelesaikan masalah dengan baik", emoji: "💪", traits: { T: 1 } },
-        { text: "Bisa membantu dan membuat orang lain senang", emoji: "🌟", traits: { F: 1 } }
+        { text: "Bisa menyelesaikan masalah dengan baik", emoji: "💪",  image: "/quiz/soal23A.jpeg", traits: { T: 1 } },
+        { text: "Bisa membantu dan membuat orang lain senang", emoji: "🌟",  image: "/quiz/soal23B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau ada teman yang sedang bertengkar, kamu cenderung...",
       options: [
-        { text: "Mencari tahu masalahnya supaya selesai", emoji: "🔍", traits: { T: 1 } },
-        { text: "Menenangkan dan mendamaikan mereka", emoji: "☮️", traits: { F: 1 } }
+        { text: "Mencari tahu masalahnya supaya selesai", emoji: "🔍",  image: "/quiz/soal24A.jpeg", traits: { T: 1 } },
+        { text: "Menenangkan dan mendamaikan mereka", emoji: "☮️",  image: "/quiz/soal24B.jpeg", traits: { F: 1 } }
       ],
     },
     // === J vs P (8 soal) ===
     {
       question: "Kondisi kamarmu biasanya...",
       options: [
-        { text: "Rapi dan barangnya tersusun", emoji: "🛏️", traits: { J: 1 } },
-        { text: "Tidak selalu rapi, tapi aku tahu barangku di mana", emoji: "🎨", traits: { P: 1 } }
+        { text: "Rapi dan barangnya tersusun", emoji: "🛏️",  image: "/quiz/soal25A.jpeg", traits: { J: 1 } },
+        { text: "Tidak selalu rapi, tapi aku tahu barangku di mana", emoji: "🎨",  image: "/quiz/soal25B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kalau dapat PR dari guru, kamu biasanya...",
       options: [
-        { text: "Langsung kerjakan saat pulang sekolah", emoji: "✍️", traits: { J: 1 } },
-        { text: "Mengerjakannya setelah tidur siang atau main", emoji: "⏰", traits: { P: 1 } }
+        { text: "Langsung kerjakan saat pulang sekolah", emoji: "✍️",  image: "/quiz/soal26A.jpeg", traits: { J: 1 } },
+        { text: "Mengerjakannya setelah tidur siang atau main", emoji: "⏰",  image: "/quiz/soal26B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Dalam kegiatan sehari-hari, kamu lebih suka...",
       options: [
-        { text: "Tahu rencana dari awal", emoji: "📅", traits: { J: 1 } },
-        { text: "Melihat situasi dulu baru menentukan", emoji: "🌊", traits: { P: 1 } }
+        { text: "Tahu rencana dari awal", emoji: "📅",  image: "/quiz/soal27A.jpeg", traits: { J: 1 } },
+        { text: "Melihat situasi dulu baru menentukan", emoji: "🌊",  image: "/quiz/soal27B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kalau mau bermain bersama teman, kamu biasanya...",
       options: [
-        { text: "Sepakati aturan main dulu", emoji: "📜", traits: { J: 1 } },
-        { text: "Main dulu, aturannya sambil jalan", emoji: "🎲", traits: { P: 1 } }
+        { text: "Sepakati aturan main dulu", emoji: "📜",  image: "/quiz/soal28A.jpeg", traits: { J: 1 } },
+        { text: "Main dulu, aturannya sambil jalan", emoji: "🎲",  image: "/quiz/soal28B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kamu lebih suka permainan yang...",
       options: [
-        { text: "Ada aturan dan urutan bermainnya", emoji: "🗓️", traits: { J: 1 } },
-        { text: "Tidak banyak aturan, yang penting asik", emoji: "🎭", traits: { P: 1 } }
+        { text: "Ada aturan dan urutan bermainnya", emoji: "🗓️",  image: "/quiz/soal29A.jpeg", traits: { J: 1 } },
+        { text: "Tidak banyak aturan, yang penting asik", emoji: "🎭",  image: "/quiz/soal29B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kalau rencana berubah tiba-tiba, kamu biasanya...",
       options: [
-        { text: "Perlu waktu sebentar buat menyesuaikan", emoji: "🙂", traits: { J: 1 } },
-        { text: "Bisa langsung menyesuaikan", emoji: "😎", traits: { P: 1 } }
+        { text: "Perlu waktu sebentar buat menyesuaikan", emoji: "🙂",  image: "/quiz/soal30A.jpeg", traits: { J: 1 } },
+        { text: "Bisa langsung menyesuaikan", emoji: "😎",  image: "/quiz/soal30B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Saat mengerjakan tugas atau pekerjaan, kamu lebih sering...",
       options: [
-        { text: "Menyelesaikannya sampai selesai", emoji: "✔️", traits: { J: 1 } },
-        { text: "Mengerjakannya bertahap", emoji: "⏸️", traits: { P: 1 } }
+        { text: "Menyelesaikannya sampai selesai", emoji: "✔️",  image: "/quiz/soal31A.jpeg", traits: { J: 1 } },
+        { text: "Mengerjakannya bertahap", emoji: "⏸️",  image: "/quiz/soal31B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kondisi tas sekolahmu biasanya...",
       options: [
-        { text: "Buku dan alat tulis tertata rapi", emoji: "🎒", traits: { J: 1 } },
-        { text: "Isinya kadang rapi, kadang campur", emoji: "👜", traits: { P: 1 } }
+        { text: "Buku dan alat tulis tertata rapi", emoji: "🎒",  image: "/quiz/soal32A.jpeg", traits: { J: 1 } },
+        { text: "Isinya kadang rapi, kadang campur", emoji: "👜",  image: "/quiz/soal32B.jpeg", traits: { P: 1 } }
       ],
     },
   ];
@@ -1790,24 +1791,41 @@ export default function KuisPage() {
                       {String.fromCharCode(65 + index)}
                     </div>
 
-                    {/* Emoji dan Text */}
+                    {/* Emoji/Image dan Text */}
                     <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 w-full" style={{
                       animationDelay: `${index * 200 + 150}ms`,
                       animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
                       opacity: optionsVisible ? 1 : 0
                     }}>
-                      <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-none">
-                        <span suppressHydrationWarning>{option.emoji}</span>
+                      <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-none flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56">
+                        {option.image ? (
+                          <Image
+                            src={option.image}
+                            alt={option.text}
+                            width={256}
+                            height={256}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              // Fallback to emoji if image fails to load
+                              const target = e.target as HTMLElement;
+                              target.style.display = 'none';
+                              if (target.nextSibling) {
+                                (target.nextSibling as HTMLElement).style.display = 'block';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <span suppressHydrationWarning style={{ display: option.image ? 'none' : 'block' }}>{option.emoji}</span>
                       </div>
                       <p className="text-sm sm:text-base md:text-lg font-semibold text-center px-2 sm:px-4 leading-relaxed">
                         {option.text}
                       </p>
                     </div>
 
-                    {/* Hover Arrow Indicator */}
-                    <div className="absolute bottom-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                      <div className="w-8 h-8 rounded-full bg-[#FF4D6D] flex items-center justify-center text-white shadow-lg">
-                        <span className="text-lg">→</span>
+                    {/* Hover Arrow Indicator - Kanan */}
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                      <div className="w-10 h-10 rounded-full bg-[#FF4D6D] flex items-center justify-center text-white shadow-lg">
+                        <span className="text-xl">→</span>
                       </div>
                     </div>
                   </button>
@@ -1920,7 +1938,7 @@ export default function KuisPage() {
               <h3 className="text-center text-base md:text-lg font-bold text-[#2D2D2D] mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Pilih Karakter Kamu
               </h3>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4 justify-items-center">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 justify-items-center">
                 {characters.map((char, index) => (
                   <button
                     key={index}

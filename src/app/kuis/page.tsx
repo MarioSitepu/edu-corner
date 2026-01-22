@@ -1490,10 +1490,69 @@ export default function KuisPage() {
                       </p>
                     </div>
                     
-                    {/* Role Model */}
-                    <div className="bg-gradient-to-r from-[#FFF0F3] to-[#FFE8EC] rounded-xl p-3 mb-3">
-                      <p className="text-sm font-semibold text-[#666666] mb-1">🦸 Tokoh Hebat:</p>
-                      <p className="text-sm text-[#2D2D2D] font-medium">{career.rolemodel}</p>
+                    {/* Role Model Carousel */}
+                    <div className="bg-gradient-to-r from-[#FFF0F3] to-[#FFE8EC] rounded-xl p-4 mb-3">
+                      <p className="text-sm font-semibold text-[#666666] mb-3">🦸 Tokoh Hebat:</p>
+                      <div className="relative">
+                        {/* Carousel Container */}
+                        <div className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                          {career.rolemodel.split(", ").map((tokoh: string, idx: number) => {
+                            // Generate slug for image path
+                            const slug = tokoh.toLowerCase()
+                              .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                              .replace(/\s+/g, '-') // Replace spaces with dash
+                              .replace(/-+/g, '-'); // Remove multiple dashes
+                            
+                            return (
+                              <div key={idx} className="snap-center shrink-0 w-[200px]">
+                                <div className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105">
+                                  <div className="aspect-square relative bg-gradient-to-br from-pink-50 to-pink-100">
+                                    <Image
+                                      src={`/tokoh/${slug}.jpg`}
+                                      alt={tokoh}
+                                      fill
+                                      className="object-cover"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        // Try .jpeg format
+                                        if (target.src.endsWith('.jpg')) {
+                                          target.src = `/tokoh/${slug}.jpeg`;
+                                        } 
+                                        // Try .png format
+                                        else if (target.src.endsWith('.jpeg')) {
+                                          target.src = `/tokoh/${slug}.png`;
+                                        }
+                                        // If all formats fail, show placeholder
+                                        else {
+                                          target.style.display = 'none';
+                                          if (target.nextElementSibling) {
+                                            (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                                          }
+                                        }
+                                      }}
+                                    />
+                                    {/* Fallback placeholder */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-pink-200 hidden items-center justify-center">
+                                      <span className="text-5xl">👤</span>
+                                    </div>
+                                  </div>
+                                  <div className="p-3 bg-white">
+                                    <p className="text-sm text-center text-[#2D2D2D] font-semibold leading-tight">
+                                      {tokoh}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Scroll Indicator */}
+                        <div className="flex justify-center mt-2 gap-1">
+                          {career.rolemodel.split(", ").map((_: string, idx: number) => (
+                            <div key={idx} className="w-1.5 h-1.5 rounded-full bg-pink-300"></div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                     
                     {/* Subjects */}
@@ -1834,20 +1893,13 @@ export default function KuisPage() {
             </div>
           </div>
 
-          {/* Bottom Info dengan Animasi */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 animate-fade-in">
-            <div className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#FFF0F3] to-[#FFE4E9] px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#FF4D6D] to-[#FF6B8A] shadow-lg animate-bounce-slow">
-                <span className="text-lg sm:text-xl" suppressHydrationWarning>💪</span>
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-[#FF4D6D] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Kamu Pasti Bisa</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-[#F0FDF4] to-[#DCFCE7] px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#A7C957] to-[#6A994E] shadow-lg animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
-                <span className="text-lg sm:text-xl" suppressHydrationWarning>🌟</span>
-              </div>
-              <span className="text-xs sm:text-sm font-bold text-[#6A994E] uppercase tracking-wide" style={{ fontFamily: 'Inter, sans-serif' }}>Raih Mimpimu</span>
-            </div>
+          {/* Motivational Quote */}
+          <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6 px-4">
+            <span className="text-lg" suppressHydrationWarning>🌟</span>
+            <p className="text-xs sm:text-sm text-gray-600 italic text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+              "Percaya pada dirimu sendiri, raih mimpimu setinggi bintang"
+            </p>
+            <span className="text-lg" suppressHydrationWarning>🌟</span>
           </div>
         </main>
 

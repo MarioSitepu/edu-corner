@@ -37,6 +37,7 @@ export default function KuisPage() {
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [pdfError, setPdfError] = useState<string>("");
   const [carouselStates, setCarouselStates] = useState<{ [key: number]: { canScrollLeft: boolean; canScrollRight: boolean } }>({});
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Refs untuk cleanup timer (fix race condition)
   const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,8 +49,9 @@ export default function KuisPage() {
   const transitionSoundRef = useRef<HTMLAudioElement | null>(null);
   const tryAgainSoundRef = useRef<HTMLAudioElement | null>(null);
 
-  // Fungsi untuk memutar sound effect
+  // Fungsi untuk memutar sound effect (tidak jalan jika sound dimatikan)
   const playSound = (soundType: 'click' | 'transition' | 'tryagain' = 'click') => {
+    if (!soundEnabled) return;
     try {
       let audioRef: HTMLAudioElement | null = null;
 
@@ -94,6 +96,17 @@ export default function KuisPage() {
       transitionSoundRef.current = null;
       tryAgainSoundRef.current = null;
     };
+  }, []);
+
+  // Load preferensi suara dari localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const v = localStorage.getItem('kuisSoundEnabled');
+        if (v === '0') setSoundEnabled(false);
+        else if (v === '1') setSoundEnabled(true);
+      } catch (_) {}
+    }
   }, []);
 
   // Data karakter
@@ -2199,6 +2212,29 @@ return (
         {/* Form Card */}
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10 animate-scale-in">
           <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Opsi Suara: Hidupkan / Matikan */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6 border-b border-gray-100">
+              <span className="text-sm font-medium text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>Efek Suara:</span>
+              <div className="flex rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => { setSoundEnabled(true); try { localStorage.setItem('kuisSoundEnabled', '1'); } catch (_) {} }}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${soundEnabled ? 'bg-[#FF4D6D] text-white shadow' : 'text-[#666666] hover:bg-gray-100'}`}
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  🔊 Hidupkan Suara
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setSoundEnabled(false); try { localStorage.setItem('kuisSoundEnabled', '0'); } catch (_) {} }}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${!soundEnabled ? 'bg-gray-300 text-gray-700 shadow' : 'text-[#666666] hover:bg-gray-100'}`}
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  🔇 Matikan Suara
+                </button>
+              </div>
+            </div>
+
             {/* Pilih Karakter Kamu */}
             <div>
               <h3 className="text-center text-base md:text-lg font-bold text-[#2D2D2D] mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>

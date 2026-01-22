@@ -37,11 +37,64 @@ export default function KuisPage() {
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [pdfError, setPdfError] = useState<string>("");
   const [carouselStates, setCarouselStates] = useState<{ [key: number]: { canScrollLeft: boolean; canScrollRight: boolean } }>({});
-  
+
   // Refs untuk cleanup timer (fix race condition)
   const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
   const carouselRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+  // Refs untuk audio elements
+  const clickSoundRef = useRef<HTMLAudioElement | null>(null);
+  const transitionSoundRef = useRef<HTMLAudioElement | null>(null);
+  const tryAgainSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  // Fungsi untuk memutar sound effect
+  const playSound = (soundType: 'click' | 'transition' | 'tryagain' = 'click') => {
+    try {
+      let audioRef: HTMLAudioElement | null = null;
+
+      switch (soundType) {
+        case 'click':
+          audioRef = clickSoundRef.current;
+          break;
+        case 'transition':
+          audioRef = transitionSoundRef.current;
+          break;
+        case 'tryagain':
+          audioRef = tryAgainSoundRef.current;
+          break;
+      }
+
+      if (audioRef) {
+        audioRef.currentTime = 0; // Reset ke awal
+        audioRef.play().catch((error) => {
+          // Ignore error jika user belum interact dengan page
+          console.log('Audio play failed (user interaction required):', error);
+        });
+      }
+    } catch (error) {
+      console.log('Error playing sound:', error);
+    }
+  };
+
+  // Inisialisasi Audio sekali saat mount (persisten di semua view, tidak ikut unmount saat ganti form/kuis/hasil)
+  useEffect(() => {
+    const click = new Audio('/sound/soundclick.mp3');
+    click.volume = 0.5; // 50% volume
+    const trans = new Audio('/sound/transition.mp3');
+    const trya = new Audio('/sound/tryagain.mp3');
+    clickSoundRef.current = click;
+    transitionSoundRef.current = trans;
+    tryAgainSoundRef.current = trya;
+    return () => {
+      click.pause();
+      trans.pause();
+      trya.pause();
+      clickSoundRef.current = null;
+      transitionSoundRef.current = null;
+      tryAgainSoundRef.current = null;
+    };
+  }, []);
 
   // Data karakter
   const characters = [
@@ -90,7 +143,7 @@ export default function KuisPage() {
       "ENFJ": "Kamu suka menyemangati orang lain, sehingga kamu bisa membantu teman menjadi lebih percaya diri.",
       "ENTJ": "Kamu percaya diri dan suka membuat rencana, sehingga kamu hebat mengambil keputusan dan mengajak orang maju bersama."
     };
-    
+
     return descriptions[mbtiCode] || "Kamu adalah anak yang unik! Kombinasi sifatmu menunjukkan potensi hebat.";
   };
 
@@ -101,8 +154,8 @@ export default function KuisPage() {
 
     const scrollAmount = 220; // Width card (200px) + gap (20px)
     const currentScroll = carousel.scrollLeft;
-    const newScroll = direction === 'left' 
-      ? currentScroll - scrollAmount 
+    const newScroll = direction === 'left'
+      ? currentScroll - scrollAmount
       : currentScroll + scrollAmount;
 
     carousel.scrollTo({
@@ -135,10 +188,10 @@ export default function KuisPage() {
       if (typeof window !== 'undefined' && window.localStorage && window.sessionStorage) {
         // Cek apakah hasil sudah siap (dari sessionStorage)
         const hasResultReady = sessionStorage.getItem("quizResultReady");
-        
+
         // Cek progress kuis yang sedang berjalan
         const savedProgress = localStorage.getItem("quizProgress");
-        
+
         if (hasResultReady === "true" && !savedProgress) {
           // Hasil sudah siap dan tidak ada progress kuis yang sedang berjalan
           // Reset semua dan mulai kuis baru
@@ -158,7 +211,7 @@ export default function KuisPage() {
           setOptionsVisible(false);
           return;
         }
-        
+
         if (savedProgress) {
           try {
             const progress = JSON.parse(savedProgress);
@@ -166,7 +219,7 @@ export default function KuisPage() {
             if (progress && typeof progress === 'object' && progress.nama && progress.karakter) {
               const savedAnswers = progress.answers || [];
               const savedScores = progress.scores || { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-              
+
               // Cari soal yang paling awal yang belum dijawab
               let firstUnansweredQuestion = 0;
               for (let i = 0; i < questions.length; i++) {
@@ -175,7 +228,7 @@ export default function KuisPage() {
                   break;
                 }
               }
-              
+
               // Jika semua soal sudah dijawab, reset (hasil sudah siap)
               if (savedAnswers.length >= questions.length) {
                 // Semua soal sudah dijawab, hapus progress dan set flag untuk reset
@@ -203,7 +256,7 @@ export default function KuisPage() {
                 setOptionsVisible(false);
                 return;
               }
-              
+
               setNama(progress.nama || "");
               setKarakter(progress.karakter || "");
               setCurrentQuestion(firstUnansweredQuestion); // Kembali ke soal yang belum dijawab paling awal
@@ -258,17 +311,17 @@ export default function KuisPage() {
   useEffect(() => {
     if (showQuiz) {
       setOptionsVisible(false);
-      
+
       // Cleanup timer sebelumnya jika ada
       if (animationTimerRef.current) {
         clearTimeout(animationTimerRef.current);
       }
-      
+
       animationTimerRef.current = setTimeout(() => {
         setOptionsVisible(true);
         animationTimerRef.current = null;
       }, 200);
-      
+
       return () => {
         if (animationTimerRef.current) {
           clearTimeout(animationTimerRef.current);
@@ -317,7 +370,7 @@ export default function KuisPage() {
     {
       question: "Kalau hari ulang tahunmu, kamu lebih suka...",
       options: [
-        { text: "Ngundang banyak teman buat kumpul", emoji: "🎉" , image: "/quiz/soal2A.jpeg", traits: { E: 1 } },
+        { text: "Ngundang banyak teman buat kumpul", emoji: "🎉", image: "/quiz/soal2A.jpeg", traits: { E: 1 } },
         { text: "Rayain sederhana sama keluarga", emoji: "🎂", image: "/quiz/soal2B.jpeg", traits: { I: 1 } }
       ],
     },
@@ -345,100 +398,100 @@ export default function KuisPage() {
     {
       question: "Saat main bareng teman, kamu biasanya...",
       options: [
-        { text: "Banyak cerita dan bercanda", emoji: "😆",  image: "/quiz/soal6A.jpeg", traits: { E: 1 } },
-        { text: "Lebih sering dengerin dan sedikit bicara",  image: "/quiz/soal6B.jpeg", emoji: "🤫", traits: { I: 1 } }
+        { text: "Banyak cerita dan bercanda", emoji: "😆", image: "/quiz/soal6A.jpeg", traits: { E: 1 } },
+        { text: "Lebih sering dengerin dan sedikit bicara", image: "/quiz/soal6B.jpeg", emoji: "🤫", traits: { I: 1 } }
       ],
     },
     {
       question: "Kalau ada lomba 17-an di desa, kamu...",
       options: [
-        { text: "Ikut ramai-ramai dan kenalan sama banyak teman", emoji: "🎈",  image: "/quiz/soal7A.jpeg", traits: { E: 1 } },
-        { text: "Ikut lomba bareng teman yang sudah dekat", emoji: "🪁",  image: "/quiz/soal7B.jpeg", traits: { I: 1 } }
+        { text: "Ikut ramai-ramai dan kenalan sama banyak teman", emoji: "🎈", image: "/quiz/soal7A.jpeg", traits: { E: 1 } },
+        { text: "Ikut lomba bareng teman yang sudah dekat", emoji: "🪁", image: "/quiz/soal7B.jpeg", traits: { I: 1 } }
       ],
     },
     {
       question: "Setelah main lama dengan banyak teman, kamu merasa...",
       options: [
-        { text: "Senang dan makin semangat", emoji: "⚡",  image: "/quiz/soal8A.jpeg", traits: { E: 1 } },
-        { text: "Capek dan ingin sendirian dulu", emoji: "😌",  image: "/quiz/soal8B.jpeg", traits: { I: 1 } }
+        { text: "Senang dan makin semangat", emoji: "⚡", image: "/quiz/soal8A.jpeg", traits: { E: 1 } },
+        { text: "Capek dan ingin sendirian dulu", emoji: "😌", image: "/quiz/soal8B.jpeg", traits: { I: 1 } }
       ],
     },
     // === S vs N (8 soal) ===
     {
       question: "Kalau guru jelasin pelajaran, kamu lebih cepat paham kalau...",
       options: [
-        { text: "Ada contoh yang bisa dilihat langsung", emoji: "👀",  image: "/quiz/soal9A.jpeg", traits: { S: 1 } },
-        { text: "Diceritain dulu maksud dari pelajarannya", emoji: "🌈",  image: "/quiz/soal9B.jpeg", traits: { N: 1 } }
+        { text: "Ada contoh yang bisa dilihat langsung", emoji: "👀", image: "/quiz/soal9A.jpeg", traits: { S: 1 } },
+        { text: "Diceritain dulu maksud dari pelajarannya", emoji: "🌈", image: "/quiz/soal9B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau dengar cerita, kamu lebih suka cerita tentang...",
       options: [
-        { text: "Kehidupan nyata sehari-hari", emoji: "🏠",  image: "/quiz/soal10A.jpeg", traits: { S: 1 } },
-        { text: "Cerita khayalan atau dongeng", emoji: "🐉",  image: "/quiz/soal10B.jpeg", traits: { N: 1 } }
+        { text: "Kehidupan nyata sehari-hari", emoji: "🏠", image: "/quiz/soal10A.jpeg", traits: { S: 1 } },
+        { text: "Cerita khayalan atau dongeng", emoji: "🐉", image: "/quiz/soal10B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau main balok atau lego, kamu biasanya...",
       options: [
-        { text: "Menyusun pelan-pelan sesuai contoh", emoji: "📋",  image: "/quiz/soal11A.jpeg", traits: { S: 1 } },
-        { text: "Bikin bentuk sesuai ide sendiri", emoji: "✨",  image: "/quiz/soal11B.jpeg", traits: { N: 1 } }
+        { text: "Menyusun pelan-pelan sesuai contoh", emoji: "📋", image: "/quiz/soal11A.jpeg", traits: { S: 1 } },
+        { text: "Bikin bentuk sesuai ide sendiri", emoji: "✨", image: "/quiz/soal11B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Pelajaran yang paling kamu nikmati biasanya...",
       options: [
-        { text: "Yang ada praktiknya", emoji: "🔧",  image: "/quiz/soal12A.jpeg", traits: { S: 1 } },
-        { text: "Yang bisa pakai imajinasi", emoji: "💭",  image: "/quiz/soal12B.jpeg", traits: { N: 1 } }
+        { text: "Yang ada praktiknya", emoji: "🔧", image: "/quiz/soal12A.jpeg", traits: { S: 1 } },
+        { text: "Yang bisa pakai imajinasi", emoji: "💭", image: "/quiz/soal12B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau diminta menggambar, kamu lebih sering menggambar...",
       options: [
-        { text: "Hal-hal yang sering kamu lihat", emoji: "🌾",  image: "/quiz/soal13A.jpeg", traits: { S: 1 } },
-        { text: "Hal-hal dari bayangan di kepala", emoji: "🌟",  image: "/quiz/soal13B.jpeg", traits: { N: 1 } }
+        { text: "Hal-hal yang sering kamu lihat", emoji: "🌾", image: "/quiz/soal13A.jpeg", traits: { S: 1 } },
+        { text: "Hal-hal dari bayangan di kepala", emoji: "🌟", image: "/quiz/soal13B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Saat mendengar cerita yang panjang, kamu biasanya...",
       options: [
-        { text: "Suka mengingat semua nama-nama tokoh di ceritanya", emoji: "📝",  image: "/quiz/soal14A.jpeg", traits: { S: 1 } },
-        { text: "Ingat dan paham keseluruhan ceritanya saja", emoji: "💡",  image: "/quiz/soal14B.jpeg", traits: { N: 1 } }
+        { text: "Suka mengingat semua nama-nama tokoh di ceritanya", emoji: "📝", image: "/quiz/soal14A.jpeg", traits: { S: 1 } },
+        { text: "Ingat dan paham keseluruhan ceritanya saja", emoji: "💡", image: "/quiz/soal14B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau belajar atau bermain, kamu lebih suka...",
       options: [
-        { text: "Fokus dan mendalami satu hal", emoji: "🎯",  image: "/quiz/soal15A.jpeg", traits: { S: 1 } },
-        { text: "Mencoba banyak hal baru", emoji: "🎈",  image: "/quiz/soal15B.jpeg", traits: { N: 1 } }
+        { text: "Fokus dan mendalami satu hal", emoji: "🎯", image: "/quiz/soal15A.jpeg", traits: { S: 1 } },
+        { text: "Mencoba banyak hal baru", emoji: "🎈", image: "/quiz/soal15B.jpeg", traits: { N: 1 } }
       ],
     },
     {
       question: "Kalau main puzzle biasanya kamu...",
       options: [
-        { text: "Langsung pasang kepingan yang cocok satu-satu", emoji: "🧩",  image: "/quiz/soal16A.jpeg", traits: { S: 1 } },
-        { text: "Membayangkan dulu gambar apa yang akan terbentuk", emoji: "🖼️",  image: "/quiz/soal16B.jpeg", traits: { N: 1 } }
+        { text: "Langsung pasang kepingan yang cocok satu-satu", emoji: "🧩", image: "/quiz/soal16A.jpeg", traits: { S: 1 } },
+        { text: "Membayangkan dulu gambar apa yang akan terbentuk", emoji: "🖼️", image: "/quiz/soal16B.jpeg", traits: { N: 1 } }
       ],
     },
     // === T vs F (8 soal) ===
     {
       question: "Kalau ada teman yang sedang sedih atau menangis, kamu biasanya...",
       options: [
-        { text: "Tanya kenapanya dan coba bantu cari jalan keluar", emoji: "🤔",  image: "/quiz/soal17A.jpeg", traits: { T: 1 } },
-        { text: "Menemani dan menghiburnya dulu", emoji: "🤗",  image: "/quiz/soal17B.jpeg", traits: { F: 1 } }
+        { text: "Tanya kenapanya dan coba bantu cari jalan keluar", emoji: "🤔", image: "/quiz/soal17A.jpeg", traits: { T: 1 } },
+        { text: "Menemani dan menghiburnya dulu", emoji: "🤗", image: "/quiz/soal17B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Saat mengerjakan soal atau tugas, kamu merasa senang kalau...",
       options: [
-        { text: "Jawabannya jelas dan masuk akal", emoji: "✅",  image: "/quiz/soal18A.jpeg", traits: { T: 1 } },
-        { text: "Semua teman bisa bekerja dengan nyaman", emoji: "😊",  image: "/quiz/soal18B.jpeg", traits: { F: 1 } }
+        { text: "Jawabannya jelas dan masuk akal", emoji: "✅", image: "/quiz/soal18A.jpeg", traits: { T: 1 } },
+        { text: "Semua teman bisa bekerja dengan nyaman", emoji: "😊", image: "/quiz/soal18B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau main permainan bareng teman, kamu lebih senang kalau...",
       options: [
-        { text: "Permainannya rapi dan aturannya jelas", emoji: "📏",  image: "/quiz/soal19A.jpeg", traits: { T: 1 } },
+        { text: "Permainannya rapi dan aturannya jelas", emoji: "📏", image: "/quiz/soal19A.jpeg", traits: { T: 1 } },
         { text: "Semua teman bisa ikut dan senang", emoji: "🎮", image: "/quiz/soal19B.jpeg", traits: { F: 1 } }
       ],
     },
@@ -446,92 +499,92 @@ export default function KuisPage() {
       question: "Kalau ada teman melakukan kesalahan, kamu biasanya...",
       options: [
         { text: "Menjelaskan apa yang seharusnya dilakukan", emoji: "📘", image: "/quiz/soal20A.jpeg", traits: { T: 1 } },
-        { text: "Menegur dengan kata-kata yang lembut", emoji: "💝",  image: "/quiz/soal20B.jpeg", traits: { F: 1 } }
+        { text: "Menegur dengan kata-kata yang lembut", emoji: "💝", image: "/quiz/soal20B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Saat harus memilih sesuatu bersama-sama, kamu lebih sering...",
       options: [
-        { text: "Memikirkan mana yang paling masuk akal", emoji: "⚖️",  image: "/quiz/soal21A.jpeg", traits: { T: 1 } },
-        { text: "Memikirkan agar tidak ada yang tersinggung", emoji: "❤️",  image: "/quiz/soal21B.jpeg", traits: { F: 1 } }
+        { text: "Memikirkan mana yang paling masuk akal", emoji: "⚖️", image: "/quiz/soal21A.jpeg", traits: { T: 1 } },
+        { text: "Memikirkan agar tidak ada yang tersinggung", emoji: "❤️", image: "/quiz/soal21B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau menonton cerita atau film yang sedih, kamu biasanya...",
       options: [
-        { text: "Berpikir kenapa cerita itu bisa terjadi", emoji: "🧠",  image: "/quiz/soal22A.jpeg", traits: { T: 1 } },
-        { text: "Ikut merasakan sedihnya", emoji: "😢",  image: "/quiz/soal22B.jpeg", traits: { F: 1 } }
+        { text: "Berpikir kenapa cerita itu bisa terjadi", emoji: "🧠", image: "/quiz/soal22A.jpeg", traits: { T: 1 } },
+        { text: "Ikut merasakan sedihnya", emoji: "😢", image: "/quiz/soal22B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Hal yang membuat kamu merasa bangga adalah...",
       options: [
-        { text: "Bisa menyelesaikan masalah dengan baik", emoji: "💪",  image: "/quiz/soal23A.jpeg", traits: { T: 1 } },
-        { text: "Bisa membantu dan membuat orang lain senang", emoji: "🌟",  image: "/quiz/soal23B.jpeg", traits: { F: 1 } }
+        { text: "Bisa menyelesaikan masalah dengan baik", emoji: "💪", image: "/quiz/soal23A.jpeg", traits: { T: 1 } },
+        { text: "Bisa membantu dan membuat orang lain senang", emoji: "🌟", image: "/quiz/soal23B.jpeg", traits: { F: 1 } }
       ],
     },
     {
       question: "Kalau ada teman yang sedang bertengkar, kamu cenderung...",
       options: [
-        { text: "Mencari tahu masalahnya supaya selesai", emoji: "🔍",  image: "/quiz/soal24A.jpeg", traits: { T: 1 } },
-        { text: "Menenangkan dan mendamaikan mereka", emoji: "☮️",  image: "/quiz/soal24B.jpeg", traits: { F: 1 } }
+        { text: "Mencari tahu masalahnya supaya selesai", emoji: "🔍", image: "/quiz/soal24A.jpeg", traits: { T: 1 } },
+        { text: "Menenangkan dan mendamaikan mereka", emoji: "☮️", image: "/quiz/soal24B.jpeg", traits: { F: 1 } }
       ],
     },
     // === J vs P (8 soal) ===
     {
       question: "Kondisi kamarmu biasanya...",
       options: [
-        { text: "Rapi dan barangnya tersusun", emoji: "🛏️",  image: "/quiz/soal25A.jpeg", traits: { J: 1 } },
-        { text: "Tidak selalu rapi, tapi aku tahu barangku di mana", emoji: "🎨",  image: "/quiz/soal25B.jpeg", traits: { P: 1 } }
+        { text: "Rapi dan barangnya tersusun", emoji: "🛏️", image: "/quiz/soal25A.jpeg", traits: { J: 1 } },
+        { text: "Tidak selalu rapi, tapi aku tahu barangku di mana", emoji: "🎨", image: "/quiz/soal25B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kalau dapat PR dari guru, kamu biasanya...",
       options: [
-        { text: "Langsung kerjakan saat pulang sekolah", emoji: "✍️",  image: "/quiz/soal26A.jpeg", traits: { J: 1 } },
-        { text: "Mengerjakannya setelah tidur siang atau main", emoji: "⏰",  image: "/quiz/soal26B.jpeg", traits: { P: 1 } }
+        { text: "Langsung kerjakan saat pulang sekolah", emoji: "✍️", image: "/quiz/soal26A.jpeg", traits: { J: 1 } },
+        { text: "Mengerjakannya setelah tidur siang atau main", emoji: "⏰", image: "/quiz/soal26B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Dalam kegiatan sehari-hari, kamu lebih suka...",
       options: [
-        { text: "Tahu rencana dari awal", emoji: "📅",  image: "/quiz/soal27A.jpeg", traits: { J: 1 } },
-        { text: "Melihat situasi dulu baru menentukan", emoji: "🌊",  image: "/quiz/soal27B.jpeg", traits: { P: 1 } }
+        { text: "Tahu rencana dari awal", emoji: "📅", image: "/quiz/soal27A.jpeg", traits: { J: 1 } },
+        { text: "Melihat situasi dulu baru menentukan", emoji: "🌊", image: "/quiz/soal27B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kalau mau bermain bersama teman, kamu biasanya...",
       options: [
-        { text: "Sepakati aturan main dulu", emoji: "📜",  image: "/quiz/soal28A.jpeg", traits: { J: 1 } },
-        { text: "Main dulu, aturannya sambil jalan", emoji: "🎲",  image: "/quiz/soal28B.jpeg", traits: { P: 1 } }
+        { text: "Sepakati aturan main dulu", emoji: "📜", image: "/quiz/soal28A.jpeg", traits: { J: 1 } },
+        { text: "Main dulu, aturannya sambil jalan", emoji: "🎲", image: "/quiz/soal28B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kamu lebih suka permainan yang...",
       options: [
-        { text: "Ada aturan dan urutan bermainnya", emoji: "🗓️",  image: "/quiz/soal29A.jpeg", traits: { J: 1 } },
-        { text: "Tidak banyak aturan, yang penting asik", emoji: "🎭",  image: "/quiz/soal29B.jpeg", traits: { P: 1 } }
+        { text: "Ada aturan dan urutan bermainnya", emoji: "🗓️", image: "/quiz/soal29A.jpeg", traits: { J: 1 } },
+        { text: "Tidak banyak aturan, yang penting asik", emoji: "🎭", image: "/quiz/soal29B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kalau rencana berubah tiba-tiba, kamu biasanya...",
       options: [
-        { text: "Perlu waktu sebentar buat menyesuaikan", emoji: "🙂",  image: "/quiz/soal30A.jpeg", traits: { J: 1 } },
-        { text: "Bisa langsung menyesuaikan", emoji: "😎",  image: "/quiz/soal30B.jpeg", traits: { P: 1 } }
+        { text: "Perlu waktu sebentar buat menyesuaikan", emoji: "🙂", image: "/quiz/soal30A.jpeg", traits: { J: 1 } },
+        { text: "Bisa langsung menyesuaikan", emoji: "😎", image: "/quiz/soal30B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Saat mengerjakan tugas atau pekerjaan, kamu lebih sering...",
       options: [
-        { text: "Menyelesaikannya sampai selesai", emoji: "✔️",  image: "/quiz/soal31A.jpeg", traits: { J: 1 } },
-        { text: "Mengerjakannya bertahap", emoji: "⏸️",  image: "/quiz/soal31B.jpeg", traits: { P: 1 } }
+        { text: "Menyelesaikannya sampai selesai", emoji: "✔️", image: "/quiz/soal31A.jpeg", traits: { J: 1 } },
+        { text: "Mengerjakannya bertahap", emoji: "⏸️", image: "/quiz/soal31B.jpeg", traits: { P: 1 } }
       ],
     },
     {
       question: "Kondisi tas sekolahmu biasanya...",
       options: [
-        { text: "Buku dan alat tulis tertata rapi", emoji: "🎒",  image: "/quiz/soal32A.jpeg", traits: { J: 1 } },
-        { text: "Isinya kadang rapi, kadang campur", emoji: "👜",  image: "/quiz/soal32B.jpeg", traits: { P: 1 } }
+        { text: "Buku dan alat tulis tertata rapi", emoji: "🎒", image: "/quiz/soal32A.jpeg", traits: { J: 1 } },
+        { text: "Isinya kadang rapi, kadang campur", emoji: "👜", image: "/quiz/soal32B.jpeg", traits: { P: 1 } }
       ],
     },
   ];
@@ -649,6 +702,10 @@ export default function KuisPage() {
       setTopCareers([]);
       setShowQuiz(true);
       setOptionsVisible(false);
+
+      // Play transition sound effect saat mulai kuis (transisi ke soal pertama)
+      playSound('transition');
+
       // Hapus progress lama dari localStorage dan flag hasil dari sessionStorage
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
@@ -665,7 +722,7 @@ export default function KuisPage() {
       if (animationTimerRef.current) {
         clearTimeout(animationTimerRef.current);
       }
-      
+
       animationTimerRef.current = setTimeout(() => {
         setOptionsVisible(true);
         animationTimerRef.current = null;
@@ -676,12 +733,12 @@ export default function KuisPage() {
   const handleAnswer = (answerIndex: number) => {
     const newAnswers = [...answers, answerIndex];
     setAnswers(newAnswers);
-    
+
     // Update scores berdasarkan traits dari jawaban
     const question = questions[currentQuestion];
     const selectedOption = question.options[answerIndex];
     const newScores = { ...scores };
-    
+
     if (selectedOption.traits) {
       const traitsObj = selectedOption.traits as unknown as Record<string, number>;
       Object.keys(traitsObj).forEach((trait) => {
@@ -695,7 +752,7 @@ export default function KuisPage() {
       });
     }
     setScores(newScores);
-    
+
     setIsTransitioning(true);
     setOptionsVisible(false);
 
@@ -708,6 +765,7 @@ export default function KuisPage() {
     }
 
     if (currentQuestion < questions.length - 1) {
+      // Transisi antar soal - TIDAK pakai transition sound
       transitionTimerRef.current = setTimeout(() => {
         setCurrentQuestion(currentQuestion + 1);
         setIsTransitioning(false);
@@ -719,15 +777,17 @@ export default function KuisPage() {
         transitionTimerRef.current = null;
       }, 500);
     } else {
+      // Play transition sound effect saat hasil muncul (soal terakhir selesai)
+      playSound('transition');
       // Hitung Kode Kepribadian MBTI (E/I, S/N, T/F, J/P)
-      const myCode = 
+      const myCode =
         (newScores.E >= newScores.I ? "E" : "I") +
         (newScores.S >= newScores.N ? "S" : "N") +
         (newScores.T >= newScores.F ? "T" : "F") +
         (newScores.J >= newScores.P ? "J" : "P");
-      
+
       setMbtiCode(myCode);
-      
+
       // Algoritma Pencocokan dengan Profesi
       const matches = activities.map((career) => {
         // Hitung berapa banyak huruf yang cocok (0 sampai 4)
@@ -737,22 +797,22 @@ export default function KuisPage() {
             matchPoints += 1;
           }
         });
-        
+
         return {
           data: career,
           score: matchPoints
         };
       });
-      
+
       // Urutkan dari poin tertinggi dan ambil top 3
       matches.sort((a, b) => b.score - a.score);
       const top3 = matches.slice(0, 3);
       setTopCareers(top3);
-      
+
       // Simpan hasil ke database dengan data lengkap
       const hasilCitaCita = top3[0] ? top3[0].data.name : "Belum ditentukan";
       saveResult(hasilCitaCita, myCode, top3);
-      
+
       // Hapus progress dari localStorage karena kuis sudah selesai
       try {
         if (typeof window !== 'undefined' && window.localStorage) {
@@ -761,12 +821,12 @@ export default function KuisPage() {
       } catch (e) {
         console.warn("Gagal menghapus progress dari localStorage:", e);
       }
-      
+
       // Cleanup timer sebelumnya jika ada
       if (transitionTimerRef.current) {
         clearTimeout(transitionTimerRef.current);
       }
-      
+
       transitionTimerRef.current = setTimeout(() => {
         setIsTransitioning(false);
         setShowResult(true);
@@ -785,21 +845,21 @@ export default function KuisPage() {
 
   const saveResult = async (hasilCitaCita: string, mbtiCodeValue: string, topCareersData: any[]) => {
     setIsSaving(true);
-    
+
     // Validasi karakter sebelum menyimpan
     if (!karakter || karakter.trim() === '') {
       console.error('Karakter tidak terisi!', { karakter });
       setIsSaving(false);
       return;
     }
-    
+
     const result: QuizResult = {
       nama: nama.trim(),
       karakter: karakter,
       citaCita: hasilCitaCita,
       timestamp: new Date().toISOString(),
     };
-    
+
     console.log('Menyimpan hasil kuis:', result);
 
     // Set state saja, tidak simpan ke localStorage
@@ -822,9 +882,9 @@ export default function KuisPage() {
         mbtiCode: mbtiCodeValue,
         topCareers: topCareersFormatted,
       };
-      
+
       console.log('Mengirim data ke database:', dataToSend);
-      
+
       const response = await fetch("/api/data", {
         method: "POST",
         headers: {
@@ -901,6 +961,9 @@ export default function KuisPage() {
     setKarakter("");
     setIsExpanded(false);
     setExplanation("");
+
+    // Play try again sound
+    playSound('tryagain');
     // Hapus progress dari localStorage dan flag hasil dari sessionStorage
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -959,11 +1022,11 @@ export default function KuisPage() {
     try {
       // Dynamic import untuk jsPDF (kompatibel dengan Next.js)
       const { default: jsPDF } = await import('jspdf');
-      
+
       // Helper function untuk clean text - DEFINISI DI AWAL
       const decodeHtmlEntities = (text: string): string => {
         if (typeof window === 'undefined') return text;
-        
+
         try {
           const textarea = document.createElement('textarea');
           textarea.innerHTML = text;
@@ -979,68 +1042,68 @@ export default function KuisPage() {
             .replace(/&nbsp;/g, ' ');
         }
       };
-      
+
       const cleanText = (text: string): string => {
         if (!text) return '';
-        
+
         // Decode HTML entities
         let cleaned = decodeHtmlEntities(String(text));
         // Remove HTML tags jika ada
         cleaned = cleaned.replace(/<[^>]*>/g, '');
-        
+
         // HAPUS KARAKTER ANEH - SANGAT AGRESIF - HANYA ASCII
         // Step 1: Hapus pola spesifik yang bermasalah
         cleaned = cleaned.replace(/Ø=[^\s]*/g, ''); // Hapus Ø= diikuti apapun
         cleaned = cleaned.replace(/[ØÞÜþ•]/g, ''); // Hapus karakter aneh individual
         cleaned = cleaned.replace(/&[^a-zA-Z0-9#;]/g, ''); // Hapus & diikuti karakter aneh
-        
+
         // Step 2: Hanya allow ASCII printable (0x20-0x7E) dan newline/carriage return
         cleaned = cleaned.replace(/[^\x20-\x7E\n\r]/g, ' ');
-        
+
         // Step 3: Remove karakter kontrol dan non-printable
         cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-        
+
         // Step 4: Hapus pola spesifik yang bermasalah
         cleaned = cleaned.replace(/0&lt;0/g, '');
         cleaned = cleaned.replace(/0=/g, '');
         cleaned = cleaned.replace(/#\s*0/g, '');
         cleaned = cleaned.replace(/0&lt;/g, '');
         cleaned = cleaned.replace(/&lt;0/g, '');
-        
+
         // Step 5: Hanya allow karakter yang benar-benar valid - HANYA ASCII
         cleaned = cleaned.replace(/[^a-zA-Z0-9\s.,!?;:()\-'":]/g, ' ');
-        
+
         // Step 6: Clean up whitespace
         cleaned = cleaned.replace(/\s+/g, ' '); // Multiple spaces menjadi satu
         cleaned = cleaned.split('\n').map(line => line.trim()).join('\n'); // Trim setiap baris
         cleaned = cleaned.trim(); // Trim akhir
-        
+
         return cleaned;
       };
-      
+
       const displayNama = savedResult?.nama || nama;
       const displayKarakter = savedResult?.karakter || karakter;
-      
+
       // CLEAN SEMUA TEKS SEBELUM DIGUNAKAN
       const cleanedNama = cleanText(displayNama);
       const cleanedKarakter = cleanText(displayKarakter);
-      
+
       // Ambil tanggal kuis dari timestamp - CLEAN DULU
-      const rawQuizDate = savedResult?.timestamp 
+      const rawQuizDate = savedResult?.timestamp
         ? new Date(savedResult.timestamp).toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
         : new Date().toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
       const quizDate = cleanText(rawQuizDate);
 
       // Buat PDF
@@ -1069,14 +1132,14 @@ export default function KuisPage() {
         pdf.setTextColor(150, 150, 150);
         pdf.setFont('helvetica', 'normal');
         pdf.text('© 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi', pageWidth / 2, footerY, { align: 'center' });
-        
+
         const date = new Date().toLocaleDateString('id-ID', {
           year: 'numeric',
           month: 'long',
           day: 'numeric'
         });
         pdf.text(`Dibuat pada: ${date}`, pageWidth / 2, footerY + 5, { align: 'center' });
-        
+
         // Page number
         pdf.text(`Halaman ${pageNum} dari ${totalPages}`, pageWidth / 2, footerY + 10, { align: 'center' });
       };
@@ -1094,13 +1157,13 @@ export default function KuisPage() {
       // Header dengan gradient effect - format lebih bagus
       pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       pdf.rect(0, 0, pageWidth, 55, 'F');
-      
+
       // Title dengan spacing lebih baik
       pdf.setFontSize(22);
       pdf.setFont('helvetica', 'bold');
       pdf.setTextColor(255, 255, 255);
       pdf.text('EduCorner: SahabatMimpi', margin, 35);
-      
+
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(255, 255, 255);
@@ -1121,24 +1184,24 @@ export default function KuisPage() {
         const mbtiDescription = getMBTIDescription(mbtiCode);
         const descriptionLines = pdf.splitTextToSize(mbtiDescription, contentWidth - 10);
         const boxHeight = Math.max(22, 8 + 12 + (descriptionLines.length * 5) + 8); // Label + Code + Description + padding
-        
+
         pdf.setFillColor(255, 240, 243); // Very light pink
         pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, 'F');
-        
+
         pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setLineWidth(0.6);
         pdf.roundedRect(margin, yPos, contentWidth, boxHeight, 3, 3, 'D');
-        
+
         pdf.setFontSize(10);
         pdf.setTextColor(102, 102, 102);
         pdf.setFont('helvetica', 'normal');
         pdf.text('Kode Kepribadianmu:', margin + 5, yPos + 9);
-        
+
         pdf.setFontSize(20);
         pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         pdf.setFont('helvetica', 'bold');
         pdf.text(mbtiCode, margin + contentWidth - 5, yPos + 9, { align: 'right' });
-        
+
         // Deskripsi MBTI
         pdf.setFontSize(9);
         pdf.setTextColor(102, 102, 102);
@@ -1148,19 +1211,19 @@ export default function KuisPage() {
           pdf.text(line.trim(), margin + 5, descY);
           descY += 5;
         });
-        
+
         yPos += boxHeight + 5;
       }
 
       // Info Box - Nama dan Tanggal Kuis (format lebih bagus)
       pdf.setFillColor(245, 249, 240); // Light green background
       pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'F');
-      
+
       // Border untuk info box
       pdf.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       pdf.setLineWidth(0.5);
       pdf.roundedRect(margin, yPos, contentWidth, 24, 3, 3, 'D');
-      
+
       // Nama dengan format lebih bagus
       pdf.setFontSize(11);
       pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
@@ -1169,7 +1232,7 @@ export default function KuisPage() {
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(11);
       pdf.text(cleanedNama, margin + 32, yPos + 9);
-      
+
       // Tanggal Kuis dengan format lebih bagus
       pdf.setFontSize(9);
       pdf.setTextColor(102, 102, 102);
@@ -1189,7 +1252,7 @@ export default function KuisPage() {
         topCareers.forEach((item, index) => {
           const career = item.data;
           const matchPercent = Math.round((item.score / 4) * 100);
-          
+
           // Check jika perlu page baru sebelum mulai card baru
           pageNum = checkAndAddPage(yPos, pageNum, 100);
           if (yPos + 100 > pageHeight - footerHeight) {
@@ -1211,7 +1274,7 @@ export default function KuisPage() {
           // Header Card dengan background - format lebih bagus
           pdf.setFillColor(255, 228, 233); // Light pink
           pdf.roundedRect(margin, yPos, contentWidth, headerHeight, 4, 4, 'F');
-          
+
           // Border untuk header - lebih tebal untuk lebih jelas
           pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setLineWidth(0.7);
@@ -1233,13 +1296,13 @@ export default function KuisPage() {
           careerNameLines.forEach((line: string, idx: number) => {
             pdf.text(line.trim(), margin + 30, startY + (idx * 7.5));
           });
-          
+
           // Match Percent di kanan - posisi dinamis, tidak overlap dengan career name
           pdf.setFontSize(13);
           pdf.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setFont('helvetica', 'bold');
           pdf.text(`${matchPercent}%`, margin + contentWidth - 8, startY, { align: 'right' });
-          
+
           pdf.setFontSize(9);
           pdf.setTextColor(102, 102, 102);
           pdf.setFont('helvetica', 'normal');
@@ -1253,7 +1316,7 @@ export default function KuisPage() {
           pdf.setFont('helvetica', 'normal');
           const careerDesc = cleanText(career.desc);
           const descLines = pdf.splitTextToSize(careerDesc, contentWidth - 10);
-          
+
           descLines.forEach((line: string) => {
             pageNum = checkAndAddPage(yPos, pageNum, 7);
             if (yPos + 7 > pageHeight - footerHeight) {
@@ -1274,25 +1337,25 @@ export default function KuisPage() {
           const roleModelLines = pdf.splitTextToSize(roleModel, contentWidth - 10);
           // Tinggi = label (7mm) + spacing setelah label (3mm) + (jumlah baris * 7mm) + padding bottom (12mm)
           const roleModelBoxHeight = Math.max(26, 7 + 3 + (roleModelLines.length * 7) + 12);
-          
+
           pageNum = checkAndAddPage(yPos, pageNum, roleModelBoxHeight + 3);
           if (yPos + roleModelBoxHeight > pageHeight - footerHeight) {
             yPos = margin + 5;
           }
-          
+
           pdf.setFillColor(255, 240, 243); // Very light pink
           pdf.roundedRect(margin, yPos, contentWidth, roleModelBoxHeight, 3, 3, 'F');
-          
+
           pdf.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
           pdf.setLineWidth(0.3);
           pdf.roundedRect(margin, yPos, contentWidth, roleModelBoxHeight, 3, 3, 'D');
-          
+
           // Label "Tokoh Hebat:"
           pdf.setFontSize(9);
           pdf.setTextColor(102, 102, 102);
           pdf.setFont('helvetica', 'bold');
           pdf.text('Tokoh Hebat:', margin + 5, yPos + 7);
-          
+
           // Konten Role Model - mulai dari bawah label dengan spacing yang cukup
           pdf.setFont('helvetica', 'normal');
           pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
@@ -1313,25 +1376,25 @@ export default function KuisPage() {
           const subjectsLines = pdf.splitTextToSize(subjectsText, contentWidth - 10);
           // Tinggi = label (7mm) + spacing setelah label (3mm) + (jumlah baris * 7mm) + padding bottom (12mm)
           const subjectsBoxHeight = Math.max(26, 7 + 3 + (subjectsLines.length * 7) + 12);
-          
+
           pageNum = checkAndAddPage(yPos, pageNum, subjectsBoxHeight + 3);
           if (yPos + subjectsBoxHeight > pageHeight - footerHeight) {
             yPos = margin + 5;
           }
-          
+
           pdf.setFillColor(225, 245, 254); // Light blue
           pdf.roundedRect(margin, yPos, contentWidth, subjectsBoxHeight, 3, 3, 'F');
-          
+
           pdf.setDrawColor(2, 119, 189); // Blue
           pdf.setLineWidth(0.3);
           pdf.roundedRect(margin, yPos, contentWidth, subjectsBoxHeight, 3, 3, 'D');
-          
+
           // Label "Pelajaran Favorit:"
           pdf.setFontSize(9);
           pdf.setTextColor(102, 102, 102);
           pdf.setFont('helvetica', 'bold');
           pdf.text('Pelajaran Favorit:', margin + 5, yPos + 7);
-          
+
           // Konten Subjects - mulai dari bawah label dengan spacing yang cukup
           pdf.setFont('helvetica', 'bold');
           pdf.setTextColor(1, 87, 155); // Dark blue
@@ -1370,7 +1433,7 @@ export default function KuisPage() {
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
-      
+
       // Format: Hasil-Kuis-Educorner-YYYYMMDD-HHMMSS.pdf
       const fileName = `Hasil-Kuis-Educorner-${year}${month}${day}-${hours}${minutes}${seconds}.pdf`;
       pdf.save(fileName);
@@ -1378,7 +1441,7 @@ export default function KuisPage() {
       console.error('Error generating PDF:', error);
       const errorMessage = error?.message || 'Terjadi kesalahan saat membuat PDF';
       setPdfError(errorMessage);
-      
+
       // Tampilkan error message ke user dengan cara yang lebih baik
       setTimeout(() => {
         alert(`Terjadi kesalahan saat membuat PDF: ${errorMessage}\n\nSilakan coba lagi atau refresh halaman.`);
@@ -1461,402 +1524,404 @@ export default function KuisPage() {
         <StructuredData data={breadcrumbStructuredData} />
         <StructuredData data={quizStructuredData} />
         <div className="min-h-screen bg-gradient-to-br from-[#FFE8EC] via-[#FFF5F7] to-[#FFE8EC] flex flex-col relative overflow-x-hidden">
-        {/* Decorative Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-[#FFD4E5] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
-          
-          {/* Floating decorations */}
-          <div className="absolute top-20 right-20 text-6xl opacity-10 animate-pulse" style={{ animationDuration: '3s' }} suppressHydrationWarning>✨</div>
-          <div className="absolute bottom-32 left-16 text-5xl opacity-10 animate-bounce" style={{ animationDuration: '4s' }} suppressHydrationWarning>🌸</div>
-        </div>
+          {/* Decorative Background */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-10 left-10 w-64 h-64 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+            <div className="absolute bottom-10 right-10 w-64 h-64 bg-[#FFD4E5] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
 
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
-              style={{ 
-                boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
-              }}
-            >
-              <Image
-                src={logoWebp}
-                alt="Logo EduCorner: SahabatMimpi"
-                width={32}
-                height={32}
-                className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
-                priority
-              />
-            </div>
-            <div className="flex flex-col">
-              <h1 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
-                style={{ fontFamily: 'Inter, sans-serif' }}
+            {/* Floating decorations */}
+            <div className="absolute top-20 right-20 text-6xl opacity-10 animate-pulse" style={{ animationDuration: '3s' }} suppressHydrationWarning>✨</div>
+            <div className="absolute bottom-32 left-16 text-5xl opacity-10 animate-bounce" style={{ animationDuration: '4s' }} suppressHydrationWarning>🌸</div>
+          </div>
+
+          {/* Header */}
+          <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div
+                className="p-1.5 sm:p-2 rounded-lg transition-all duration-300"
+                style={{
+                  boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
+                }}
               >
-                EduCorner: SahabatMimpi
-              </h1>
-              <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
-              </p>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-4 py-8 pb-24">
-          <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-in relative z-10">
-          {/* Header dengan Avatar */}
-          <div className="bg-gradient-to-br from-[#FFE8EC] to-[#FFF0F3] px-8 py-10 text-center relative">
-            {/* Decorative elements */}
-            <div className="absolute top-4 right-4 text-4xl opacity-30 animate-pulse" suppressHydrationWarning>🎨</div>
-            <div className="absolute bottom-4 left-4 text-3xl opacity-30 animate-bounce" style={{ animationDuration: '3s' }} suppressHydrationWarning>⭐</div>
-            
-            {/* Avatar dengan border dekoratif */}
-            <div className="relative inline-block mb-4">
-              {(() => {
-                const char = getCharacter(displayKarakter);
-                // Map warna gradient berdasarkan karakter
-                const gradientColors: { [key: string]: string } = {
-                  'Berani': 'from-blue-400 to-blue-600',
-                  'Ceria': 'from-pink-400 to-pink-600',
-                  'Pintar': 'from-orange-400 to-orange-600',
-                  'Aktif': 'from-green-400 to-green-600',
-                  'Kreatif': 'from-purple-400 to-purple-600'
-                };
-                const badgeColors: { [key: string]: string } = {
-                  'Berani': 'from-blue-300 to-blue-500',
-                  'Ceria': 'from-pink-300 to-pink-500',
-                  'Pintar': 'from-orange-300 to-orange-500',
-                  'Aktif': 'from-green-300 to-green-500',
-                  'Kreatif': 'from-purple-300 to-purple-500'
-                };
-                const gradientColor = gradientColors[displayKarakter] || 'from-[#A7C957] to-[#6A994E]';
-                const badgeColor = badgeColors[displayKarakter] || 'from-yellow-400 to-orange-400';
-                
-                return (
-                  <>
-                    <div className={`absolute inset-0 bg-gradient-to-br ${gradientColor} rounded-full blur-md opacity-30 animate-pulse`}></div>
-                    <div className={`relative w-32 h-32 bg-gradient-to-br ${gradientColor} rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-xl`}>
-                      <span className="text-6xl" suppressHydrationWarning>{char.emoji}</span>
-                      {/* Badge indicator dengan emoji karakter */}
-                      <div className={`absolute -top-1 -right-1 w-10 h-10 bg-gradient-to-br ${badgeColor} rounded-full flex items-center justify-center border-2 border-white animate-bounce`}>
-                        <span className="text-xl" suppressHydrationWarning>{char.emoji}</span>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-
-            {/* Title dengan animasi */}
-            <div className="space-y-3 animate-fade-in">
-              <p className="text-[#E91E63] text-lg font-bold italic flex items-center justify-center gap-2">
-                <span suppressHydrationWarning>🎉</span>
-                <span>{displayNama}, Ini Hasil Kuis Kamu!</span>
-              </p>
-              
-              {/* MBTI Code */}
-              {mbtiCode && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-4 border-2 border-[#FF4D6D]">
-                  <p className="text-sm text-[#666666] mb-1">Kode Kepribadianmu:</p>
-                  <p className="text-3xl font-bold text-[#FF4D6D]">{mbtiCode}</p>
-                  <p className="text-xs sm:text-sm text-[#666666] mt-2 leading-relaxed">{getMBTIDescription(mbtiCode)}</p>
-                </div>
-              )}
-              
-              <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-4">
-                🌟 Pekerjaan Masa Depan yang Cocok: 🌟
-              </h2>
-            </div>
-          </div>
-
-          {/* Content Section */}
-          <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
-            {/* Top 3 Profesi */}
-            {topCareers.length > 0 ? (
-              topCareers.map((item, index) => {
-                const career = item.data;
-                const matchPercent = Math.round((item.score / 4) * 100);
-                const matchLabel = getMatchLabel(matchPercent);
-                
-                return (
-                  <div key={index} className="bg-gradient-to-br from-white to-[#FFF8F9] rounded-2xl p-4 sm:p-6 border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all">
-                    {/* Header Card */}
-                    <div className="bg-gradient-to-r from-[#FFE4E9] to-[#FFD4E5] rounded-xl p-3 sm:p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-                      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                        <span className="text-3xl sm:text-4xl shrink-0" suppressHydrationWarning>{career.icon}</span>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] break-words">{career.name}</h3>
-                          <p className="text-xs sm:text-sm text-[#666666]">Posisi #{index + 1}</p>
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-full px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-[#FF4D6D] shrink-0 w-full sm:w-auto">
-                        <p className="text-xs sm:text-sm font-bold text-[#FF4D6D] flex items-center justify-center sm:justify-start gap-1.5 whitespace-nowrap">
-                          <span className="text-base sm:text-lg" suppressHydrationWarning>{matchLabel.emoji}</span>
-                          <span>{matchLabel.text}</span>
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Deskripsi */}
-                    <div className="mb-4">
-                      <p className="text-[#4A4A4A] leading-relaxed whitespace-pre-line">
-                        {career.desc}
-                      </p>
-                    </div>
-                    
-                    {/* Role Model Carousel */}
-                    <div className="bg-gradient-to-r from-[#FFF0F3] to-[#FFE8EC] rounded-xl p-4 mb-3">
-                      <p className="text-sm font-semibold text-[#666666] mb-3">🦸 Tokoh Hebat:</p>
-                      <div className="relative">
-                        {/* Navigation Buttons - Desktop Only */}
-                        {carouselStates[index]?.canScrollLeft && (
-                          <button
-                            onClick={() => scrollCarousel(index, 'left')}
-                            className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white rounded-full p-2.5 shadow-xl border-2 border-pink-300 hover:border-pink-400 transition-all hover:scale-110 active:scale-95"
-                            aria-label="Scroll left"
-                          >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M15 18L9 12L15 6" stroke="#FF4D6D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        )}
-                        {carouselStates[index]?.canScrollRight && (
-                          <button
-                            onClick={() => scrollCarousel(index, 'right')}
-                            className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white rounded-full p-2.5 shadow-xl border-2 border-pink-300 hover:border-pink-400 transition-all hover:scale-110 active:scale-95"
-                            aria-label="Scroll right"
-                          >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M9 18L15 12L9 6" stroke="#FF4D6D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        )}
-                        
-                        {/* Carousel Container */}
-                        <div 
-                          ref={(el) => {
-                            carouselRefs.current[index] = el;
-                            if (el) {
-                              // Initial check
-                              setTimeout(() => checkCarouselScroll(index), 100);
-                            }
-                          }}
-                          onScroll={() => checkCarouselScroll(index)}
-                          className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 pb-2 md:px-0" 
-                          style={{ 
-                            scrollbarWidth: 'none', 
-                            msOverflowStyle: 'none'
-                          }}
-                        >
-                          {career.rolemodel.split(", ").map((tokoh: string, idx: number) => {
-                            // Generate slug for image path
-                            const slug = tokoh.toLowerCase()
-                              .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-                              .replace(/\s+/g, '-') // Replace spaces with dash
-                              .replace(/-+/g, '-'); // Remove multiple dashes
-                            
-                            return (
-                              <div key={idx} className="snap-center shrink-0 w-[200px]">
-                                <div className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105">
-                                  <div className="aspect-square relative bg-gradient-to-br from-pink-50 to-pink-100">
-                                    <Image
-                                      src={`/tokoh/${slug}.jpg`}
-                                      alt={tokoh}
-                                      fill
-                                      className="object-cover"
-                                      onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        // Try .jpeg format
-                                        if (target.src.endsWith('.jpg')) {
-                                          target.src = `/tokoh/${slug}.jpeg`;
-                                        } 
-                                        // Try .png format
-                                        else if (target.src.endsWith('.jpeg')) {
-                                          target.src = `/tokoh/${slug}.png`;
-                                        }
-                                        // If all formats fail, show placeholder
-                                        else {
-                                          target.style.display = 'none';
-                                          if (target.nextElementSibling) {
-                                            (target.nextElementSibling as HTMLElement).style.display = 'flex';
-                                          }
-                                        }
-                                      }}
-                                    />
-                                    {/* Fallback placeholder */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-pink-200 hidden items-center justify-center">
-                                      <span className="text-5xl">👤</span>
-                                    </div>
-                                  </div>
-                                  <div className="p-3 bg-white">
-                                    <p className="text-sm text-center text-[#2D2D2D] font-semibold leading-tight">
-                                      {tokoh}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {/* Scroll Indicator */}
-                        <div className="flex justify-center mt-2 gap-1">
-                          {career.rolemodel.split(", ").map((_: string, idx: number) => (
-                            <div key={idx} className="w-1.5 h-1.5 rounded-full bg-pink-300"></div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Subjects */}
-                    <div className="bg-gradient-to-r from-[#E1F5FE] to-[#B3E5FC] rounded-xl p-3">
-                      <p className="text-sm font-semibold text-[#0277BD] mb-1">📚 Pelajaran Favorit:</p>
-                      <p className="text-sm font-bold text-[#01579B]">{career.subjects.join(", ")}</p>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="bg-gradient-to-r from-[#F5F9F0] to-[#F0F7E8] rounded-2xl p-6 border-l-4 border-[#A7C957]">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full flex items-center justify-center shrink-0 shadow-lg">
-                    <span className="text-2xl" suppressHydrationWarning>💡</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">
-                      Mengenal {hasilCitaCita} Hebat
-                    </h3>
-                    {!isExpanded && (
-                      <button
-                        onClick={handleToggleExpand}
-                        disabled={isLoadingExplanation}
-                        className="text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
-                      >
-                        {isLoadingExplanation ? (
-                          <>
-                            <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>Memuat penjelasan...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Lihat penjelasan lengkap</span>
-                            <span>→</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Expandable Explanation */}
-                {isExpanded && explanation && (
-                  <div className="mt-4 pt-4 border-t border-[#D4E5C0] animate-fade-in">
-                    <div className="text-[#4A4A4A] space-y-3 leading-relaxed">
-                      {explanation.split('\n').map((paragraph, index) => (
-                        paragraph.trim() && (
-                          <p key={index} className="text-sm">
-                            {paragraph.trim()}
-                          </p>
-                        )
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => setIsExpanded(false)}
-                      className="mt-4 text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all"
-                    >
-                      <span>Sembunyikan</span>
-                      <span>↑</span>
-                    </button>
-                  </div>
-                )}
+                <Image
+                  src={logoWebp}
+                  alt="Logo EduCorner: SahabatMimpi"
+                  width={32}
+                  height={32}
+                  className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
+                  priority
+                />
               </div>
-            )}
-
-
-            {isSaving && (
-              <div className="text-center py-2">
-                <p className="text-sm text-[#666666] flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Menyimpan hasil...</span>
+              <div className="flex flex-col">
+                <h1
+                  className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  EduCorner: SahabatMimpi
+                </h1>
+                <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
                 </p>
               </div>
-            )}
+            </div>
+          </header>
 
-            {/* Action Buttons */}
-            <div className="space-y-4 pt-4">
-              {/* Row 1: Unduh PDF dan Coba Tes Lagi */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={handleDownloadPDF}
-                  disabled={isGeneratingPDF}
-                  className="bg-gradient-to-r from-[#E91E63] to-[#F06292] hover:from-[#C2185B] hover:to-[#E91E63] disabled:from-gray-400 disabled:to-gray-500 text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {isGeneratingPDF ? (
-                    <>
+          {/* Main Content */}
+          <div className="flex-1 flex items-center justify-center px-4 py-8 pb-24">
+            <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-in relative z-10">
+              {/* Header dengan Avatar */}
+              <div className="bg-gradient-to-br from-[#FFE8EC] to-[#FFF0F3] px-8 py-10 text-center relative">
+                {/* Decorative elements */}
+                <div className="absolute top-4 right-4 text-4xl opacity-30 animate-pulse" suppressHydrationWarning>🎨</div>
+                <div className="absolute bottom-4 left-4 text-3xl opacity-30 animate-bounce" style={{ animationDuration: '3s' }} suppressHydrationWarning>⭐</div>
+
+                {/* Avatar dengan border dekoratif */}
+                <div className="relative inline-block mb-4">
+                  {(() => {
+                    const char = getCharacter(displayKarakter);
+                    // Map warna gradient berdasarkan karakter
+                    const gradientColors: { [key: string]: string } = {
+                      'Berani': 'from-blue-400 to-blue-600',
+                      'Ceria': 'from-pink-400 to-pink-600',
+                      'Pintar': 'from-orange-400 to-orange-600',
+                      'Aktif': 'from-green-400 to-green-600',
+                      'Kreatif': 'from-purple-400 to-purple-600'
+                    };
+                    const badgeColors: { [key: string]: string } = {
+                      'Berani': 'from-blue-300 to-blue-500',
+                      'Ceria': 'from-pink-300 to-pink-500',
+                      'Pintar': 'from-orange-300 to-orange-500',
+                      'Aktif': 'from-green-300 to-green-500',
+                      'Kreatif': 'from-purple-300 to-purple-500'
+                    };
+                    const gradientColor = gradientColors[displayKarakter] || 'from-[#A7C957] to-[#6A994E]';
+                    const badgeColor = badgeColors[displayKarakter] || 'from-yellow-400 to-orange-400';
+
+                    return (
+                      <>
+                        <div className={`absolute inset-0 bg-gradient-to-br ${gradientColor} rounded-full blur-md opacity-30 animate-pulse`}></div>
+                        <div className={`relative w-32 h-32 bg-gradient-to-br ${gradientColor} rounded-full flex items-center justify-center mx-auto border-4 border-white shadow-xl`}>
+                          <span className="text-6xl" suppressHydrationWarning>{char.emoji}</span>
+                          {/* Badge indicator dengan emoji karakter */}
+                          <div className={`absolute -top-1 -right-1 w-10 h-10 bg-gradient-to-br ${badgeColor} rounded-full flex items-center justify-center border-2 border-white animate-bounce`}>
+                            <span className="text-xl" suppressHydrationWarning>{char.emoji}</span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* Title dengan animasi */}
+                <div className="space-y-3 animate-fade-in">
+                  <p className="text-[#E91E63] text-lg font-bold italic flex items-center justify-center gap-2">
+                    <span suppressHydrationWarning>🎉</span>
+                    <span>{displayNama}, Ini Hasil Kuis Kamu!</span>
+                  </p>
+
+                  {/* MBTI Code */}
+                  {mbtiCode && (
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 mb-4 border-2 border-[#FF4D6D]">
+                      <p className="text-sm text-[#666666] mb-1">Kode Kepribadianmu:</p>
+                      <p className="text-3xl font-bold text-[#FF4D6D]">{mbtiCode}</p>
+                      <p className="text-xs sm:text-sm text-[#666666] mt-2 leading-relaxed">{getMBTIDescription(mbtiCode)}</p>
+                    </div>
+                  )}
+
+                  <h2 className="text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-4">
+                    🌟 Pekerjaan Masa Depan yang Cocok: 🌟
+                  </h2>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="px-4 sm:px-6 md:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
+                {/* Top 3 Profesi */}
+                {topCareers.length > 0 ? (
+                  topCareers.map((item, index) => {
+                    const career = item.data;
+                    const matchPercent = Math.round((item.score / 4) * 100);
+                    const matchLabel = getMatchLabel(matchPercent);
+
+                    return (
+                      <div key={index} className="bg-gradient-to-br from-white to-[#FFF8F9] rounded-2xl p-4 sm:p-6 border-2 border-gray-100 shadow-lg hover:shadow-xl transition-all">
+                        {/* Header Card */}
+                        <div className="bg-gradient-to-r from-[#FFE4E9] to-[#FFD4E5] rounded-xl p-3 sm:p-4 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                            <span className="text-3xl sm:text-4xl shrink-0" suppressHydrationWarning>{career.icon}</span>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-lg sm:text-xl font-bold text-[#2D2D2D] break-words">{career.name}</h3>
+                              <p className="text-xs sm:text-sm text-[#666666]">Posisi #{index + 1}</p>
+                            </div>
+                          </div>
+                          <div className="bg-white rounded-full px-3 sm:px-4 py-1.5 sm:py-2 border-2 border-[#FF4D6D] shrink-0 w-full sm:w-auto">
+                            <p className="text-xs sm:text-sm font-bold text-[#FF4D6D] flex items-center justify-center sm:justify-start gap-1.5 whitespace-nowrap">
+                              <span className="text-base sm:text-lg" suppressHydrationWarning>{matchLabel.emoji}</span>
+                              <span>{matchLabel.text}</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Deskripsi */}
+                        <div className="mb-4">
+                          <p className="text-[#4A4A4A] leading-relaxed whitespace-pre-line">
+                            {career.desc}
+                          </p>
+                        </div>
+
+                        {/* Role Model Carousel */}
+                        <div className="bg-gradient-to-r from-[#FFF0F3] to-[#FFE8EC] rounded-xl p-4 mb-3">
+                          <p className="text-sm font-semibold text-[#666666] mb-3">🦸 Tokoh Hebat:</p>
+                          <div className="relative">
+                            {/* Navigation Buttons - Desktop Only */}
+                            {carouselStates[index]?.canScrollLeft && (
+                              <button
+                                onClick={() => scrollCarousel(index, 'left')}
+                                className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white rounded-full p-2.5 shadow-xl border-2 border-pink-300 hover:border-pink-400 transition-all hover:scale-110 active:scale-95"
+                                aria-label="Scroll left"
+                              >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M15 18L9 12L15 6" stroke="#FF4D6D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+                            )}
+                            {carouselStates[index]?.canScrollRight && (
+                              <button
+                                onClick={() => scrollCarousel(index, 'right')}
+                                className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white rounded-full p-2.5 shadow-xl border-2 border-pink-300 hover:border-pink-400 transition-all hover:scale-110 active:scale-95"
+                                aria-label="Scroll right"
+                              >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M9 18L15 12L9 6" stroke="#FF4D6D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+                            )}
+
+                            {/* Carousel Container */}
+                            <div
+                              ref={(el) => {
+                                carouselRefs.current[index] = el;
+                                if (el) {
+                                  // Initial check
+                                  setTimeout(() => checkCarouselScroll(index), 100);
+                                }
+                              }}
+                              onScroll={() => checkCarouselScroll(index)}
+                              className="overflow-x-auto scrollbar-hide snap-x snap-mandatory flex gap-3 pb-2 md:px-0"
+                              style={{
+                                scrollbarWidth: 'none',
+                                msOverflowStyle: 'none'
+                              }}
+                            >
+                              {career.rolemodel.split(", ").map((tokoh: string, idx: number) => {
+                                // Generate slug for image path
+                                const slug = tokoh.toLowerCase()
+                                  .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                                  .replace(/\s+/g, '-') // Replace spaces with dash
+                                  .replace(/-+/g, '-'); // Remove multiple dashes
+
+                                return (
+                                  <div key={idx} className="snap-center shrink-0 w-[200px]">
+                                    <div className="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105">
+                                      <div className="aspect-square relative bg-gradient-to-br from-pink-50 to-pink-100">
+                                        <Image
+                                          src={`/tokoh/${slug}.jpg`}
+                                          alt={tokoh}
+                                          fill
+                                          className="object-cover"
+                                          onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            // Try .jpeg format
+                                            if (target.src.endsWith('.jpg')) {
+                                              target.src = `/tokoh/${slug}.jpeg`;
+                                            }
+                                            // Try .png format
+                                            else if (target.src.endsWith('.jpeg')) {
+                                              target.src = `/tokoh/${slug}.png`;
+                                            }
+                                            // If all formats fail, show placeholder
+                                            else {
+                                              target.style.display = 'none';
+                                              if (target.nextElementSibling) {
+                                                (target.nextElementSibling as HTMLElement).style.display = 'flex';
+                                              }
+                                            }
+                                          }}
+                                        />
+                                        {/* Fallback placeholder */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-pink-100 to-pink-200 hidden items-center justify-center">
+                                          <span className="text-5xl">👤</span>
+                                        </div>
+                                      </div>
+                                      <div className="p-3 bg-white">
+                                        <p className="text-sm text-center text-[#2D2D2D] font-semibold leading-tight">
+                                          {tokoh}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {/* Scroll Indicator */}
+                            <div className="flex justify-center mt-2 gap-1">
+                              {career.rolemodel.split(", ").map((_: string, idx: number) => (
+                                <div key={idx} className="w-1.5 h-1.5 rounded-full bg-pink-300"></div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Subjects */}
+                        <div className="bg-gradient-to-r from-[#E1F5FE] to-[#B3E5FC] rounded-xl p-3">
+                          <p className="text-sm font-semibold text-[#0277BD] mb-1">📚 Pelajaran Favorit:</p>
+                          <p className="text-sm font-bold text-[#01579B]">{career.subjects.join(", ")}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="bg-gradient-to-r from-[#F5F9F0] to-[#F0F7E8] rounded-2xl p-6 border-l-4 border-[#A7C957]">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[#A7C957] to-[#6A994E] rounded-full flex items-center justify-center shrink-0 shadow-lg">
+                        <span className="text-2xl" suppressHydrationWarning>💡</span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-[#2D2D2D] mb-2">
+                          Mengenal {hasilCitaCita} Hebat
+                        </h3>
+                        {!isExpanded && (
+                          <button
+                            onClick={handleToggleExpand}
+                            disabled={isLoadingExplanation}
+                            className="text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all disabled:opacity-50"
+                          >
+                            {isLoadingExplanation ? (
+                              <>
+                                <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Memuat penjelasan...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>Lihat penjelasan lengkap</span>
+                                <span>→</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expandable Explanation */}
+                    {isExpanded && explanation && (
+                      <div className="mt-4 pt-4 border-t border-[#D4E5C0] animate-fade-in">
+                        <div className="text-[#4A4A4A] space-y-3 leading-relaxed">
+                          {explanation.split('\n').map((paragraph, index) => (
+                            paragraph.trim() && (
+                              <p key={index} className="text-sm">
+                                {paragraph.trim()}
+                              </p>
+                            )
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => setIsExpanded(false)}
+                          className="mt-4 text-[#A7C957] hover:text-[#6A994E] font-semibold text-sm flex items-center gap-2 transition-all"
+                        >
+                          <span>Sembunyikan</span>
+                          <span>↑</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
+                {isSaving && (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-[#666666] flex items-center justify-center gap-2">
                       <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span>Membuat PDF...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-lg" suppressHydrationWarning>📥</span>
-                      <span>Unduh PDF</span>
-                    </>
-                  )}
-                </button>
-                
+                      <span>Menyimpan hasil...</span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="space-y-4 pt-4">
+                  {/* Row 1: Unduh PDF dan Coba Tes Lagi */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleDownloadPDF}
+                      disabled={isGeneratingPDF}
+                      className="bg-gradient-to-r from-[#E91E63] to-[#F06292] hover:from-[#C2185B] hover:to-[#E91E63] disabled:from-gray-400 disabled:to-gray-500 text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                      {isGeneratingPDF ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Membuat PDF...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-lg" suppressHydrationWarning>📥</span>
+                          <span>Unduh PDF</span>
+                        </>
+                      )}
+                    </button>
+
                     <button
                       onClick={() => {
+                        playSound('click');
                         handleCobaTesLagi();
                       }}
                       className="bg-gradient-to-r from-[#A7C957] to-[#6A994E] hover:from-[#8FB84E] hover:to-[#588B3B] text-white font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
                     >
-                  <span className="text-lg" suppressHydrationWarning>🔄</span>
-                  <span>Coba Lagi</span>
-                </button>
-              </div>
+                      <span className="text-lg" suppressHydrationWarning>🔄</span>
+                      <span>Coba Lagi</span>
+                    </button>
+                  </div>
 
-              {/* Row 2: Kembali ke Beranda */}
-              <button
-                onClick={() => {
-                  router.push("/");
-                }}
-                className="w-full bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#E91E63] hover:text-[#C2185B] border-2 border-[#FFD4E5] hover:border-[#FFB6C1] font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-              >
-                <span className="text-lg group-hover:-translate-x-1 transition-transform" suppressHydrationWarning>←</span>
-                <span>Kembali ke Beranda</span>
-              </button>
+                  {/* Row 2: Kembali ke Beranda */}
+                  <button
+                    onClick={() => {
+                      playSound('click');
+                      router.push("/");
+                    }}
+                    className="w-full bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#E91E63] hover:text-[#C2185B] border-2 border-[#FFD4E5] hover:border-[#FFB6C1] font-bold px-4 py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                  >
+                    <span className="text-lg group-hover:-translate-x-1 transition-transform" suppressHydrationWarning>←</span>
+                    <span>Kembali ke Beranda</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        </div>
 
-        {/* Footer */}
-        <footer 
-          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
-          style={{
-            borderColor: 'rgba(243, 244, 246, 0.5)',
-            fontFamily: 'Inter, sans-serif'
-          }}
-        >
-          <p 
-            className="text-xs sm:text-sm text-[#666666] font-medium" 
-            style={{ fontFamily: 'Inter, sans-serif' }}
+          {/* Footer */}
+          <footer
+            className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
+            style={{
+              borderColor: 'rgba(243, 244, 246, 0.5)',
+              fontFamily: 'Inter, sans-serif'
+            }}
           >
-            © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
-          </p>
-        </footer>
-      </div>
+            <p
+              className="text-xs sm:text-sm text-[#666666] font-medium"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
+            </p>
+          </footer>
+        </div>
       </>
     );
   }
@@ -1866,225 +1931,219 @@ export default function KuisPage() {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-x-hidden overflow-y-auto">
-        {/* Decorative Background Elements - sama seperti page.tsx */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-[#DCFCE7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-[#FFE4E9] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-          
-          {/* Fun Floating Shapes */}
-          <div className="absolute top-[15%] right-[20%] text-4xl opacity-20 animate-pulse" style={{ animationDuration: '2s' }} suppressHydrationWarning>⭐</div>
-          <div className="absolute bottom-[20%] right-[15%] text-3xl opacity-20 animate-pulse" style={{ animationDuration: '2.8s', animationDelay: '0.5s' }} suppressHydrationWarning>😊</div>
-          <div className="absolute top-[45%] left-[8%] text-3xl opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }} suppressHydrationWarning>💚</div>
-          <div className="absolute bottom-[25%] left-[12%] text-4xl opacity-20 animate-pulse" style={{ animationDuration: '3s' }} suppressHydrationWarning>✏️</div>
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-x-hidden overflow-y-auto">
+          {/* Decorative Background Elements - sama seperti page.tsx */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+            <div className="absolute top-40 right-10 w-72 h-72 bg-[#DCFCE7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-[#FFE4E9] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+
+            {/* Fun Floating Shapes */}
+            <div className="absolute top-[15%] right-[20%] text-4xl opacity-20 animate-pulse" style={{ animationDuration: '2s' }} suppressHydrationWarning>⭐</div>
+            <div className="absolute bottom-[20%] right-[15%] text-3xl opacity-20 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '0.5s' }} suppressHydrationWarning>😊</div>
+            <div className="absolute top-[45%] left-[8%] text-3xl opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }} suppressHydrationWarning>💚</div>
+            <div className="absolute bottom-[25%] left-[12%] text-4xl opacity-20 animate-pulse" style={{ animationDuration: '3s' }} suppressHydrationWarning>✏️</div>
+          </div>
+
+          {/* Header - sama seperti page.tsx */}
+          <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div
+                className="p-1.5 sm:p-2 rounded-lg transition-all duration-300"
+                style={{
+                  boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
+                }}
+              >
+                <Image
+                  src={logoWebp}
+                  alt="Logo EduCorner: SahabatMimpi"
+                  width={32}
+                  height={32}
+                  className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
+                  priority
+                />
+              </div>
+              <div className="flex flex-col">
+                <h1
+                  className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  EduCorner: SahabatMimpi
+                </h1>
+                <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>Temukan potensi diri dan wujudkan mimpi langkah demi langkah.</p>
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="container mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6 max-w-4xl relative z-10 pb-20">
+            {/* Progress Bar dengan Counter */}
+            <div className="mb-4 sm:mb-6 animate-fade-in">
+              <div className="flex justify-between items-center mb-2 sm:mb-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg">
+                    Pertanyaan {currentQuestion + 1} dari {questions.length}
+                  </div>
+                  <span className="text-xs sm:text-sm font-semibold text-[#666666] hidden sm:inline" style={{ fontFamily: 'Inter, sans-serif' }}>Progres Kuis</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-base sm:text-lg font-bold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>{Math.round(progress)}%</span>
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-[#FF4D6D] rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden shadow-inner">
+                <div
+                  className="bg-gradient-to-r from-[#FF4D6D] via-[#FF6B8A] to-[#FF8FA3] h-2 sm:h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
+                  style={{ width: `${progress}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Loading Overlay saat Transisi */}
+            {isTransitioning && (
+              <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 border-4 border-[#FF4D6D] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-[#FF4D6D] font-semibold text-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    Memuat pertanyaan berikutnya...
+                  </p>
+                </div>
+              </div>
+            )}
+
+        {/* Question Card */}
+        <div
+          key={currentQuestion}
+          className={`bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 relative overflow-hidden ${isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
+            } transition-all duration-500 ease-out`}
+        >
+          {/* Decorative Background Pattern */}
+          <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-br from-[#FFE4E9]/30 to-transparent rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-tr from-[#FFF0F3]/30 to-transparent rounded-full blur-3xl"></div>
+
+          <div className="relative z-10">
+            <div className="flex items-center justify-center mb-3 sm:mb-4">
+              <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white px-4 sm:px-6 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Pilih salah satu yang paling sesuai denganmu
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-4 sm:mb-6 md:mb-8 text-center leading-tight px-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+            {question.question}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+            {question.options.map((option: any, index: number) => (
+              <button
+                key={`${currentQuestion}-${index}`}
+                onClick={() => { playSound('click'); handleAnswer(index); }}
+                className={`relative w-full bg-gradient-to-br from-white to-[#FFF8F9] hover:from-[#FFF0F3] hover:to-[#FFE4E9] border-2 border-gray-200 hover:border-[#FF4D6D] text-[#2D2D2D] font-medium px-4 sm:px-6 py-4 sm:py-6 md:py-8 rounded-2xl sm:rounded-3xl text-center transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] shadow-md hover:shadow-xl group flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-5 min-h-[240px] sm:min-h-[280px] md:min-h-[320px] overflow-hidden ${!optionsVisible ? 'opacity-0' : ''
+                  }`}
+                style={{
+                  animationDelay: `${index * 200}ms`,
+                  animation: optionsVisible && !isTransitioning
+                    ? (index === 0
+                      ? 'slideInFromLeft 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
+                      : 'slideInFromRight 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards')
+                    : 'none'
+                }}
+              >
+                {/* Animated Background Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/0 via-[#FF6B8A]/0 to-[#FF8FA3]/0 group-hover:from-[#FF4D6D]/5 group-hover:via-[#FF6B8A]/5 group-hover:to-[#FF8FA3]/5 transition-all duration-300 rounded-3xl"></div>
+
+                {/* Glow Effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF4D6D]/20 via-transparent to-[#FF6B8A]/20 blur-xl rounded-3xl"></div>
+                </div>
+
+                {/* Badge Label */}
+                <div className="absolute top-4 right-4 w-8 h-8 bg-gradient-to-br from-[#FFE4E9] to-[#FFB6C1] group-hover:from-[#FF4D6D] group-hover:to-[#FF6B8A] rounded-full flex items-center justify-center font-bold text-sm text-[#FF4D6D] group-hover:text-white transition-all duration-300 shadow-md group-hover:shadow-lg z-10" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  {String.fromCharCode(65 + index)}
+                </div>
+
+                {/* Emoji/Image dan Text */}
+                <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 w-full" style={{
+                  animationDelay: `${index * 200 + 150}ms`,
+                  animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
+                  opacity: optionsVisible ? 1 : 0
+                }}>
+                  <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-none flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56">
+                    {option.image ? (
+                      <Image
+                        src={option.image}
+                        alt={option.text}
+                        width={256}
+                        height={256}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          // Fallback to emoji if image fails to load
+                          const target = e.target as HTMLElement;
+                          target.style.display = 'none';
+                          if (target.nextSibling) {
+                            (target.nextSibling as HTMLElement).style.display = 'block';
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <span suppressHydrationWarning style={{ display: option.image ? 'none' : 'block' }}>{option.emoji}</span>
+                  </div>
+                  <p className="text-sm sm:text-base md:text-lg font-semibold text-center px-2 sm:px-4 leading-relaxed">
+                    {option.text}
+                  </p>
+                </div>
+
+                {/* Hover Arrow Indicator - Kanan */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                  <div className="w-10 h-10 rounded-full bg-[#FF4D6D] flex items-center justify-center text-white shadow-lg">
+                    <span className="text-xl">→</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Header - sama seperti page.tsx */}
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
-              style={{ 
-                boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
-                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
-              }}
-            >
-              <Image
-                src={logoWebp}
-                alt="Logo EduCorner: SahabatMimpi"
-                width={32}
-                height={32}
-                className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9"
-                priority
-              />
-            </div>
-            <div className="flex flex-col">
-              <h1 
-                className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                EduCorner: SahabatMimpi
-              </h1>
-              <p className="text-xs sm:text-sm text-[#666666]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Temukan potensi diri dan wujudkan mimpi langkah demi langkah.
-              </p>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="container mx-auto px-4 sm:px-6 md:px-8 py-4 md:py-6 max-w-4xl relative z-10 pb-20">
-          {/* Progress Bar dengan Counter */}
-          <div className="mb-4 sm:mb-6 animate-fade-in">
-            <div className="flex justify-between items-center mb-2 sm:mb-3">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg">
-                  Pertanyaan {currentQuestion + 1} dari {questions.length}
-                </div>
-                <span className="text-xs sm:text-sm font-semibold text-[#666666] hidden sm:inline" style={{ fontFamily: 'Inter, sans-serif' }}>Progres Kuis</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-base sm:text-lg font-bold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>{Math.round(progress)}%</span>
-                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-[#FF4D6D] rounded-full animate-pulse"></div>
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden shadow-inner">
-              <div
-                className="bg-gradient-to-r from-[#FF4D6D] via-[#FF6B8A] to-[#FF8FA3] h-2 sm:h-3 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-                style={{ width: `${progress}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Loading Overlay saat Transisi */}
-          {isTransitioning && (
-            <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-40 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-[#FF4D6D] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-[#FF4D6D] font-semibold text-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Memuat pertanyaan berikutnya...
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Question Card */}
-          <div 
-            key={currentQuestion}
-            className={`bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 p-4 sm:p-6 md:p-8 mb-4 sm:mb-6 relative overflow-hidden ${
-              isTransitioning ? 'opacity-0 scale-95 translate-y-4' : 'opacity-100 scale-100 translate-y-0'
-            } transition-all duration-500 ease-out`}
-          >
-            {/* Decorative Background Pattern */}
-            <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-br from-[#FFE4E9]/30 to-transparent rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 sm:w-64 sm:h-64 bg-gradient-to-tr from-[#FFF0F3]/30 to-transparent rounded-full blur-3xl"></div>
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-center mb-3 sm:mb-4">
-                <div className="bg-gradient-to-r from-[#FF4D6D]/10 to-[#FF6B8A]/10 px-4 sm:px-6 py-1.5 sm:py-2 rounded-full border border-[#FF4D6D]/20">
-                  <span className="text-xs sm:text-sm font-semibold text-[#FF4D6D]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    Pilih salah satu yang paling sesuai denganmu
-                  </span>
-                </div>
-              </div>
-              
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#2D2D2D] mb-4 sm:mb-6 md:mb-8 text-center leading-tight px-2" style={{ fontFamily: 'Inter, sans-serif' }}>
-                {question.question}
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-                {question.options.map((option: any, index: number) => (
-                  <button
-                    key={`${currentQuestion}-${index}`}
-                    onClick={() => handleAnswer(index)}
-                    className={`relative w-full bg-gradient-to-br from-white to-[#FFF8F9] hover:from-[#FFF0F3] hover:to-[#FFE4E9] border-2 border-gray-200 hover:border-[#FF4D6D] text-[#2D2D2D] font-medium px-4 sm:px-6 py-4 sm:py-6 md:py-8 rounded-2xl sm:rounded-3xl text-center transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98] shadow-md hover:shadow-xl group flex flex-col items-center justify-center gap-3 sm:gap-4 md:gap-5 min-h-[240px] sm:min-h-[280px] md:min-h-[320px] overflow-hidden ${
-                      !optionsVisible ? 'opacity-0' : ''
-                    }`}
-                    style={{
-                      animationDelay: `${index * 200}ms`,
-                      animation: optionsVisible && !isTransitioning 
-                        ? (index === 0 
-                           ? 'slideInFromLeft 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' 
-                           : 'slideInFromRight 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards')
-                        : 'none'
-                    }}
-                  >
-                    {/* Animated Background Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#FF4D6D]/0 via-[#FF6B8A]/0 to-[#FF8FA3]/0 group-hover:from-[#FF4D6D]/5 group-hover:via-[#FF6B8A]/5 group-hover:to-[#FF8FA3]/5 transition-all duration-300 rounded-3xl"></div>
-                    
-                    {/* Glow Effect */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#FF4D6D]/20 via-transparent to-[#FF6B8A]/20 blur-xl rounded-3xl"></div>
-                    </div>
-
-                    {/* Badge Label */}
-                    <div className="absolute top-4 right-4 w-8 h-8 bg-gradient-to-br from-[#FFE4E9] to-[#FFB6C1] group-hover:from-[#FF4D6D] group-hover:to-[#FF6B8A] rounded-full flex items-center justify-center font-bold text-sm text-[#FF4D6D] group-hover:text-white transition-all duration-300 shadow-md group-hover:shadow-lg z-10" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      {String.fromCharCode(65 + index)}
-                    </div>
-
-                    {/* Emoji/Image dan Text */}
-                    <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3 md:gap-4 w-full" style={{
-                      animationDelay: `${index * 200 + 150}ms`,
-                      animation: optionsVisible && !isTransitioning ? 'scaleInBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards' : 'none',
-                      opacity: optionsVisible ? 1 : 0
-                    }}>
-                      <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-none flex items-center justify-center w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-56 lg:h-56">
-                        {option.image ? (
-                          <Image
-                            src={option.image}
-                            alt={option.text}
-                            width={256}
-                            height={256}
-                            className="w-full h-full object-contain"
-                            onError={(e) => {
-                              // Fallback to emoji if image fails to load
-                              const target = e.target as HTMLElement;
-                              target.style.display = 'none';
-                              if (target.nextSibling) {
-                                (target.nextSibling as HTMLElement).style.display = 'block';
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <span suppressHydrationWarning style={{ display: option.image ? 'none' : 'block' }}>{option.emoji}</span>
-                      </div>
-                      <p className="text-sm sm:text-base md:text-lg font-semibold text-center px-2 sm:px-4 leading-relaxed">
-                        {option.text}
-                      </p>
-                    </div>
-
-                    {/* Hover Arrow Indicator - Kanan */}
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                      <div className="w-10 h-10 rounded-full bg-[#FF4D6D] flex items-center justify-center text-white shadow-lg">
-                        <span className="text-xl">→</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Motivational Quote */}
-          <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6 px-4">
-            <span className="text-lg" suppressHydrationWarning>🌟</span>
-            <p className="text-xs sm:text-sm text-gray-600 italic text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
-              "Percaya pada dirimu sendiri, raih mimpimu setinggi bintang"
-            </p>
-            <span className="text-lg" suppressHydrationWarning>🌟</span>
-          </div>
-        </main>
-
-        {/* Footer - sama seperti page.tsx */}
-        <footer 
-          className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
-          style={{
-            borderColor: 'rgba(243, 244, 246, 0.5)',
-            fontFamily: 'Inter, sans-serif'
-          }}
-        >
-          <p 
-            className="text-xs sm:text-sm text-[#666666] font-medium" 
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
+        {/* Motivational Quote */}
+        <div className="flex items-center justify-center gap-3 mb-4 sm:mb-6 px-4">
+          <span className="text-lg" suppressHydrationWarning>🌟</span>
+          <p className="text-xs sm:text-sm text-gray-600 italic text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Percaya pada dirimu sendiri, raih mimpimu setinggi bintang
           </p>
-        </footer>
-      </div>
-    );
-  }
+          <span className="text-lg" suppressHydrationWarning>🌟</span>
+        </div>
+      </main>
 
-  return (
+      {/* Footer - sama seperti page.tsx */}
+      <footer
+        className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
+        style={{
+          borderColor: 'rgba(243, 244, 246, 0.5)',
+          fontFamily: 'Inter, sans-serif'
+        }}
+      >
+        <p className="text-xs sm:text-sm text-[#666666] font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
+          © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
+        </p>
+      </footer>
+    </div>
+      </>
+    );
+}
+
+return (
+  <>
     <div className="min-h-screen bg-gradient-to-br from-[#FFF0F3] via-[#FFF5F7] to-[#FFF0F3] relative overflow-hidden">
       {/* Decorative Background Elements - sama seperti page.tsx */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#FFB6C1] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-[#DCFCE7] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
         <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-[#FFE4E9] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-        
+
         {/* Fun Floating Shapes */}
         <div className="absolute top-[10%] left-[8%] text-5xl opacity-30 animate-pulse" style={{ animationDuration: '2s' }} suppressHydrationWarning>⭐</div>
         <div className="absolute top-[15%] right-[12%] text-5xl opacity-30 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.5s' }} suppressHydrationWarning>🚀</div>
@@ -2095,9 +2154,9 @@ export default function KuisPage() {
       {/* Header - sama seperti page.tsx */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-custom border-b border-[#FCE7F3]/50 px-4 sm:px-6 md:px-10 lg:px-16 py-2 md:py-3 shadow-sm">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div 
-            className="p-1.5 sm:p-2 rounded-lg transition-all duration-300" 
-            style={{ 
+          <div
+            className="p-1.5 sm:p-2 rounded-lg transition-all duration-300"
+            style={{
               boxShadow: '0px 4px 30px -4px rgba(255, 77, 109, 0.2), 0px 0px 20px rgba(255, 77, 109, 0.1)',
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 240, 243, 0.9) 100%)'
             }}
@@ -2112,8 +2171,8 @@ export default function KuisPage() {
             />
           </div>
           <div className="flex flex-col">
-            <h1 
-              className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]" 
+            <h1
+              className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] bg-clip-text text-transparent leading-[1.42] tracking-[-0.02em]"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
               EduCorner: SahabatMimpi
@@ -2151,20 +2210,17 @@ export default function KuisPage() {
                     key={index}
                     type="button"
                     onClick={() => setKarakter(char.label)}
-                    className={`flex flex-col items-center transition-all duration-300 ${
-                      karakter === char.label 
-                        ? "scale-110" 
-                        : "hover:scale-105 opacity-70 hover:opacity-100"
-                    }`}
+                    className={`flex flex-col items-center transition-all duration-300 ${karakter === char.label
+                      ? "scale-110"
+                      : "hover:scale-105 opacity-70 hover:opacity-100"
+                      }`}
                   >
-                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br ${char.bgColor} flex items-center justify-center text-3xl md:text-4xl shadow-md transition-all ${
-                      karakter === char.label ? `ring-4 ${char.ringColor} shadow-lg` : ""
-                    }`}>
+                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br ${char.bgColor} flex items-center justify-center text-3xl md:text-4xl shadow-md transition-all ${karakter === char.label ? `ring-4 ${char.ringColor} shadow-lg` : ""
+                      }`}>
                       <span suppressHydrationWarning>{char.emoji}</span>
                     </div>
-                    <span className={`text-xs md:text-sm font-semibold mt-2 ${
-                      karakter === char.label ? "text-[#FF4D6D]" : "text-[#666666]"
-                    }`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <span className={`text-xs md:text-sm font-semibold mt-2 ${karakter === char.label ? "text-[#FF4D6D]" : "text-[#666666]"
+                      }`} style={{ fontFamily: 'Inter, sans-serif' }}>
                       {char.label}
                     </span>
                   </button>
@@ -2222,7 +2278,7 @@ export default function KuisPage() {
           <Link
             href="/"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFE8EC] to-[#FFD4E5] hover:from-[#FFB6C1] hover:to-[#FFE8EC] text-[#FF4D6D] hover:text-[#E91E63] font-semibold text-sm transition-all px-5 py-2.5 rounded-xl border-2 border-[#FFD4E5] hover:border-[#FFB6C1] shadow-sm hover:shadow-md transform hover:scale-105 cursor-pointer"
-            style={{ 
+            style={{
               fontFamily: 'Inter, sans-serif',
               textDecoration: 'none',
               position: 'relative',
@@ -2238,20 +2294,21 @@ export default function KuisPage() {
       </main>
 
       {/* Footer - sama seperti page.tsx */}
-      <footer 
+      <footer
         className="fixed bottom-0 left-0 right-0 text-center py-3 sm:py-4 border-t px-4 z-50 backdrop-blur-sm bg-white/80"
         style={{
           borderColor: 'rgba(243, 244, 246, 0.5)',
           fontFamily: 'Inter, sans-serif'
         }}
       >
-        <p 
-          className="text-xs sm:text-sm text-[#666666] font-medium" 
+        <p
+          className="text-xs sm:text-sm text-[#666666] font-medium"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
           © 2026 KKN T31 MARGO LESTARI. EduCorner:SahabatMimpi
         </p>
       </footer>
     </div>
-  );
+  </>
+);
 }

@@ -82,7 +82,13 @@ EduCorner: SahabatMimpi adalah platform edukasi interaktif yang dirancang untuk 
 - Tampilan yang optimal di semua perangkat
 - UI/UX yang menarik dan user-friendly
 
-### 8. **Sound Effects**
+### 8. **Forgot Password**
+- Firebase Email Link passwordless authentication
+- Secure password reset tanpa OTP
+- Magic link dikirim langsung ke email
+- Link valid selama 1 jam
+
+### 9. **Sound Effects**
 - Sound effects untuk interaksi pengguna
 - Opsi untuk mengaktifkan/menonaktifkan suara
 - Pengalaman yang lebih interaktif dan engaging
@@ -100,7 +106,8 @@ EduCorner: SahabatMimpi adalah platform edukasi interaktif yang dirancang untuk 
 ### Backend
 - **Next.js API Routes** - Serverless API
 - **Neon PostgreSQL** - Database serverless
-- **JWT (jose)** - Autentikasi
+- **Firebase Auth** - Email Link passwordless authentication
+- **JWT (jose)** - Session management
 - **Groq SDK** - AI untuk penjelasan profesi
 
 ### Database
@@ -143,19 +150,24 @@ Buat file `.env.local` di root folder `Edu-Corner`:
 # Database
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
-# Base URL (untuk SEO dan links)
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-
-# Email Configuration (untuk forgot password)
-RESEND_API_KEY=re_your_api_key_here
-EMAIL_FROM=onboarding@resend.dev
-ADMIN_EMAIL=your-admin-email@gmail.com
-
-# JWT Secret (untuk autentikasi)
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-
 # Groq AI (untuk penjelasan profesi)
 GROQ_API_KEY=your_groq_api_key_here
+
+# Firebase Configuration (untuk authentication)
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Admin Configuration
+ADMIN_EMAIL=your-admin-email@gmail.com
+ADMIN_USERNAME=admin
+
+# JWT Secret (untuk session management)
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
 # Site Verification (opsional)
 GOOGLE_SITE_VERIFICATION=your_google_verification_code
@@ -217,14 +229,16 @@ Pastikan `DATABASE_URL` di `.env.local` sudah benar. Format:
 postgresql://username:password@host/database?sslmode=require
 ```
 
-### Email Configuration
+### Firebase Authentication
 
-Untuk fitur forgot password, Anda perlu:
-1. Daftar di [Resend](https://resend.com)
-2. Dapatkan API key
-3. Set `RESEND_API_KEY` di `.env.local`
-4. Set `EMAIL_FROM` (gunakan `onboarding@resend.dev` untuk testing)
-5. Set `ADMIN_EMAIL` (email yang akan menerima OTP)
+Untuk fitur forgot password (Email Link), Anda perlu:
+1. Buat Firebase project di [Firebase Console](https://console.firebase.google.com)
+2. Enable Email/Password provider di Authentication
+3. Enable **Email link (passwordless sign-in)**
+4. Dapatkan Firebase config dan set semua `NEXT_PUBLIC_FIREBASE_*` di `.env.local`
+5. Set `ADMIN_EMAIL` (email admin yang bisa reset password)
+
+**Setup Guide lengkap**: Lihat `firebase_setup_guide.md` di folder artifacts
 
 ### JWT Secret
 
@@ -415,22 +429,27 @@ Mendapatkan penjelasan profesi dari AI.
 
 ```env
 DATABASE_URL=your_production_database_url
-NEXT_PUBLIC_BASE_URL=https://educorner.my.id
-RESEND_API_KEY=your_production_resend_key
-EMAIL_FROM=noreply@educorner.my.id
-ADMIN_EMAIL=your-admin-email@gmail.com
-JWT_SECRET=your-production-jwt-secret
 GROQ_API_KEY=your_production_groq_key
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+ADMIN_EMAIL=your-admin-email@gmail.com
+ADMIN_USERNAME=admin
+JWT_SECRET=your-production-jwt-secret
 ```
 
-### Setup Domain di Resend (Production)
+### Setup Firebase Authorized Domains (Production)
 
-Untuk menggunakan custom email domain:
-1. Login ke Resend Dashboard
-2. Buka menu "Domains"
-3. Add domain: `educorner.my.id`
-4. Setup DNS records (SPF, DKIM, DMARC)
-5. Set `EMAIL_FROM=noreply@educorner.my.id`
+Untuk domain production:
+1. Login ke Firebase Console
+2. Buka **Authentication** → **Settings**
+3. Scroll ke **Authorized domains**
+4. Add domain production: `educorner.my.id`
+5. Klik **Add**
 
 ## 🧪 Testing
 
@@ -474,13 +493,15 @@ Kontribusi sangat diterima! Untuk kontribusi:
 - Pastikan `DATABASE_URL` sudah di-set dengan benar
 - Restart development server setelah mengubah `.env.local`
 
-### Email Tidak Terkirim
+### Email Link Tidak Terkirim
 
-**Problem:** Email OTP tidak terkirim
+**Problem:** Email reset password tidak terkirim
 
 **Solution:**
-- Cek `RESEND_API_KEY` sudah benar
-- Pastikan `EMAIL_FROM` menggunakan domain Resend (`onboarding@resend.dev` untuk testing)
+- Cek Firebase Email Link sudah enabled di Firebase Console
+- Pastikan semua `NEXT_PUBLIC_FIREBASE_*` environment variables sudah benar
+- Cek quota Firebase (free plan memiliki daily limit)
+- Periksa folder Spam/Junk di email
 
 ### PDF Generation Error
 
@@ -540,7 +561,7 @@ Terima kasih kepada:
 
 - **Next.js** team untuk framework yang luar biasa
 - **Neon** untuk database serverless yang handal
-- **Resend** untuk email service yang mudah digunakan
+- **Firebase** untuk authentication service yang mudah dan aman
 - **Groq** untuk AI service yang powerful
 - **Vercel** untuk platform deployment yang seamless
 - Semua kontributor dan pengguna platform ini

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import logoWebp from "../../../logo.webp";
+import { auth } from "@/lib/firebase";
+import { sendSignInLinkToEmail } from "firebase/auth";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -20,28 +22,36 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+      // Configure where the user will be redirected after clicking the email link
+      const actionCodeSettings = {
+        url: `${window.location.origin}/cekhasil/login/verify-email`,
+        handleCodeInApp: true,
+      };
 
-      const result = await response.json();
+      // Send the email link using Firebase
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
 
-      if (result.success) {
-        // Simpan email ke sessionStorage untuk digunakan di halaman reset password
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('reset_password_email', email);
-        }
-        setSuccess(true);
-        setEmail("");
-      } else {
-        setError(result.error || "Terjadi kesalahan saat mengirim email");
+      // Save the email locally so we can complete sign-in on the verify page
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('emailForSignIn', email);
       }
+
+      setSuccess(true);
+      setEmail("");
     } catch (err: any) {
-      setError("Terjadi kesalahan saat mengirim email");
+      console.error('Error sending email link:', err);
+
+      // Handle specific Firebase errors
+      if (err.code === 'auth/invalid-email') {
+        setError('Format email tidak valid');
+      } else if (err.code === 'auth/user-not-found') {
+        // For security, don't reveal if email exists
+        setSuccess(true);
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Terlalu banyak permintaan. Silakan coba lagi nanti');
+      } else {
+        setError('Terjadi kesalahan saat mengirim email. Pastikan Firebase sudah dikonfigurasi dengan benar');
+      }
     } finally {
       setLoading(false);
     }
@@ -67,7 +77,7 @@ export default function ForgotPasswordPage() {
               Lupa Password
             </h1>
             <p className="text-[#666666]">
-              Masukkan email Anda untuk mendapatkan kode OTP reset password
+              Masukkan email Anda untuk mendapatkan link reset password
             </p>
           </div>
 
@@ -90,25 +100,23 @@ export default function ForgotPasswordPage() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <span>Kode OTP telah dikirim ke email Anda!</span>
+                  <span>Link reset password telah dikirim ke email Anda!</span>
                 </div>
               </div>
-              <p className="text-sm text-[#666666] text-center">
-                Silakan cek inbox email Anda untuk mendapatkan kode OTP 6 digit.
-                Kode OTP berlaku selama 10 menit.
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+                <p className="text-sm text-blue-900 mb-2">
+                  📧 <strong>Cek inbox email Anda</strong>
+                </p>
+                <ul className="text-xs text-blue-700 space-y-1 ml-4">
+                  <li>• Klik link yang dikirim dari Firebase</li>
+                  <li>• Link akan mengarahkan Anda ke halaman reset password</li>
+                  <li>• Link berlaku selama 1 jam</li>
+                </ul>
+              </div>
+              <p className="text-xs text-[#666666] text-center">
+                Tidak menerima email? Cek folder Spam atau Junk Mail
               </p>
-              <Link
-                href="/cekhasil/login/reset-password"
-                className="block w-full bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:from-[#E91E63] hover:to-[#FF4D6D] text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl text-center mt-4"
-              >
-                Masukkan Kode OTP
-              </Link>
-              <Link
-                href="/cekhasil/login"
-                className="block w-full bg-gradient-to-r from-[#FF4D6D] to-[#FF6B8A] hover:from-[#E91E63] hover:to-[#FF4D6D] text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl text-center"
-              >
-                Kembali ke Login
-              </Link>
+
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -164,7 +172,7 @@ export default function ForgotPasswordPage() {
                     Mengirim...
                   </span>
                 ) : (
-                  "Kirim Kode OTP"
+                  "Kirim Link Reset Password"
                 )}
               </button>
             </form>
